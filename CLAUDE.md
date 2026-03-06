@@ -28,6 +28,24 @@ Every Firlefanz story follows a consistent arc:
 - **In German**: All story text must be written in German. Simple, clear German suitable for young children.
 - **Age-appropriate**: Language and themes for children aged 3–6. Simple sentences, gentle pacing, read-aloud friendly.
 
+## App Layout
+
+### Home / Story Library
+- Stories are displayed as visual **tiles** in a grid layout
+- Each tile shows the story's cover image and title
+- Clicking a tile opens the story in the reader view
+
+### Story Reader
+- **Kids' book style layout** — page-by-page presentation with flip/swipe navigation
+- Each page combines an illustration with story text
+- Navigation: forward/back through pages (buttons or swipe)
+- Designed for a parent reading aloud to a child on a tablet or screen
+
+### Story Data
+- Stories are **pre-generated** and stored as static data (JSON + images) for now
+- Each story consists of an ordered list of pages, where each page has text (German) and an image
+- Future: allow creating new stories dynamically once a backend is in place
+
 ## Tech Stack
 
 - **React** with **Vite** for the frontend
