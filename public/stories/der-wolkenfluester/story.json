@@ -91,5 +91,87 @@
       ],
       "image": "/stories/der-wolkenfluester/page-12.png"
     }
-  ]
+  ],
+  "translations": {
+    "en": {
+      "title": "The Cloud Whisperer",
+      "teaser": "The clouds are gray and sad. Firlefanz sets off to find the Cloud Whisperer!",
+      "pages": [
+        {
+          "text": [
+            "Firlefanz woke up and looked out the window. But something was not right. The clouds were gray. Not just a little gray, but completely gray. Sad gray.",
+            "\"What is wrong with the clouds?\" whispered Firlefanz."
+          ]
+        },
+        {
+          "text": [
+            "In the kitchen, Firlefanz made himself a buttered bread with strawberry jam and a warm milk. Outside, everything was quiet.",
+            "Usually, the birds always sang in the morning. But today, they just sat there and looked up. As if they were waiting for something."
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz ran to Papalapapp. He was standing by the window, frowning.",
+            "\"Papalapapp, why are the clouds so sad?\"",
+            "Papalapapp nodded slowly. \"High up in the Cloud Mountains lives the Cloud Whisperer. He paints the clouds their colors every day. Pink in the morning, white at noon, gold in the evening. If the clouds are gray, he might need help.\" He put on his coat. \"Let's go see.\""
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz bundled up warmly: the green hat, the thick boots, and the cozy jacket. He also took his walking stick.",
+            "\"The Cloud Mountains are very high,\" said Papalapapp, tying his scarf around his neck. \"You should take cookies with you. And warm gloves.\""
+          ]
+        },
+        {
+          "text": [
+            "They set off. Over seven seas, where the waves were quiet and still today. Over seven deserts, where the sand did not sparkle like usual.",
+            "Over seven high mountains, seven rivers, seven forests, and seven blooming meadows. Everything seemed a little paler than usual, as if someone had turned down the colors."
+          ]
+        },
+        {
+          "text": [
+            "Then they came to the Cloud Mountains. The mountains were so high that their peaks disappeared into the clouds. A staircase made of soft, shimmering steps led upwards.",
+            "\"The Cloud Staircase,\" Papalapapp said softly. \"It only carries those who mean well.\""
+          ]
+        },
+        {
+          "text": [
+            "At the very top, above the clouds, lay a small workshop. Pots and buckets filled with bright colors were everywhere: sun yellow, evening red, morning pink, sky blue.",
+            "But the brushes lay on the ground. And in the middle sat a small, fluffy creature with long ears and a sad face. It had fur like a cloud — soft and white."
+          ]
+        },
+        {
+          "text": [
+            "\"Are you the Cloud Whisperer?\" asked Firlefanz carefully.",
+            "The creature nodded. \"I am Wölkchen. I paint the clouds every day. But yesterday, the wind blew away my favorite brushes. Without them, I can't mix the colors properly.\" Wölkchen sniffled softly. \"And now all the clouds are sad.\""
+          ]
+        },
+        {
+          "text": [
+            "\"Then let's find them!\" shouted Firlefanz. They searched everywhere: behind the cloud towers, under the rainbow bridges, between the star flowers.",
+            "Papalapapp found one brush in the wind channel, where the wind whistled softly. Firlefanz discovered two more in a nest of cotton clouds, where a little cloud bird had used them as a roof."
+          ]
+        },
+        {
+          "text": [
+            "\"My brushes!\" cried Wölkchen, hopping with joy. He dipped the first brush in evening red and painted a long, gentle line over the next cloud. Immediately, it shone in warm pink.",
+            "\"Can I try too?\" asked Firlefanz. Wölkchen gave him a brush with sun yellow. Firlefanz carefully painted a small cloud. It turned golden and glowed like a lantern."
+          ]
+        },
+        {
+          "text": [
+            "Together, they painted the whole sky. Wölkchen mixed the colors, Papalapapp held the pots, and Firlefanz painted the little clouds that floated far below.",
+            "Slowly, the sky became colorful again. Pink and gold and soft blue. Down in the villages, the people looked up and smiled."
+          ]
+        },
+        {
+          "text": [
+            "When evening came, the sky shone in the most beautiful colors Firlefanz had ever seen. Wölkchen beamed. \"Thank you, both of you. Come visit me again soon!\"",
+            "He gave Firlefanz a tiny brush, no bigger than a finger. \"With this, you can paint little clouds at home whenever you want.\"",
+            "On the way home, Firlefanz leaned against Papalapapp and fell asleep. And above them, the clouds glowed in soft evening gold, painted by the Cloud Whisperer and a little dragon."
+          ]
+        }
+      ]
+    }
+  }
 }

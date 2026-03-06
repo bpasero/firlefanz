@@ -91,5 +91,87 @@
       ],
       "image": "/stories/die-stadt-der-vergessenen-spielzeuge/page-12.png"
     }
-  ]
+  ],
+  "translations": {
+    "en": {
+      "title": "The City of Forgotten Toys",
+      "teaser": "Where do all the lost toys actually go? Firlefanz sets out to find out!",
+      "pages": [
+        {
+          "text": [
+            "Firlefanz woke up and heard something strange. It was softly rattling in the attic above his room.",
+            "\"What is that?\" murmured Firlefanz, rubbing his eyes."
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz climbed the creaky ladder to the attic. There, among old boxes and dusty blankets, he found a small wooden train with chipped red paint.",
+            "\"I don't know you,\" whispered Firlefanz. \"Where do you come from?\""
+          ]
+        },
+        {
+          "text": [
+            "In the kitchen, Firlefanz made himself a honey sandwich and warm milk. He placed the little train next to his plate.",
+            "\"I wonder if there are more forgotten toys?\" he thought while chewing. \"And where do they all go?\""
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz ran to Papalapapp. He was sitting in his chair, drinking coffee.",
+            "\"Papalapapp, where do toys go when we forget them?\"",
+            "Papalapapp picked up the little train and smiled. \"There is a city, far away and well hidden, where all the forgotten toys find a new home.\" He stood up. \"I'll show you the way.\""
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz carefully packed the little train into his bag. He put on his green hat, laced up his boots, and took his walking stick.",
+            "Papalapapp wrapped his scarf around himself and packed a bag of cookies. \"Forgotten toys will surely be happy to have visitors.\""
+          ]
+        },
+        {
+          "text": [
+            "They set off. Over seven seas, where the waves rocked old bottles back and forth. Over seven deserts, where the wind whistled soft melodies.",
+            "Over seven mountains, seven rivers, seven forests, and seven blooming meadows. The further they went, the more little lost things lay by the roadside: a single crayon, a marble, a doll's shoe."
+          ]
+        },
+        {
+          "text": [
+            "Behind a gentle hill, hidden among ancient trees, suddenly lay a small city. The houses were made of building blocks, the roofs from colorful paper, and the streets were paved with marbles.",
+            "\"The City of Forgotten Toys,\" whispered Papalapapp."
+          ]
+        },
+        {
+          "text": [
+            "At the city gate, a large, old teddy bear with tiny glasses and a friendly smile was waiting. His fur was thin in some places, but his eyes shone warmly.",
+            "\"Welcome! I am Brummel, the mayor,\" he said in a deep, gentle voice. \"Visitors are always welcome here.\""
+          ]
+        },
+        {
+          "text": [
+            "Brummel showed them around the city. Stuffed animals ran a little shop where they traded buttons and ribbons. Wooden figures played tag in a square. An old doll with only one shoe read stories to the smaller toys.",
+            "\"No one is forgotten here,\" said Brummel. \"Everyone has a place here.\""
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz took the little wooden train out of his bag. \"I found him in my attic. Does he belong here?\"",
+            "Brummel's eyes became moist. \"That's the little Red! He was here a long time ago, but one day he rolled away to see the world.\" He gently took the train in his paws. \"Welcome home, little friend.\""
+          ]
+        },
+        {
+          "text": [
+            "They all sat together in the marketplace and shared Papalapapp's cookies. The little Red happily drove in circles around them and tooted softly.",
+            "The toys sang a lullaby that was so gentle that Firlefanz slowly closed his eyes."
+          ]
+        },
+        {
+          "text": [
+            "As the stars shone over the little city, Papalapapp carried the sleeping Firlefanz home.",
+            "Brummel waved goodbye to them. \"Come visit us again soon!\"",
+            "And in Firlefanz's bag lay a tiny wooden cube that the toys had given him. So he would never forget them. And Firlefanz slept deeply and soundly and dreamed of a city where nothing and no one was forgotten."
+          ]
+        }
+      ]
+    }
+  }
 }

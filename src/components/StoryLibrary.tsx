@@ -1,6 +1,9 @@
 import type { Story } from '../types/story'
+import { localizeStory } from '../types/story'
 import { useNightMode } from '../context/NightModeContext'
+import { useLanguage } from '../context/LanguageContext'
 import NightModeToggle from './NightModeToggle'
+import LanguageToggle from './LanguageToggle'
 
 const base = import.meta.env.BASE_URL
 
@@ -11,6 +14,7 @@ interface StoryLibraryProps {
 
 export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryProps) {
   const { nightMode } = useNightMode()
+  const { language } = useLanguage()
 
   return (
     <div
@@ -52,8 +56,9 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
         <div className={`absolute bottom-48 left-2/3 text-lg hidden sm:block ${nightMode ? 'text-yellow-200/45' : 'text-amber-300/35'}`}>&#10022;</div>
       </div>
 
-      {/* Night mode toggle */}
-      <div className="absolute top-4 right-4 z-20">
+      {/* Controls */}
+      <div className="absolute top-4 right-4 z-20 flex gap-1.5">
+        <LanguageToggle />
         <NightModeToggle />
       </div>
 
@@ -76,7 +81,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
             color: nightMode ? '#b8956a' : '#a0714a',
           }}
         >
-          Geschichten zum Einschlafen
+          {language === 'en' ? 'Bedtime Stories' : 'Geschichten zum Einschlafen'}
         </p>
       </div>
 
@@ -84,48 +89,51 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
       <div className="max-w-5xl mx-auto relative z-10">
         {/* Shelf row */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-4 sm:gap-10 px-2 sm:px-4 pb-4 sm:pb-6">
-          {stories.map((story) => (
-            <button
-              key={story.id}
-              onClick={() => onSelectStory(story)}
-              className="group cursor-pointer w-full sm:w-52 transition-all duration-300 active:scale-95 sm:hover:-translate-y-3 sm:hover:scale-105"
-              style={{ perspective: '800px' }}
-            >
-              {/* Book cover */}
-              <div
-                className="relative rounded-xl sm:rounded-2xl overflow-hidden transition-shadow duration-300"
-                style={{
-                  transformStyle: 'preserve-3d',
-                  transform: 'rotateY(-4deg)',
-                  boxShadow: nightMode
-                    ? '-4px 8px 24px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)'
-                    : '-4px 8px 24px rgba(120,70,20,0.35), 0 2px 8px rgba(0,0,0,0.15)',
-                }}
+          {stories.map((story) => {
+            const localized = localizeStory(story, language)
+            return (
+              <button
+                key={story.id}
+                onClick={() => onSelectStory(story)}
+                className="group cursor-pointer w-full sm:w-52 transition-all duration-300 active:scale-95 sm:hover:-translate-y-3 sm:hover:scale-105"
+                style={{ perspective: '800px' }}
               >
-                {/* Spine edge */}
-                <div className={`absolute left-0 top-0 bottom-0 w-2 sm:w-3 z-10 rounded-l-xl sm:rounded-l-2xl ${nightMode ? 'bg-gradient-to-r from-black/50 to-transparent' : 'bg-gradient-to-r from-amber-800/40 to-transparent'}`} />
-                <img
-                  src={`${base}${story.coverImage.replace(/^\//, '')}`}
-                  alt={story.title}
-                  className={`w-full aspect-[2/3] object-cover ${nightMode ? 'brightness-75' : ''}`}
-                />
-                {/* Title overlay at bottom */}
+                {/* Book cover */}
                 <div
-                  className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 pt-8 sm:pt-10"
+                  className="relative rounded-xl sm:rounded-2xl overflow-hidden transition-shadow duration-300"
                   style={{
-                    background: 'linear-gradient(to top, rgba(60,30,10,0.85) 0%, rgba(60,30,10,0.5) 50%, transparent 100%)',
+                    transformStyle: 'preserve-3d',
+                    transform: 'rotateY(-4deg)',
+                    boxShadow: nightMode
+                      ? '-4px 8px 24px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)'
+                      : '-4px 8px 24px rgba(120,70,20,0.35), 0 2px 8px rgba(0,0,0,0.15)',
                   }}
                 >
-                  <h2
-                    className="text-amber-50 font-semibold text-sm sm:text-base leading-snug drop-shadow"
-                    style={{ fontFamily: "'Playfair Display', serif" }}
+                  {/* Spine edge */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-2 sm:w-3 z-10 rounded-l-xl sm:rounded-l-2xl ${nightMode ? 'bg-gradient-to-r from-black/50 to-transparent' : 'bg-gradient-to-r from-amber-800/40 to-transparent'}`} />
+                  <img
+                    src={`${base}${story.coverImage.replace(/^\//, '')}`}
+                    alt={localized.title}
+                    className={`w-full aspect-[2/3] object-cover ${nightMode ? 'brightness-75' : ''}`}
+                  />
+                  {/* Title overlay at bottom */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 pt-8 sm:pt-10"
+                    style={{
+                      background: 'linear-gradient(to top, rgba(60,30,10,0.85) 0%, rgba(60,30,10,0.5) 50%, transparent 100%)',
+                    }}
                   >
-                    {story.title}
-                  </h2>
+                    <h2
+                      className="text-amber-50 font-semibold text-sm sm:text-base leading-snug drop-shadow"
+                      style={{ fontFamily: "'Playfair Display', serif" }}
+                    >
+                      {localized.title}
+                    </h2>
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            )
+          })}
         </div>
 
         {/* Wooden shelf */}

@@ -1,7 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import type { Story } from '../types/story'
+import { localizeStory } from '../types/story'
 import { useNightMode } from '../context/NightModeContext'
+import { useLanguage } from '../context/LanguageContext'
 import NightModeToggle from './NightModeToggle'
+import LanguageToggle from './LanguageToggle'
 
 const base = import.meta.env.BASE_URL
 
@@ -12,8 +15,9 @@ interface StoryReaderProps {
 
 type TurnState = null | 'turning-forward' | 'turning-back'
 
-function PageContent({ story, pageIndex, nightMode }: { story: Story; pageIndex: number; nightMode: boolean }) {
-  const page = story.pages[pageIndex]
+function PageContent({ story, pageIndex, nightMode, language }: { story: Story; pageIndex: number; nightMode: boolean; language: string }) {
+  const localized = localizeStory(story, language)
+  const page = localized.pages[pageIndex]
   return (
     <div className="absolute inset-0 flex flex-col md:flex-row">
       {/* Left page — illustration */}
@@ -103,6 +107,8 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
   const bookRef = useRef<HTMLDivElement>(null)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
   const { nightMode } = useNightMode()
+  const { language } = useLanguage()
+  const localized = localizeStory(story, language)
   const isFirst = pageIndex === 0
   const isLast = pageIndex === story.pages.length - 1
 
@@ -216,7 +222,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = btnHoverBg}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = btnBg}
         >
-          &larr; <span className="hidden sm:inline">Zur Bibliothek</span>
+          &larr; <span className="hidden sm:inline">{language === 'en' ? 'Library' : 'Zur Bibliothek'}</span>
         </button>
         <h2
           className="text-sm sm:text-lg font-semibold truncate min-w-0"
@@ -225,9 +231,10 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
             color: nightMode ? '#e8d5b7' : '#7c4a1e',
           }}
         >
-          {story.title}
+          {localized.title}
         </h2>
         <div className="flex items-center gap-1.5 shrink-0">
+          <LanguageToggle />
           <NightModeToggle />
           <span
             className="text-xs sm:text-sm px-2.5 py-1.5 sm:px-3 rounded-full whitespace-nowrap"
@@ -263,12 +270,12 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
         >
           {/* Bottom layer: next page (visible during turn) */}
           {turnState && (
-            <PageContent story={story} pageIndex={nextPageIndex} nightMode={nightMode} />
+            <PageContent story={story} pageIndex={nextPageIndex} nightMode={nightMode} language={language} />
           )}
 
           {/* Current page */}
           {!turnState && (
-            <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} />
+            <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} />
           )}
 
           {/* Turning page overlay */}
@@ -282,7 +289,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
                 backfaceVisibility: 'hidden',
               }}
             >
-              <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} />
+              <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} />
               {/* Shadow that intensifies as page turns */}
               <div
                 className="absolute inset-0"
