@@ -8,58 +8,92 @@ interface StoryLibraryProps {
 export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryProps) {
   return (
     <div
-      className="min-h-screen px-6 py-12"
+      className="min-h-screen px-6 py-12 relative overflow-hidden"
       style={{
-        background: 'linear-gradient(180deg, #3e2723 0%, #5d4037 40%, #4e342e 100%)',
+        background: 'linear-gradient(170deg, #f9e8c9 0%, #f5d5a0 30%, #e8c07a 60%, #d4a05a 100%)',
       }}
     >
+      {/* Soft floating shapes for playful background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div
+          className="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-30"
+          style={{ background: 'radial-gradient(circle, #fde68a, transparent 70%)' }}
+        />
+        <div
+          className="absolute top-1/3 -right-16 w-56 h-56 rounded-full opacity-25"
+          style={{ background: 'radial-gradient(circle, #fbbf24, transparent 70%)' }}
+        />
+        <div
+          className="absolute bottom-10 left-1/4 w-40 h-40 rounded-full opacity-20"
+          style={{ background: 'radial-gradient(circle, #f59e0b, transparent 70%)' }}
+        />
+        {/* Tiny stars */}
+        <div className="absolute top-16 right-1/4 text-amber-400/40 text-2xl">&#10022;</div>
+        <div className="absolute top-32 left-1/3 text-amber-300/30 text-lg">&#10022;</div>
+        <div className="absolute bottom-32 right-1/3 text-amber-400/25 text-xl">&#10022;</div>
+        <div className="absolute top-1/2 left-16 text-yellow-300/30 text-sm">&#10022;</div>
+        <div className="absolute bottom-48 left-2/3 text-amber-300/35 text-lg">&#10022;</div>
+      </div>
+
       {/* Header */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-14 relative z-10">
         <h1
-          className="text-5xl font-bold text-amber-100 mb-2"
-          style={{ fontFamily: "'Playfair Display', serif" }}
+          className="text-6xl font-bold mb-3"
+          style={{
+            fontFamily: "'Playfair Display', serif",
+            color: '#7c4a1e',
+            textShadow: '0 2px 4px rgba(255,255,255,0.3)',
+          }}
         >
           Firlefanz
         </h1>
         <p
-          className="text-amber-300 text-lg italic"
-          style={{ fontFamily: "'Lora', serif" }}
+          className="text-xl italic"
+          style={{
+            fontFamily: "'Lora', serif",
+            color: '#a0714a',
+          }}
         >
           Geschichten zum Einschlafen
         </p>
       </div>
 
       {/* Bookshelf */}
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-5xl mx-auto relative z-10">
         {/* Shelf row */}
-        <div className="flex flex-wrap justify-center gap-8 px-4 pb-4">
+        <div className="flex flex-wrap justify-center gap-10 px-4 pb-6">
           {stories.map((story) => (
             <button
               key={story.id}
               onClick={() => onSelectStory(story)}
-              className="group cursor-pointer w-56 transition-transform hover:-translate-y-2"
+              className="group cursor-pointer w-52 transition-all duration-300 hover:-translate-y-3 hover:scale-105"
               style={{ perspective: '800px' }}
             >
               {/* Book cover */}
               <div
-                className="relative rounded-r-lg rounded-l-sm overflow-hidden shadow-2xl transition-shadow group-hover:shadow-amber-400/30"
+                className="relative rounded-2xl overflow-hidden transition-shadow duration-300"
                 style={{
                   transformStyle: 'preserve-3d',
-                  transform: 'rotateY(-5deg)',
-                  boxShadow: '-6px 6px 20px rgba(0,0,0,0.5), inset -2px 0 4px rgba(0,0,0,0.2)',
+                  transform: 'rotateY(-4deg)',
+                  boxShadow: '-4px 8px 24px rgba(120,70,20,0.35), 0 2px 8px rgba(0,0,0,0.15)',
                 }}
               >
                 {/* Spine edge */}
-                <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-amber-950 to-transparent z-10" />
+                <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-amber-800/40 to-transparent z-10 rounded-l-2xl" />
                 <img
                   src={story.coverImage}
                   alt={story.title}
                   className="w-full aspect-[2/3] object-cover"
                 />
                 {/* Title overlay at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4 pt-10">
+                <div
+                  className="absolute bottom-0 left-0 right-0 p-4 pt-10"
+                  style={{
+                    background: 'linear-gradient(to top, rgba(60,30,10,0.85) 0%, rgba(60,30,10,0.5) 50%, transparent 100%)',
+                  }}
+                >
                   <h2
-                    className="text-amber-50 font-semibold text-base leading-snug"
+                    className="text-amber-50 font-semibold text-base leading-snug drop-shadow"
                     style={{ fontFamily: "'Playfair Display', serif" }}
                   >
                     {story.title}
@@ -71,7 +105,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
                 href={`/stories/${story.id}/book.pdf`}
                 download={`${story.title}.pdf`}
                 onClick={(e) => e.stopPropagation()}
-                className="mt-2 flex items-center justify-center gap-1 text-amber-400 hover:text-amber-200 text-xs transition-colors"
+                className="mt-3 flex items-center justify-center gap-1 text-amber-700 hover:text-amber-900 text-xs transition-colors"
                 style={{ fontFamily: "'Lora', serif" }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
@@ -86,10 +120,10 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
 
         {/* Wooden shelf */}
         <div
-          className="h-4 rounded-sm mx-2"
+          className="h-5 rounded-lg mx-2"
           style={{
-            background: 'linear-gradient(180deg, #8d6e63, #6d4c41 40%, #5d4037)',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.4), 0 2px 0 #4e342e',
+            background: 'linear-gradient(180deg, #c49a6c 0%, #a67c52 40%, #8b6340 100%)',
+            boxShadow: '0 6px 16px rgba(120,70,20,0.3), 0 2px 0 #7a5530, inset 0 1px 0 rgba(255,255,255,0.2)',
           }}
         />
       </div>

@@ -13,7 +13,7 @@ function PageContent({ story, pageIndex }: { story: Story; pageIndex: number }) 
   return (
     <div className="absolute inset-0 flex flex-col lg:flex-row">
       {/* Left page — illustration */}
-      <div className="lg:w-1/2 bg-amber-50 relative overflow-hidden">
+      <div className="lg:w-1/2 relative overflow-hidden" style={{ backgroundColor: '#faf3e3' }}>
         <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-black/10 to-transparent z-10 hidden lg:block" />
         <img
           src={page.image}
@@ -24,32 +24,35 @@ function PageContent({ story, pageIndex }: { story: Story; pageIndex: number }) 
 
       {/* Book spine */}
       <div
-        className="hidden lg:block w-2 relative z-20 shrink-0"
+        className="hidden lg:block w-3 relative z-20 shrink-0"
         style={{
-          background: 'linear-gradient(90deg, #5d4037, #8d6e63, #5d4037)',
-          boxShadow: '0 0 8px rgba(0,0,0,0.4)',
+          background: 'linear-gradient(90deg, #b8956a, #d4b08c, #b8956a)',
+          boxShadow: '0 0 10px rgba(0,0,0,0.2)',
         }}
       />
 
       {/* Right page — text */}
       <div
-        className="lg:w-1/2 p-8 lg:p-10 flex flex-col justify-center paper-texture relative"
+        className="lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center paper-texture relative"
         style={{
-          background: 'linear-gradient(135deg, #fdf8ed 0%, #f5ecd5 50%, #efe4c8 100%)',
+          background: 'linear-gradient(145deg, #fdf8ed 0%, #f8eed5 40%, #f3e5c0 100%)',
         }}
       >
         <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-black/5 to-transparent hidden lg:block" />
         <div
-          className="absolute bottom-0 right-0 w-8 h-8 hidden lg:block"
-          style={{ background: 'linear-gradient(135deg, transparent 50%, #e8dcc6 50%)' }}
+          className="absolute bottom-0 right-0 w-10 h-10 hidden lg:block"
+          style={{ background: 'linear-gradient(135deg, transparent 50%, #eddcb8 50%)' }}
         />
 
         <div className="relative z-10">
           {page.text.map((paragraph, i) => (
             <p
               key={i}
-              className="text-amber-950 text-lg lg:text-xl leading-relaxed mb-4 last:mb-0"
-              style={{ fontFamily: "'Lora', serif" }}
+              className="text-lg lg:text-xl leading-relaxed mb-5 last:mb-0"
+              style={{
+                fontFamily: "'Lora', serif",
+                color: '#4a3520',
+              }}
             >
               {paragraph}
             </p>
@@ -58,8 +61,11 @@ function PageContent({ story, pageIndex }: { story: Story; pageIndex: number }) 
 
         <div className="absolute bottom-4 right-6 lg:bottom-6 lg:right-8">
           <span
-            className="text-amber-400 text-sm italic"
-            style={{ fontFamily: "'Lora', serif" }}
+            className="text-sm italic"
+            style={{
+              fontFamily: "'Lora', serif",
+              color: '#c4a06a',
+            }}
           >
             — {pageIndex + 1} —
           </span>
@@ -103,21 +109,58 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center p-4"
+      className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
       style={{
-        background: 'radial-gradient(ellipse at center, #5d4037 0%, #3e2723 70%, #2c1a12 100%)',
+        background: 'linear-gradient(170deg, #f5e1be 0%, #edd3a4 40%, #dfc08a 100%)',
       }}
     >
+      {/* Soft floating shapes */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div
+          className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-25"
+          style={{ background: 'radial-gradient(circle, #fde68a, transparent 70%)' }}
+        />
+        <div
+          className="absolute bottom-0 -left-20 w-72 h-72 rounded-full opacity-20"
+          style={{ background: 'radial-gradient(circle, #fbbf24, transparent 70%)' }}
+        />
+        <div className="absolute top-12 left-1/4 text-amber-400/30 text-xl">&#10022;</div>
+        <div className="absolute bottom-20 right-1/4 text-amber-300/25 text-lg">&#10022;</div>
+        <div className="absolute top-1/3 right-12 text-yellow-400/20 text-sm">&#10022;</div>
+      </div>
+
       {/* Header */}
-      <div className="w-full max-w-5xl mb-4 flex items-center justify-between">
+      <div className="w-full max-w-5xl mb-5 flex items-center justify-between relative z-10">
         <button
           onClick={onBack}
-          className="text-amber-200 hover:text-amber-50 text-sm font-medium transition-colors"
-          style={{ fontFamily: "'Lora', serif" }}
+          className="text-sm font-medium transition-colors px-3 py-1.5 rounded-full"
+          style={{
+            fontFamily: "'Lora', serif",
+            color: '#7c4a1e',
+            backgroundColor: 'rgba(255,255,255,0.4)',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.6)'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.4)'}
         >
           &larr; Zur Bibliothek
         </button>
-        <span className="text-amber-400 text-sm" style={{ fontFamily: "'Lora', serif" }}>
+        <h2
+          className="text-lg font-semibold"
+          style={{
+            fontFamily: "'Playfair Display', serif",
+            color: '#7c4a1e',
+          }}
+        >
+          {story.title}
+        </h2>
+        <span
+          className="text-sm px-3 py-1.5 rounded-full"
+          style={{
+            fontFamily: "'Lora', serif",
+            color: '#9a6b3a',
+            backgroundColor: 'rgba(255,255,255,0.3)',
+          }}
+        >
           Seite {pageIndex + 1} von {story.pages.length}
         </span>
       </div>
@@ -126,14 +169,14 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       <div
         ref={bookRef}
         onClick={handleBookClick}
-        className="w-full max-w-5xl cursor-pointer select-none"
+        className="w-full max-w-5xl cursor-pointer select-none relative z-10"
         style={{ perspective: '2500px' }}
       >
         <div
-          className="relative rounded-lg overflow-hidden"
+          className="relative rounded-2xl overflow-hidden"
           style={{
-            boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.1)',
-            height: 'clamp(400px, 60vh, 650px)',
+            boxShadow: '0 12px 40px rgba(120,70,20,0.25), 0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(180,140,90,0.2)',
+            height: 'clamp(450px, 72vh, 780px)',
           }}
         >
           {/* Bottom layer: next page (visible during turn) */}
@@ -181,21 +224,30 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       </div>
 
       {/* Navigation */}
-      <div className="mt-6 flex items-center gap-8">
+      <div className="mt-6 flex items-center gap-8 relative z-10">
         <button
           onClick={() => turnPage('back')}
           disabled={isFirst || !!turnState}
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-amber-900/50 text-amber-200 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-amber-800 transition-colors text-lg"
+          className="w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-lg"
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.5)',
+            color: '#7c4a1e',
+          }}
+          onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.7)' }}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.5)'}
         >
           &lsaquo;
         </button>
-        <p className="text-amber-500/60 text-xs" style={{ fontFamily: "'Lora', serif" }}>
-          Klicke links oder rechts zum Blättern
-        </p>
-        <button
+<button
           onClick={() => turnPage('forward')}
           disabled={isLast || !!turnState}
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-amber-900/50 text-amber-200 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-amber-800 transition-colors text-lg"
+          className="w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-lg"
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.5)',
+            color: '#7c4a1e',
+          }}
+          onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.7)' }}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.5)'}
         >
           &rsaquo;
         </button>
