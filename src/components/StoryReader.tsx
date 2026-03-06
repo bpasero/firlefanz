@@ -261,6 +261,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
         <div
           className="relative rounded-xl sm:rounded-2xl overflow-hidden h-full"
           style={{
+            backgroundColor: nightMode ? '#1e1a12' : '#fdf8ed',
             boxShadow: nightMode
               ? '0 12px 40px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(60,40,20,0.3)'
               : '0 12px 40px rgba(120,70,20,0.25), 0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(180,140,90,0.2)',
