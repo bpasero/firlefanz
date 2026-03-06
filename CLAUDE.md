@@ -25,6 +25,7 @@ Every Firlefanz story follows a consistent arc:
 - **Calming**: The ultimate goal is to make kids sleepy and eventually fall asleep. Stories should wind down, never frighten or overly excite.
 - **Fantasy-rich**: Heavily inspired by Walter Moers' "Kapitän Blaubär" — fictional places, whimsical creatures, and imaginative world-building.
 - **Warm & safe**: Even uncertain or mysterious moments resolve into happy, friendly encounters.
+- **In German**: All story text must be written in German. Simple, clear German suitable for young children.
 - **Age-appropriate**: Language and themes for children aged 3–6. Simple sentences, gentle pacing, read-aloud friendly.
 
 ## Tech Stack

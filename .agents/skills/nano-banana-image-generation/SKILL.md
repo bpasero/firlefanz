@@ -53,6 +53,7 @@ const response = await ai.models.generateContent({
 - **Resolution:** Use `2K` for story pages.
 - **Consistency:** Use reference images and character descriptions to maintain visual consistency across pages. Nano Banana 2 supports up to 5 consistent characters and 14 objects per session.
 - **Tone:** Illustrations should feel safe, cozy, and sleepy — matching the calming story tone. Even "mysterious" scenes should look inviting, not frightening.
+- **Language:** Any text rendered in images (signs, labels, book covers, etc.) must be in German.
 
 ## Prompt Template
 
