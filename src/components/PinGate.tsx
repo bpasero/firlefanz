@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNightMode } from '../context/NightModeContext'
+import NightModeToggle from './NightModeToggle'
 
 const PIN = '040522'
 const SESSION_KEY = 'firlefanz-auth'
@@ -14,6 +16,7 @@ export default function PinGate({ children }: PinGateProps) {
   const [digits, setDigits] = useState(['', '', '', '', '', ''])
   const [error, setError] = useState(false)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const { nightMode } = useNightMode()
 
   useEffect(() => {
     inputRefs.current[0]?.focus()
@@ -85,20 +88,33 @@ export default function PinGate({ children }: PinGateProps) {
     <div
       className="min-h-screen flex flex-col items-center justify-center p-4"
       style={{
-        background: 'linear-gradient(170deg, #f9e8c9 0%, #f5d5a0 30%, #e8c07a 60%, #d4a05a 100%)',
+        background: nightMode
+          ? 'linear-gradient(170deg, #1e1810 0%, #2a2018 30%, #1a1410 60%, #12100c 100%)'
+          : 'linear-gradient(170deg, #f9e8c9 0%, #f5d5a0 30%, #e8c07a 60%, #d4a05a 100%)',
       }}
     >
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-30"
-          style={{ background: 'radial-gradient(circle, #fde68a, transparent 70%)' }}
+          style={{ background: nightMode
+            ? 'radial-gradient(circle, #3b2d6b, transparent 70%)'
+            : 'radial-gradient(circle, #fde68a, transparent 70%)'
+          }}
         />
         <div
           className="absolute bottom-10 right-1/4 w-56 h-56 rounded-full opacity-25"
-          style={{ background: 'radial-gradient(circle, #fbbf24, transparent 70%)' }}
+          style={{ background: nightMode
+            ? 'radial-gradient(circle, #2d1f5e, transparent 70%)'
+            : 'radial-gradient(circle, #fbbf24, transparent 70%)'
+          }}
         />
-        <div className="absolute top-20 right-1/3 text-amber-400/40 text-2xl">&#10022;</div>
-        <div className="absolute bottom-32 left-1/4 text-amber-300/30 text-lg">&#10022;</div>
+        <div className={`absolute top-20 right-1/3 text-2xl ${nightMode ? 'text-yellow-200/50' : 'text-amber-400/40'}`}>&#10022;</div>
+        <div className={`absolute bottom-32 left-1/4 text-lg ${nightMode ? 'text-yellow-100/40' : 'text-amber-300/30'}`}>&#10022;</div>
+      </div>
+
+      {/* Night mode toggle */}
+      <div className="absolute top-4 right-4 z-20">
+        <NightModeToggle />
       </div>
 
       <div className="relative z-10 text-center">
@@ -106,7 +122,7 @@ export default function PinGate({ children }: PinGateProps) {
           className="text-4xl sm:text-5xl font-bold mb-3"
           style={{
             fontFamily: "'Playfair Display', serif",
-            color: '#7c4a1e',
+            color: nightMode ? '#e8d5b7' : '#7c4a1e',
           }}
         >
           Firlefanz
@@ -115,7 +131,7 @@ export default function PinGate({ children }: PinGateProps) {
           className="text-lg italic mb-10"
           style={{
             fontFamily: "'Lora', serif",
-            color: '#a0714a',
+            color: nightMode ? '#b8956a' : '#a0714a',
           }}
         >
           Bitte gib den Geheimcode ein
@@ -135,10 +151,10 @@ export default function PinGate({ children }: PinGateProps) {
               className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold rounded-xl outline-none transition-all duration-200"
               style={{
                 fontFamily: "'Playfair Display', serif",
-                color: '#7c4a1e',
-                backgroundColor: 'rgba(255,255,255,0.6)',
-                border: error ? '2px solid #c44' : '2px solid rgba(180,140,90,0.3)',
-                boxShadow: '0 2px 8px rgba(120,70,20,0.1)',
+                color: nightMode ? '#e8d5b7' : '#7c4a1e',
+                backgroundColor: nightMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)',
+                border: error ? '2px solid #c44' : nightMode ? '2px solid rgba(180,140,90,0.2)' : '2px solid rgba(180,140,90,0.3)',
+                boxShadow: nightMode ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(120,70,20,0.1)',
                 animation: error ? 'shake 0.4s ease-in-out' : undefined,
               }}
             />

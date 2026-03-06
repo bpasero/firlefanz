@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { Story } from './types/story'
+import { NightModeProvider } from './context/NightModeContext'
 import PinGate from './components/PinGate'
 import StoryLibrary from './components/StoryLibrary'
 import StoryReader from './components/StoryReader'
@@ -18,13 +19,15 @@ function App() {
   }, [])
 
   return (
-    <PinGate>
-      {activeStory ? (
-        <StoryReader story={activeStory} onBack={() => setActiveStory(null)} />
-      ) : (
-        <StoryLibrary stories={stories} onSelectStory={setActiveStory} />
-      )}
-    </PinGate>
+    <NightModeProvider>
+      <PinGate>
+        {activeStory ? (
+          <StoryReader story={activeStory} onBack={() => setActiveStory(null)} />
+        ) : (
+          <StoryLibrary stories={stories} onSelectStory={setActiveStory} />
+        )}
+      </PinGate>
+    </NightModeProvider>
   )
 }
 
