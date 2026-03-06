@@ -12,6 +12,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@fontsource/lora": "^5.2.8",
+    "@fontsource/playfair-display": "^5.2.8",
     "pdfkit": "^0.17.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
