@@ -5,6 +5,7 @@ import { useNightMode } from '../context/NightModeContext'
 import { useLanguage } from '../context/LanguageContext'
 import NightModeToggle from './NightModeToggle'
 import LanguageToggle from './LanguageToggle'
+import NarrationToggle from './NarrationToggle'
 
 const base = import.meta.env.BASE_URL
 
@@ -104,6 +105,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
   const [pageIndex, setPageIndex] = useState(0)
   const [turnState, setTurnState] = useState<TurnState>(null)
   const [nextPageIndex, setNextPageIndex] = useState(0)
+  const [narrating, setNarrating] = useState(false)
   const bookRef = useRef<HTMLDivElement>(null)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
   const { nightMode } = useNightMode()
@@ -122,6 +124,39 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       img.src = `${base}${story.pages[i].image.replace(/^\//, '')}`
     }
   }, [pageIndex, story])
+
+  // Speak the current page when narrating; cancel on cleanup / page change
+  useEffect(() => {
+    const synth = window.speechSynthesis
+    synth.cancel()
+    if (!narrating) return
+
+    const text = localized.pages[pageIndex].text.join(' ')
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = language === 'en' ? 'en-US' : 'de-DE'
+    utterance.rate = 0.88
+
+    const speak = () => {
+      const voices = synth.getVoices()
+      const voice = voices.find((v) => v.lang.startsWith(language === 'en' ? 'en' : 'de'))
+      if (voice) utterance.voice = voice
+      synth.speak(utterance)
+    }
+
+    // Voices may not be loaded yet on first call
+    if (synth.getVoices().length > 0) {
+      speak()
+    } else {
+      synth.addEventListener('voiceschanged', speak, { once: true })
+    }
+
+    return () => synth.cancel()
+  }, [pageIndex, narrating, language, localized.pages])
+
+  // Cancel speech when leaving the reader
+  useEffect(() => {
+    return () => window.speechSynthesis.cancel()
+  }, [])
 
   const turnPage = useCallback((direction: 'forward' | 'back') => {
     if (direction === 'forward' && isLast) return
@@ -212,7 +247,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       {/* Header */}
       <div className="w-full max-w-5xl mb-1.5 sm:mb-5 flex items-center justify-between relative z-10 gap-2">
         <button
-          onClick={onBack}
+          onClick={() => { window.speechSynthesis.cancel(); onBack() }}
           className="text-xs sm:text-sm font-medium transition-colors px-2.5 py-1.5 sm:px-3 rounded-full shrink-0"
           style={{
             fontFamily: "'Lora', serif",
@@ -234,6 +269,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
           {localized.title}
         </h2>
         <div className="flex items-center gap-1.5 shrink-0">
+          <NarrationToggle narrating={narrating} onToggle={() => setNarrating((n) => !n)} />
           <LanguageToggle />
           <NightModeToggle />
           <span
