@@ -149,7 +149,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
 
   return (
     <div
-      className="min-h-screen min-h-dvh flex flex-col items-center justify-center p-2 sm:p-4 relative overflow-hidden"
+      className="min-h-screen min-h-dvh flex flex-col items-center justify-center px-2 py-1.5 sm:p-4 relative overflow-hidden"
       style={{
         background: 'linear-gradient(170deg, #f5e1be 0%, #edd3a4 40%, #dfc08a 100%)',
       }}
@@ -169,7 +169,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       </div>
 
       {/* Header */}
-      <div className="w-full max-w-5xl mb-3 sm:mb-5 flex items-center justify-between relative z-10 gap-2">
+      <div className="w-full max-w-5xl mb-1.5 sm:mb-5 flex items-center justify-between relative z-10 gap-2">
         <button
           onClick={onBack}
           className="text-xs sm:text-sm font-medium transition-colors px-2.5 py-1.5 sm:px-3 rounded-full shrink-0"
@@ -266,7 +266,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       </div>
 
       {/* Navigation — larger touch targets on mobile */}
-      <div className="mt-3 sm:mt-6 flex items-center gap-6 sm:gap-8 relative z-10">
+      <div className="mt-1.5 sm:mt-6 flex items-center gap-6 sm:gap-8 relative z-10">
         <button
           onClick={() => turnPage('back')}
           disabled={isFirst || !!turnState}
