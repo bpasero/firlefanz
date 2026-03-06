@@ -106,6 +106,17 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
   const isFirst = pageIndex === 0
   const isLast = pageIndex === story.pages.length - 1
 
+  // Preload adjacent page images for smooth page turns
+  useEffect(() => {
+    const toPreload = [pageIndex - 1, pageIndex + 1].filter(
+      (i) => i >= 0 && i < story.pages.length
+    )
+    for (const i of toPreload) {
+      const img = new Image()
+      img.src = `${base}${story.pages[i].image.replace(/^\//, '')}`
+    }
+  }, [pageIndex, story])
+
   const turnPage = useCallback((direction: 'forward' | 'back') => {
     if (direction === 'forward' && isLast) return
     if (direction === 'back' && isFirst) return
