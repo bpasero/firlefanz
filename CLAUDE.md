@@ -30,24 +30,49 @@ Every Firlefanz story follows a consistent arc:
 
 ## App Layout
 
+### Authentication
+- **PIN gate** — 6-digit PIN entry screen before accessing the app
+- PIN stored in `sessionStorage` (persists for the browser session)
+- PIN code is in `src/components/PinGate.tsx`
+
 ### Home / Story Library
-- Styled as a **wooden bookshelf** with 3D standing book covers
-- Each book shows a cover image with title overlay; books lift on hover
-- PDF download link below each book
+- Styled as a **wooden bookshelf** with 3D standing book covers on a warm golden background
+- 2-column grid on mobile, flexible wrap on larger screens
+- Each book shows a cover image with title overlay; books lift on hover (desktop) or scale on tap (mobile)
 - Clicking a book opens the story in the reader view
+- Copyright footer at bottom
 
 ### Story Reader
-- **Open book layout** — illustration on the left page, German text on the right page, with a spine divider
-- Paper-textured text page with page numbers, corner fold detail
+- **Desktop**: Open book layout — illustration on the left page, German text on the right page, with a spine divider
+- **Mobile**: Stacked layout — illustration on top, text below, with a horizontal divider
+- Paper-textured text page with page numbers, corner fold detail (desktop)
 - Page turn animation (3D flip with shadows) when navigating
-- Click left/right thirds of the book or use nav buttons to turn pages
-- Designed for a parent reading aloud to a child on a tablet or screen
+- Navigation: click left/right thirds, arrow keys, swipe left/right on touch, or nav buttons
+- Overscroll bounce disabled to prevent accidental navigation
+- Fully responsive with dynamic viewport height (`dvh`) for proper mobile sizing
 
 ### Story Data
 - Stories are **pre-generated** and stored as static data at `public/stories/<id>/`
 - Each story directory contains: `story.json`, page images (`page-N.png`), cover image (`cover.png`), and a downloadable `book.pdf`
 - Story JSON schema (see `src/types/story.ts`): id, title, teaser, coverImage, prompt (original English prompt for regeneration), and pages (each with `text: string[]` for multiple paragraphs and an image path)
-- Future: allow creating new stories dynamically once a backend is in place
+- Story drafts/ideas saved in `public/stories/drafts.json`
+- All image/asset paths must use `import.meta.env.BASE_URL` prefix (for GitHub Pages deployment)
+
+## Copyright & Protection
+
+- **All Rights Reserved** license (see `LICENSE`)
+- Copyright footer visible in the app
+- PDF metadata includes author, copyright, and keywords
+- All images have **invisible watermarking**: EXIF metadata + LSB steganography encoding copyright message
+- After generating images, always run `node scripts/watermark-images.mjs` before committing
+- After watermarking, regenerate PDFs so they contain watermarked images
+
+## Deployment
+
+- Hosted on **GitHub Pages** at `https://bpasero.github.io/firlefanz/`
+- GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and deploys on push to `main`
+- Vite `base` is set to `/firlefanz/` for correct asset paths
+- Node 22 required in CI
 
 ## Tech Stack
 
@@ -55,11 +80,13 @@ Every Firlefanz story follows a consistent arc:
 - **Tailwind CSS v4** for styling (via `@tailwindcss/vite` plugin)
 - **Vitest** with **happy-dom** for testing
 - **PDFKit** for generating downloadable story PDFs
-- **Playfair Display** and **Lora** fonts (self-hosted via `@fontsource`)
+- **Sharp** for image watermarking (EXIF metadata + LSB steganography)
+- **Playfair Display** and **Lora** fonts (self-hosted via `@fontsource`, Latin subset only)
 
 ## Commands
 
 - `npm run dev` — start dev server
+- `npm run dev -- --host` — start dev server accessible on local network (for testing on mobile)
 - `npm run build` — type-check and build for production
 - `npm run lint` — lint with ESLint
 - `npm test` — run tests once
@@ -67,5 +94,16 @@ Every Firlefanz story follows a consistent arc:
 
 ## Scripts
 
-- `node scripts/generate-images.mjs [--provider=openai|google]` — generate story illustrations (defaults to OpenAI)
+- `node scripts/generate-images-<story-slug>.mjs` — generate story illustrations via OpenAI
+- `node scripts/watermark-images.mjs [story-id]` — watermark images (EXIF + steganography); all stories if no id given
 - `node scripts/generate-pdf.mjs <story-id>` — generate downloadable PDF for a story
+
+## Workflow for Adding a New Story
+
+1. Write `story.json` in `public/stories/<id>/`
+2. Create and run image generation script: `node scripts/generate-images-<slug>.mjs`
+3. Watermark images: `node scripts/watermark-images.mjs <id>`
+4. Generate PDF: `node scripts/generate-pdf.mjs <id>`
+5. Add story id to the `storyIds` array in `src/App.tsx`
+6. Remove from `drafts.json` if applicable
+7. Commit and push
