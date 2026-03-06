@@ -8,7 +8,7 @@ function App() {
   const [activeStory, setActiveStory] = useState<Story | null>(null)
 
   useEffect(() => {
-    const storyIds = ['goldi-im-labyrinth', 'am-ende-der-welt']
+    const storyIds = ['goldi-im-labyrinth', 'am-ende-der-welt', 'die-stadt-der-vergessenen-spielzeuge']
     Promise.all(
       storyIds.map((id) =>
         fetch(`/stories/${id}/story.json`).then((res) => res.json())
