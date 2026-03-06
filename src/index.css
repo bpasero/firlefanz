@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Prevent iOS bounce/overscroll */
+html, body {
+  overscroll-behavior: none;
+}
+
 /* Page flip: forward (current page swings away to the left) */
 @keyframes flip-forward {
   0% {
