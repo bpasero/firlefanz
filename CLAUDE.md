@@ -41,20 +41,30 @@ Every Firlefanz story follows a consistent arc:
 - Each book shows a cover image with title overlay; books lift on hover (desktop) or scale on tap (mobile)
 - Clicking a book opens the story in the reader view
 - Copyright footer at bottom
+- Language toggle (DE/EN) and night mode toggle in the top-right corner
 
 ### Story Reader
-- **Desktop**: Open book layout — illustration on the left page, German text on the right page, with a spine divider
+- **Desktop**: Open book layout — illustration on the left page, text on the right page, with a spine divider
 - **Mobile**: Stacked layout — illustration on top, text below, with a horizontal divider
 - Paper-textured text page with page numbers, corner fold detail (desktop)
 - Page turn animation (3D flip with shadows) when navigating
+- Adjacent page images preloaded for smooth page turns
 - Navigation: click left/right thirds, arrow keys, swipe left/right on touch, or nav buttons
 - Overscroll bounce disabled to prevent accidental navigation
 - Fully responsive with dynamic viewport height (`dvh`) for proper mobile sizing
+- Header contains: back button, story title, narration toggle, language toggle, night mode toggle, page counter
+
+### Global UI Features
+- **Night mode** — warm dark colour palette for bedtime reading; defaults to OS `prefers-color-scheme`, persisted in `localStorage`
+- **Language toggle** — DE/EN (cycles through `SUPPORTED` in `src/context/LanguageContext.tsx`); defaults to browser language, persisted in `localStorage`
+- **Audio narration** — Web Speech API reads each page aloud at rate 0.88; uses `de-DE`/`en-US` voice matching the active language; toggle in story reader header
+- All three toggles share the same visual style (small rounded pill buttons)
 
 ### Story Data
 - Stories are **pre-generated** and stored as static data at `public/stories/<id>/`
 - Each story directory contains: `story.json`, page images (`page-N.png`), cover image (`cover.png`), and a downloadable `book.pdf`
-- Story JSON schema (see `src/types/story.ts`): id, title, teaser, coverImage, prompt (original English prompt for regeneration), and pages (each with `text: string[]` for multiple paragraphs and an image path)
+- Story JSON schema (see `src/types/story.ts`): id, title, teaser, coverImage, prompt, pages (each with `text: string[]` and image path), and optional `translations` object
+- **Translations** are stored inline in `story.json` under `translations.<lang>` (e.g. `translations.en`). German is always the base language. Use `localizeStory(story, lang)` helper to get localized title/teaser/pages.
 - Story drafts/ideas saved in `public/stories/drafts.json`
 - All image/asset paths must use `import.meta.env.BASE_URL` prefix (for GitHub Pages deployment)
 
@@ -80,8 +90,19 @@ Every Firlefanz story follows a consistent arc:
 - **Tailwind CSS v4** for styling (via `@tailwindcss/vite` plugin)
 - **Vitest** with **happy-dom** for testing
 - **PDFKit** for generating downloadable story PDFs
-- **Sharp** for image watermarking (EXIF metadata + LSB steganography)
+- **Sharp** for image watermarking (EXIF metadata + LSB steganography) and icon generation
 - **Playfair Display** and **Lora** fonts (self-hosted via `@fontsource`, Latin subset only)
+- **Web Speech API** (browser built-in) for audio narration
+- **Umami** for privacy-friendly analytics (script tag in `index.html`)
+
+## PWA
+
+- Installable as a PWA on iOS ("Add to Home Screen"), Android (install prompt), and desktop
+- Web app manifest at `public/manifest.json` — `start_url` and `scope` set to `/firlefanz/`
+- Service worker at `public/sw.js` — stale-while-revalidate caching strategy; offline-capable after first visit
+- App icons at `public/icons/icon-192.png` and `public/icons/icon-512.png` (generated via `node scripts/generate-icons.mjs`)
+- Registered in `src/main.tsx` via `navigator.serviceWorker.register`
+- SW cache name is `firlefanz-v1` — bump this when deploying breaking changes
 
 ## Commands
 
@@ -97,6 +118,14 @@ Every Firlefanz story follows a consistent arc:
 - `node scripts/generate-images-<story-slug>.mjs` — generate story illustrations via OpenAI
 - `node scripts/watermark-images.mjs [story-id]` — watermark images (EXIF + steganography); all stories if no id given
 - `node scripts/generate-pdf.mjs <story-id>` — generate downloadable PDF for a story
+- `node scripts/translate-stories.mjs [lang]` — translate all stories to target language (default: `en`) using GPT-4o-mini; adds `translations.<lang>` to each `story.json`; skips stories that already have that translation
+- `node scripts/generate-icons.mjs` — generate PWA icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`) from a cover image using Sharp
+
+## Adding a New Language
+
+1. Run `node scripts/translate-stories.mjs <lang>` (e.g. `fr`)
+2. Add the language code to the `SUPPORTED` array in `src/context/LanguageContext.tsx`
+3. Commit and push
 
 ## Workflow for Adding a New Story
 
