@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef } from 'react'
 import type { Story } from '../types/story'
 
+const base = import.meta.env.BASE_URL
+
 interface StoryReaderProps {
   story: Story
   onBack: () => void
@@ -16,7 +18,7 @@ function PageContent({ story, pageIndex }: { story: Story; pageIndex: number }) 
       <div className="lg:w-1/2 relative overflow-hidden" style={{ backgroundColor: '#faf3e3' }}>
         <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-black/10 to-transparent z-10 hidden lg:block" />
         <img
-          src={page.image}
+          src={`${base}${page.image.replace(/^\//, '')}`}
           alt={`Seite ${pageIndex + 1}`}
           className="w-full h-full object-cover"
         />

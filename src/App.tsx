@@ -12,7 +12,7 @@ function App() {
     const storyIds = ['goldi-im-labyrinth', 'am-ende-der-welt', 'die-stadt-der-vergessenen-spielzeuge', 'der-wolkenfluester']
     Promise.all(
       storyIds.map((id) =>
-        fetch(`/stories/${id}/story.json`).then((res) => res.json())
+        fetch(`${import.meta.env.BASE_URL}stories/${id}/story.json`).then((res) => res.json())
       )
     ).then((loaded: Story[]) => setStories(loaded))
   }, [])

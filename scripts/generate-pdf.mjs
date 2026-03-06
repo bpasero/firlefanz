@@ -34,7 +34,10 @@ const doc = new PDFDocument({
   margins: { top: MARGIN, bottom: MARGIN, left: MARGIN, right: MARGIN },
   info: {
     Title: story.title,
-    Author: 'Firlefanz',
+    Author: 'Benjamin Pasero',
+    Creator: 'Firlefanz — Geschichten zum Einschlafen',
+    Subject: `Firlefanz: ${story.title}`,
+    Keywords: 'Firlefanz, Kinderbuch, Benjamin Pasero',
   },
 });
 
@@ -52,6 +55,16 @@ doc
   .fontSize(48)
   .font('Helvetica-Bold')
   .text(story.title, MARGIN, PAGE_HEIGHT - 120, {
+    width: PAGE_WIDTH - MARGIN * 2,
+    align: 'center',
+  });
+
+// Copyright line on cover
+doc
+  .fill('rgba(255,255,255,0.7)')
+  .fontSize(10)
+  .font('Helvetica')
+  .text('\u00A9 2026 Benjamin Pasero. Alle Rechte vorbehalten.', MARGIN, PAGE_HEIGHT - 50, {
     width: PAGE_WIDTH - MARGIN * 2,
     align: 'center',
   });

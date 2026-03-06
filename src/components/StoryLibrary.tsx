@@ -1,5 +1,7 @@
 import type { Story } from '../types/story'
 
+const base = import.meta.env.BASE_URL
+
 interface StoryLibraryProps {
   stories: Story[]
   onSelectStory: (story: Story) => void
@@ -81,7 +83,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
                 {/* Spine edge */}
                 <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-amber-800/40 to-transparent z-10 rounded-l-2xl" />
                 <img
-                  src={story.coverImage}
+                  src={`${base}${story.coverImage.replace(/^\//, '')}`}
                   alt={story.title}
                   className="w-full aspect-[2/3] object-cover"
                 />
@@ -102,7 +104,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
               </div>
               {/* PDF download */}
               <a
-                href={`/stories/${story.id}/book.pdf`}
+                href={`${base}stories/${story.id}/book.pdf`}
                 download={`${story.title}.pdf`}
                 onClick={(e) => e.stopPropagation()}
                 className="mt-3 flex items-center justify-center gap-1 text-amber-700 hover:text-amber-900 text-xs transition-colors"
@@ -127,6 +129,17 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
           }}
         />
       </div>
+
+      {/* Copyright */}
+      <p
+        className="text-center mt-12 text-xs relative z-10"
+        style={{
+          fontFamily: "'Lora', serif",
+          color: '#a0814a',
+        }}
+      >
+        &copy; 2026 Benjamin Pasero. Alle Rechte vorbehalten.
+      </p>
     </div>
   )
 }
