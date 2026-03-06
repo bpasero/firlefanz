@@ -48,5 +48,14 @@ Every Firlefanz story follows a consistent arc:
 
 ## Tech Stack
 
-- **React** with **Vite** for the frontend
-- **Tailwind CSS** for styling
+- **React** (TypeScript) with **Vite** for the frontend
+- **Tailwind CSS v4** for styling (via `@tailwindcss/vite` plugin)
+- **Vitest** with **happy-dom** for testing
+
+## Commands
+
+- `npm run dev` — start dev server
+- `npm run build` — type-check and build for production
+- `npm run lint` — lint with ESLint
+- `npm test` — run tests once
+- `npm run test:watch` — run tests in watch mode
