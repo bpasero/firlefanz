@@ -103,7 +103,7 @@ export default function PinGate({ children }: PinGateProps) {
 
       <div className="relative z-10 text-center">
         <h1
-          className="text-5xl font-bold mb-3"
+          className="text-4xl sm:text-5xl font-bold mb-3"
           style={{
             fontFamily: "'Playfair Display', serif",
             color: '#7c4a1e',
@@ -121,7 +121,7 @@ export default function PinGate({ children }: PinGateProps) {
           Bitte gib den Geheimcode ein
         </p>
 
-        <div className="flex gap-3 justify-center mb-6" onPaste={handlePaste}>
+        <div className="flex gap-2 sm:gap-3 justify-center mb-6" onPaste={handlePaste}>
           {digits.map((digit, i) => (
             <input
               key={i}
@@ -132,7 +132,7 @@ export default function PinGate({ children }: PinGateProps) {
               value={digit}
               onChange={(e) => handleChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
-              className="w-12 h-14 text-center text-2xl font-bold rounded-xl outline-none transition-all duration-200"
+              className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold rounded-xl outline-none transition-all duration-200"
               style={{
                 fontFamily: "'Playfair Display', serif",
                 color: '#7c4a1e',

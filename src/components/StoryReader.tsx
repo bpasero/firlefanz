@@ -13,10 +13,10 @@ type TurnState = null | 'turning-forward' | 'turning-back'
 function PageContent({ story, pageIndex }: { story: Story; pageIndex: number }) {
   const page = story.pages[pageIndex]
   return (
-    <div className="absolute inset-0 flex flex-col lg:flex-row">
+    <div className="absolute inset-0 flex flex-col md:flex-row">
       {/* Left page — illustration */}
-      <div className="lg:w-1/2 relative overflow-hidden" style={{ backgroundColor: '#faf3e3' }}>
-        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-black/10 to-transparent z-10 hidden lg:block" />
+      <div className="h-2/5 md:h-auto md:w-1/2 relative overflow-hidden" style={{ backgroundColor: '#faf3e3' }}>
+        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-black/10 to-transparent z-10 hidden md:block" />
         <img
           src={`${base}${page.image.replace(/^\//, '')}`}
           alt={`Seite ${pageIndex + 1}`}
@@ -26,23 +26,31 @@ function PageContent({ story, pageIndex }: { story: Story; pageIndex: number }) 
 
       {/* Book spine */}
       <div
-        className="hidden lg:block w-3 relative z-20 shrink-0"
+        className="hidden md:block w-3 relative z-20 shrink-0"
         style={{
           background: 'linear-gradient(90deg, #b8956a, #d4b08c, #b8956a)',
           boxShadow: '0 0 10px rgba(0,0,0,0.2)',
         }}
       />
+      {/* Mobile divider */}
+      <div
+        className="md:hidden h-1 relative z-20 shrink-0"
+        style={{
+          background: 'linear-gradient(180deg, #b8956a, #d4b08c, #b8956a)',
+          boxShadow: '0 0 6px rgba(0,0,0,0.15)',
+        }}
+      />
 
       {/* Right page — text */}
       <div
-        className="lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center paper-texture relative"
+        className="h-3/5 md:h-auto md:w-1/2 p-5 sm:p-8 md:p-12 flex flex-col justify-center paper-texture relative overflow-y-auto"
         style={{
           background: 'linear-gradient(145deg, #fdf8ed 0%, #f8eed5 40%, #f3e5c0 100%)',
         }}
       >
-        <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-black/5 to-transparent hidden lg:block" />
+        <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-black/5 to-transparent hidden md:block" />
         <div
-          className="absolute bottom-0 right-0 w-10 h-10 hidden lg:block"
+          className="absolute bottom-0 right-0 w-10 h-10 hidden md:block"
           style={{ background: 'linear-gradient(135deg, transparent 50%, #eddcb8 50%)' }}
         />
 
@@ -50,7 +58,7 @@ function PageContent({ story, pageIndex }: { story: Story; pageIndex: number }) 
           {page.text.map((paragraph, i) => (
             <p
               key={i}
-              className="text-lg lg:text-xl leading-relaxed mb-5 last:mb-0"
+              className="text-base sm:text-lg md:text-xl leading-relaxed mb-4 md:mb-5 last:mb-0"
               style={{
                 fontFamily: "'Lora', serif",
                 color: '#4a3520',
@@ -61,9 +69,9 @@ function PageContent({ story, pageIndex }: { story: Story; pageIndex: number }) 
           ))}
         </div>
 
-        <div className="absolute bottom-4 right-6 lg:bottom-6 lg:right-8">
+        <div className="absolute bottom-3 right-4 md:bottom-6 md:right-8">
           <span
-            className="text-sm italic"
+            className="text-xs sm:text-sm italic"
             style={{
               fontFamily: "'Lora', serif",
               color: '#c4a06a',
@@ -82,6 +90,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
   const [turnState, setTurnState] = useState<TurnState>(null)
   const [nextPageIndex, setNextPageIndex] = useState(0)
   const bookRef = useRef<HTMLDivElement>(null)
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
   const isFirst = pageIndex === 0
   const isLast = pageIndex === story.pages.length - 1
 
@@ -118,9 +127,29 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
     else if (x > third * 2) turnPage('forward')
   }, [turnPage, turnState])
 
+  // Swipe handling for touch
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
+  }, [])
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current) return
+    const touch = e.changedTouches[0]
+    const dx = touch.clientX - touchStartRef.current.x
+    const dy = touch.clientY - touchStartRef.current.y
+    touchStartRef.current = null
+
+    // Only count horizontal swipes (dx > dy) with enough distance
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) turnPage('forward')
+      else turnPage('back')
+    }
+  }, [turnPage])
+
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
+      className="min-h-screen min-h-dvh flex flex-col items-center justify-center p-2 sm:p-4 relative overflow-hidden"
       style={{
         background: 'linear-gradient(170deg, #f5e1be 0%, #edd3a4 40%, #dfc08a 100%)',
       }}
@@ -135,16 +164,15 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
           className="absolute bottom-0 -left-20 w-72 h-72 rounded-full opacity-20"
           style={{ background: 'radial-gradient(circle, #fbbf24, transparent 70%)' }}
         />
-        <div className="absolute top-12 left-1/4 text-amber-400/30 text-xl">&#10022;</div>
-        <div className="absolute bottom-20 right-1/4 text-amber-300/25 text-lg">&#10022;</div>
-        <div className="absolute top-1/3 right-12 text-yellow-400/20 text-sm">&#10022;</div>
+        <div className="absolute top-12 left-1/4 text-amber-400/30 text-xl hidden sm:block">&#10022;</div>
+        <div className="absolute bottom-20 right-1/4 text-amber-300/25 text-lg hidden sm:block">&#10022;</div>
       </div>
 
       {/* Header */}
-      <div className="w-full max-w-5xl mb-5 flex items-center justify-between relative z-10">
+      <div className="w-full max-w-5xl mb-3 sm:mb-5 flex items-center justify-between relative z-10 gap-2">
         <button
           onClick={onBack}
-          className="text-sm font-medium transition-colors px-3 py-1.5 rounded-full"
+          className="text-xs sm:text-sm font-medium transition-colors px-2.5 py-1.5 sm:px-3 rounded-full shrink-0"
           style={{
             fontFamily: "'Lora', serif",
             color: '#7c4a1e',
@@ -153,10 +181,10 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.6)'}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.4)'}
         >
-          &larr; Zur Bibliothek
+          &larr; <span className="hidden sm:inline">Zur Bibliothek</span>
         </button>
         <h2
-          className="text-lg font-semibold"
+          className="text-sm sm:text-lg font-semibold truncate min-w-0"
           style={{
             fontFamily: "'Playfair Display', serif",
             color: '#7c4a1e',
@@ -165,14 +193,14 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
           {story.title}
         </h2>
         <span
-          className="text-sm px-3 py-1.5 rounded-full"
+          className="text-xs sm:text-sm px-2.5 py-1.5 sm:px-3 rounded-full shrink-0 whitespace-nowrap"
           style={{
             fontFamily: "'Lora', serif",
             color: '#9a6b3a',
             backgroundColor: 'rgba(255,255,255,0.3)',
           }}
         >
-          Seite {pageIndex + 1} von {story.pages.length}
+          {pageIndex + 1}/{story.pages.length}
         </span>
       </div>
 
@@ -180,14 +208,17 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       <div
         ref={bookRef}
         onClick={handleBookClick}
-        className="w-full max-w-5xl cursor-pointer select-none relative z-10"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className="w-full max-w-5xl cursor-pointer select-none relative z-10 flex-1 md:flex-none"
         style={{ perspective: '2500px' }}
       >
         <div
-          className="relative rounded-2xl overflow-hidden"
+          className="relative rounded-xl sm:rounded-2xl overflow-hidden h-full"
           style={{
             boxShadow: '0 12px 40px rgba(120,70,20,0.25), 0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(180,140,90,0.2)',
-            height: 'clamp(450px, 72vh, 780px)',
+            minHeight: 'min(calc(100dvh - 120px), 780px)',
+            maxHeight: '780px',
           }}
         >
           {/* Bottom layer: next page (visible during turn) */}
@@ -234,12 +265,12 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="mt-6 flex items-center gap-8 relative z-10">
+      {/* Navigation — larger touch targets on mobile */}
+      <div className="mt-3 sm:mt-6 flex items-center gap-6 sm:gap-8 relative z-10">
         <button
           onClick={() => turnPage('back')}
           disabled={isFirst || !!turnState}
-          className="w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-lg"
+          className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-xl sm:text-lg"
           style={{
             backgroundColor: 'rgba(255,255,255,0.5)',
             color: '#7c4a1e',
@@ -249,10 +280,10 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
         >
           &lsaquo;
         </button>
-<button
+        <button
           onClick={() => turnPage('forward')}
           disabled={isLast || !!turnState}
-          className="w-10 h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-lg"
+          className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-xl sm:text-lg"
           style={{
             backgroundColor: 'rgba(255,255,255,0.5)',
             color: '#7c4a1e',
