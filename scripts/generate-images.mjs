@@ -88,7 +88,7 @@ const generators = { openai: generateWithOpenAI, google: generateWithGoogle };
 const STYLE_PREFIX = 'Children\'s book illustration, soft watercolor style, warm calming colors.';
 const STYLE_SUFFIX = 'Gentle, cozy atmosphere suitable for a bedtime story. No text in the image.';
 const FIRLEFANZ_DESC = 'Firlefanz is a small friendly green dragon/dinosaur creature';
-const PAPERLAPAPP_DESC = 'Paperlapapp is the same species as Firlefanz but larger and fatherly';
+const PAPERLAPAPP_DESC = 'Papalapapp is the same species as Firlefanz but larger and fatherly';
 const GOLDI_DESC = 'Goldi is a golden-furred ape with big friendly eyes';
 
 const storyDir = path.join(rootDir, 'public/stories/goldi-im-labyrinth');
@@ -108,7 +108,7 @@ const images = [
   },
   {
     filename: 'page-3.png',
-    prompt: `${STYLE_PREFIX} ${FIRLEFANZ_DESC} visiting ${PAPERLAPAPP_DESC} who is sitting at a kitchen table drinking coffee. They are in Paperlapapp's cozy house. Paperlapapp looks welcoming and wise. ${STYLE_SUFFIX}`,
+    prompt: `${STYLE_PREFIX} ${FIRLEFANZ_DESC} visiting ${PAPERLAPAPP_DESC} who is sitting at a kitchen table drinking coffee. They are in Papalapapp's cozy house. Papalapapp looks welcoming and wise. ${STYLE_SUFFIX}`,
   },
   {
     filename: 'page-4.png',

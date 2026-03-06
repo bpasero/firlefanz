@@ -47,7 +47,7 @@ const response = await ai.models.generateContent({
 ## Image Guidelines for Firlefanz Stories
 
 - **Style:** Warm, soft, whimsical children's book illustration style. Think watercolor or gentle digital painting.
-- **Characters:** Firlefanz is a small dragon/dinosaur-like creature (not human). Paperlapapp is the same species, larger, fatherly.
+- **Characters:** Firlefanz is a small dragon/dinosaur-like creature (not human). Papalapapp is the same species, larger, fatherly.
 - **Palette:** Calming, warm colors. Avoid harsh contrasts or dark/scary imagery.
 - **Aspect ratio:** Use `3:2` landscape for story pages, `1:1` for character portraits.
 - **Resolution:** Use `2K` for story pages.
