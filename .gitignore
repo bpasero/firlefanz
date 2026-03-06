@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Playwright CLI
+.playwright-cli
+
 # Environment
 .env
 .env.*
