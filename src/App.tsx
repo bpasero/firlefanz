@@ -8,9 +8,12 @@ function App() {
   const [activeStory, setActiveStory] = useState<Story | null>(null)
 
   useEffect(() => {
-    fetch('/stories/goldi-im-labyrinth/story.json')
-      .then((res) => res.json())
-      .then((story: Story) => setStories([story]))
+    const storyIds = ['goldi-im-labyrinth', 'am-ende-der-welt']
+    Promise.all(
+      storyIds.map((id) =>
+        fetch(`/stories/${id}/story.json`).then((res) => res.json())
+      )
+    ).then((loaded: Story[]) => setStories(loaded))
   }, [])
 
   if (activeStory) {
