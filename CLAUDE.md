@@ -31,19 +31,22 @@ Every Firlefanz story follows a consistent arc:
 ## App Layout
 
 ### Home / Story Library
-- Stories are displayed as visual **tiles** in a grid layout
-- Each tile shows the story's cover image and title
-- Clicking a tile opens the story in the reader view
+- Styled as a **wooden bookshelf** with 3D standing book covers
+- Each book shows a cover image with title overlay; books lift on hover
+- PDF download link below each book
+- Clicking a book opens the story in the reader view
 
 ### Story Reader
-- **Kids' book style layout** — page-by-page presentation with flip/swipe navigation
-- Each page combines an illustration with story text
-- Navigation: forward/back through pages (buttons or swipe)
+- **Open book layout** — illustration on the left page, German text on the right page, with a spine divider
+- Paper-textured text page with page numbers, corner fold detail
+- Page turn animation (3D flip with shadows) when navigating
+- Click left/right thirds of the book or use nav buttons to turn pages
 - Designed for a parent reading aloud to a child on a tablet or screen
 
 ### Story Data
-- Stories are **pre-generated** and stored as static data (JSON + images) for now
-- Each story consists of an ordered list of pages, where each page has text (German) and an image
+- Stories are **pre-generated** and stored as static data at `public/stories/<id>/`
+- Each story directory contains: `story.json`, page images (`page-N.png`), cover image (`cover.png`), and a downloadable `book.pdf`
+- Story JSON schema (see `src/types/story.ts`): id, title, teaser, coverImage, prompt (original English prompt for regeneration), and pages (each with `text: string[]` for multiple paragraphs and an image path)
 - Future: allow creating new stories dynamically once a backend is in place
 
 ## Tech Stack
@@ -51,6 +54,8 @@ Every Firlefanz story follows a consistent arc:
 - **React** (TypeScript) with **Vite** for the frontend
 - **Tailwind CSS v4** for styling (via `@tailwindcss/vite` plugin)
 - **Vitest** with **happy-dom** for testing
+- **PDFKit** for generating downloadable story PDFs
+- **Playfair Display** and **Lora** fonts (self-hosted via `@fontsource`)
 
 ## Commands
 
@@ -59,3 +64,8 @@ Every Firlefanz story follows a consistent arc:
 - `npm run lint` — lint with ESLint
 - `npm test` — run tests once
 - `npm run test:watch` — run tests in watch mode
+
+## Scripts
+
+- `node scripts/generate-images.mjs [--provider=openai|google]` — generate story illustrations (defaults to OpenAI)
+- `node scripts/generate-pdf.mjs <story-id>` — generate downloadable PDF for a story

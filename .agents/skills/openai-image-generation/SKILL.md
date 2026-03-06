@@ -35,8 +35,8 @@ curl -X POST "https://api.openai.com/v1/images/generations" \
     -d '{
         "model": "gpt-image-1",
         "prompt": "A children's book illustration...",
-        "size": "1792x1024",
-        "quality": "hd"
+        "size": "1536x1024",
+        "quality": "medium"
     }' | jq -r '.data[0].b64_json' | base64 --decode > image.png
 ```
 
@@ -45,8 +45,8 @@ curl -X POST "https://api.openai.com/v1/images/generations" \
 - **Style:** Warm, soft, whimsical children's book illustration style. Think watercolor or gentle digital painting.
 - **Characters:** Firlefanz is a small dragon/dinosaur-like creature (not human). Papalapapp is the same species, larger, fatherly.
 - **Palette:** Calming, warm colors. Avoid harsh contrasts or dark/scary imagery.
-- **Size:** Use `1792x1024` landscape for story pages, `1024x1024` for cover images.
-- **Quality:** Use `hd` for story pages.
+- **Size:** Use `1536x1024` landscape for story pages and covers.
+- **Quality:** Use `medium` for story pages.
 - **Tone:** Illustrations should feel safe, cozy, and sleepy — matching the calming story tone. Even "mysterious" scenes should look inviting, not frightening.
 - **Language:** Any text rendered in images (signs, labels, book covers, etc.) must be in German.
 
