@@ -292,7 +292,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         className="w-full max-w-5xl cursor-pointer select-none relative z-10 flex-1 md:flex-none"
-        style={{ perspective: '2500px' }}
+        style={{ perspective: '2500px', WebkitTapHighlightColor: 'transparent' }}
       >
         <div
           className="relative rounded-xl sm:rounded-2xl overflow-hidden h-full"
@@ -324,16 +324,23 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
                 animation: `${turnState === 'turning-forward' ? 'flip-forward' : 'flip-back'} 0.8s ease-in-out forwards`,
                 transformStyle: 'preserve-3d',
                 backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+                willChange: 'transform',
               }}
             >
-              <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} />
-              {/* Shadow that intensifies as page turns */}
               <div
                 className="absolute inset-0"
-                style={{
-                  animation: `${turnState === 'turning-forward' ? 'shadow-forward' : 'shadow-back'} 0.8s ease-in-out forwards`,
-                }}
-              />
+                style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+              >
+                <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} />
+                {/* Shadow that intensifies as page turns */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    animation: `${turnState === 'turning-forward' ? 'shadow-forward' : 'shadow-back'} 0.8s ease-in-out forwards`,
+                  }}
+                />
+              </div>
             </div>
           )}
 
