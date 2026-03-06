@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { Story } from '../types/story'
 
 const base = import.meta.env.BASE_URL
@@ -99,6 +99,15 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       setTurnState(null)
     }, 800)
   }, [isFirst, isLast, pageIndex, turnState])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') turnPage('forward')
+      else if (e.key === 'ArrowLeft') turnPage('back')
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [turnPage])
 
   const handleBookClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!bookRef.current || turnState) return
