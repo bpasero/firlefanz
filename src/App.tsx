@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { Story } from './types/story'
+import PinGate from './components/PinGate'
 import StoryLibrary from './components/StoryLibrary'
 import StoryReader from './components/StoryReader'
 
@@ -16,11 +17,15 @@ function App() {
     ).then((loaded: Story[]) => setStories(loaded))
   }, [])
 
-  if (activeStory) {
-    return <StoryReader story={activeStory} onBack={() => setActiveStory(null)} />
-  }
-
-  return <StoryLibrary stories={stories} onSelectStory={setActiveStory} />
+  return (
+    <PinGate>
+      {activeStory ? (
+        <StoryReader story={activeStory} onBack={() => setActiveStory(null)} />
+      ) : (
+        <StoryLibrary stories={stories} onSelectStory={setActiveStory} />
+      )}
+    </PinGate>
+  )
 }
 
 export default App

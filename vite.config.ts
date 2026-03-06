@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/firlefanz/',
   plugins: [react(), tailwindcss()],
   test: {
     environment: 'happy-dom',
