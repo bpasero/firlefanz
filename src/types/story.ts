@@ -3,6 +3,7 @@ export interface Story {
   title: string;
   teaser: string;
   coverImage: string;
+  prompt: string;
   pages: Page[];
 }
 
