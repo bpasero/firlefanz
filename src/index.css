@@ -5,63 +5,6 @@ html, body {
   overscroll-behavior: none;
 }
 
-/* Page flip: forward (current page swings away to the left) */
-@keyframes flip-forward {
-  0% {
-    transform: rotateY(0deg);
-  }
-  100% {
-    transform: rotateY(-180deg);
-  }
-}
-
-/* Page flip: back (current page swings away to the right) */
-@keyframes flip-back {
-  0% {
-    transform: rotateY(0deg);
-  }
-  100% {
-    transform: rotateY(180deg);
-  }
-}
-
-/* Shadow on the turning page — darkens as it folds */
-@keyframes shadow-forward {
-  0% {
-    background: transparent;
-  }
-  40% {
-    background: rgba(0, 0, 0, 0.25);
-  }
-  100% {
-    background: rgba(0, 0, 0, 0.5);
-  }
-}
-
-@keyframes shadow-back {
-  0% {
-    background: transparent;
-  }
-  40% {
-    background: rgba(0, 0, 0, 0.25);
-  }
-  100% {
-    background: rgba(0, 0, 0, 0.5);
-  }
-}
-
-/* Shadow on the page being revealed underneath */
-@keyframes shadow-reveal {
-  0% {
-    background: rgba(0, 0, 0, 0.3);
-  }
-  60% {
-    background: rgba(0, 0, 0, 0.15);
-  }
-  100% {
-    background: transparent;
-  }
-}
 
 /* Shake animation for wrong PIN */
 @keyframes shake {

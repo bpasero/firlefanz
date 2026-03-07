@@ -14,7 +14,6 @@ interface StoryReaderProps {
   onBack: () => void
 }
 
-type TurnState = null | 'turning-forward' | 'turning-back'
 
 function PageContent({ story, pageIndex, nightMode, language }: { story: Story; pageIndex: number; nightMode: boolean; language: string }) {
   const localized = localizeStory(story, language)
@@ -103,8 +102,6 @@ function PageContent({ story, pageIndex, nightMode, language }: { story: Story; 
 
 export default function StoryReader({ story, onBack }: StoryReaderProps) {
   const [pageIndex, setPageIndex] = useState(0)
-  const [turnState, setTurnState] = useState<TurnState>(null)
-  const [nextPageIndex, setNextPageIndex] = useState(0)
   const [narrating, setNarrating] = useState(false)
   const bookRef = useRef<HTMLDivElement>(null)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -192,17 +189,9 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
   const turnPage = useCallback((direction: 'forward' | 'back') => {
     if (direction === 'forward' && isLast) return
     if (direction === 'back' && isFirst) return
-    if (turnState) return
-
     const next = pageIndex + (direction === 'forward' ? 1 : -1)
-    setNextPageIndex(next)
-    setTurnState(direction === 'forward' ? 'turning-forward' : 'turning-back')
-
-    setTimeout(() => {
-      setPageIndex(next)
-      setTurnState(null)
-    }, 800)
-  }, [isFirst, isLast, pageIndex, turnState])
+    setPageIndex(next)
+  }, [isFirst, isLast, pageIndex])
 
   // Keep refs current for use inside audio/speech callbacks
   turnPageRef.current = turnPage
@@ -218,13 +207,13 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
   }, [turnPage])
 
   const handleBookClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!bookRef.current || turnState) return
+    if (!bookRef.current) return
     const rect = bookRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left
     const third = rect.width / 3
     if (x < third) turnPage('back')
     else if (x > third * 2) turnPage('forward')
-  }, [turnPage, turnState])
+  }, [turnPage])
 
   // Swipe handling for touch
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -341,54 +330,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
             WebkitTransform: 'translateZ(0)',
           }}
         >
-          {/* Base layer: current page — always rendered to avoid unmount/remount flash */}
           <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} />
-
-          {/* Next page layer — sits above base, revealed as overlay rotates away */}
-          {turnState && (
-            <div className="absolute inset-0 z-10">
-              <PageContent story={story} pageIndex={nextPageIndex} nightMode={nightMode} language={language} />
-            </div>
-          )}
-
-          {/* Turning page overlay */}
-          {turnState && (
-            <div
-              className="absolute inset-0 z-30"
-              style={{
-                transformOrigin: turnState === 'turning-forward' ? 'left center' : 'right center',
-                animation: `${turnState === 'turning-forward' ? 'flip-forward' : 'flip-back'} 0.8s ease-in-out forwards`,
-                transformStyle: 'preserve-3d',
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden',
-                willChange: 'transform',
-              }}
-            >
-              <div
-                className="absolute inset-0"
-                style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-              >
-                <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} />
-                {/* Shadow that intensifies as page turns */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    animation: `${turnState === 'turning-forward' ? 'shadow-forward' : 'shadow-back'} 0.8s ease-in-out forwards`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Dynamic shadow on the revealed page */}
-          {turnState && (
-            <div
-              className="absolute inset-0 z-20 pointer-events-none"
-              style={{
-                animation: `shadow-reveal 0.8s ease-in-out forwards`,
-              }}
-            />
-          )}
         </div>
       </div>
 
@@ -396,7 +338,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       <div className="mt-1.5 sm:mt-6 flex items-center gap-6 sm:gap-8 relative z-10">
         <button
           onClick={() => turnPage('back')}
-          disabled={isFirst || !!turnState}
+          disabled={isFirst}
           className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-xl sm:text-lg"
           style={{
             backgroundColor: btnBg,
@@ -409,7 +351,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
         </button>
         <button
           onClick={() => turnPage('forward')}
-          disabled={isLast || !!turnState}
+          disabled={isLast}
           className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-xl sm:text-lg"
           style={{
             backgroundColor: btnBg,
