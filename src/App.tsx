@@ -11,7 +11,7 @@ function App() {
   const [activeStory, setActiveStory] = useState<Story | null>(null)
 
   useEffect(() => {
-    const storyIds = ['goldi-im-labyrinth', 'am-ende-der-welt', 'die-stadt-der-vergessenen-spielzeuge', 'der-wolkenfluester']
+    const storyIds = ['das-tal-der-sanften-riesen', 'goldi-im-labyrinth', 'am-ende-der-welt', 'die-stadt-der-vergessenen-spielzeuge', 'der-wolkenfluester']
     Promise.all(
       storyIds.map((id) =>
         fetch(`${import.meta.env.BASE_URL}stories/${id}/story.json`).then((res) => res.json())
