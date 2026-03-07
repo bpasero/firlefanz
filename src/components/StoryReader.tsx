@@ -327,7 +327,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         className="w-full max-w-5xl cursor-pointer select-none relative z-10 flex-1 md:flex-none"
-        style={{ perspective: '2500px', WebkitTapHighlightColor: 'transparent' }}
+        style={{ perspective: '2500px', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
       >
         <div
           className="relative rounded-xl sm:rounded-2xl overflow-hidden h-full"
@@ -338,16 +338,17 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
               : '0 12px 40px rgba(120,70,20,0.25), 0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(180,140,90,0.2)',
             minHeight: 'min(calc(100dvh - 120px), 780px)',
             maxHeight: '780px',
+            WebkitTransform: 'translateZ(0)',
           }}
         >
-          {/* Bottom layer: next page (visible during turn) */}
-          {turnState && (
-            <PageContent story={story} pageIndex={nextPageIndex} nightMode={nightMode} language={language} />
-          )}
+          {/* Base layer: current page — always rendered to avoid unmount/remount flash */}
+          <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} />
 
-          {/* Current page */}
-          {!turnState && (
-            <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} />
+          {/* Next page layer — sits above base, revealed as overlay rotates away */}
+          {turnState && (
+            <div className="absolute inset-0 z-10">
+              <PageContent story={story} pageIndex={nextPageIndex} nightMode={nightMode} language={language} />
+            </div>
           )}
 
           {/* Turning page overlay */}
