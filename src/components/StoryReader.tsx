@@ -349,10 +349,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
             WebkitTransform: 'translateZ(0)',
           }}
         >
-          {/* Base page — always mounted to avoid iOS white flash on remount */}
-          <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} mobileImages={mobileImages} />
-
-          {flip && (
+          {flip ? (
             <>
               {/* Bottom page — target page revealed during flip */}
               <PageContent story={story} pageIndex={flip.toPage} nightMode={nightMode} language={language} mobileImages={mobileImages} />
@@ -424,6 +421,8 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
                 </div>
               </div>
             </>
+          ) : (
+            <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} mobileImages={mobileImages} />
           )}
         </div>
       </div>
