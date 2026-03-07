@@ -252,10 +252,8 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
 
   return (
     <div
-      className="fixed inset-0 flex flex-col items-center justify-center px-2 sm:px-4 overflow-hidden"
+      className="min-h-screen min-h-dvh flex flex-col items-center justify-center px-2 py-1.5 sm:p-4 relative overflow-hidden"
       style={{
-        paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
-        paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)',
         background: nightMode
           ? 'linear-gradient(170deg, #1e1810 0%, #1a1410 40%, #14100c 100%)'
           : 'linear-gradient(170deg, #f5e1be 0%, #edd3a4 40%, #dfc08a 100%)',
