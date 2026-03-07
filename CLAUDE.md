@@ -122,9 +122,9 @@ Every Firlefanz story follows a consistent arc:
 - `node scripts/generate-icons.mjs` — generate PWA icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`) from a cover image using Sharp
 - `node scripts/generate-audio.mjs <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`tts-1-hd`, speed 0.9); saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer)
   - der-wolkenfluester → `fable` (warm British male)
-  - am-ende-der-welt → `onyx` (deep male)
-  - die-stadt-der-vergessenen-spielzeuge → `echo` (soft male)
-  - goldi-im-labyrinth → `alloy` (neutral)
+  - am-ende-der-welt → `nova` (warm female)
+  - die-stadt-der-vergessenen-spielzeuge → `fable` (warm British male)
+  - goldi-im-labyrinth → `nova` (warm female)
 
 ## Adding a New Language
 
