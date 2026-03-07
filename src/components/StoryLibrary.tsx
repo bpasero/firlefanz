@@ -18,7 +18,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
 
   return (
     <div
-      className="min-h-screen px-4 sm:px-6 py-8 sm:py-12 relative overflow-hidden"
+      className="min-h-screen px-4 sm:px-6 pt-28 pb-8 sm:pt-24 sm:pb-12 relative overflow-hidden"
       style={{
         background: nightMode
           ? 'linear-gradient(170deg, #1e1810 0%, #2a2018 30%, #1a1410 60%, #12100c 100%)'
@@ -57,7 +57,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
       </div>
 
       {/* Controls */}
-      <div className="absolute top-4 right-4 z-20 flex gap-1.5">
+      <div className="absolute top-6 right-4 z-20 flex gap-1.5">
         <LanguageToggle />
         <NightModeToggle />
       </div>
