@@ -53,10 +53,16 @@ const langs = langArg === 'all'
 
 // Voice selection: fable is a warm, calm male voice — great for storytelling
 const VOICE = voiceArg ?? 'fable'
-const MODEL = 'tts-1-hd'
+const MODEL = 'gpt-4o-mini-tts'
 const SPEED = 0.9  // slightly slower for young children
 
-async function generateAudio(text) {
+const LANG_INSTRUCTIONS = {
+  de: 'Speak in German with a native German accent. You are a warm, calm storyteller reading a bedtime story to young children aged 3–6.',
+  en: 'Speak in English with a native English accent. You are a warm, calm storyteller reading a bedtime story to young children aged 3–6.',
+}
+
+async function generateAudio(text, lang) {
+  const instructions = LANG_INSTRUCTIONS[lang] ?? `Speak in the language of the provided text with a native accent. You are a warm, calm storyteller reading a bedtime story to young children aged 3–6.`
   const res = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: {
@@ -68,6 +74,7 @@ async function generateAudio(text) {
       voice: VOICE,
       input: text,
       speed: SPEED,
+      instructions,
     }),
   })
   if (!res.ok) {
@@ -98,7 +105,7 @@ for (const lang of langs) {
     }
     process.stdout.write(`  Page ${i + 1}/${pageTexts.length}: generating... `)
     try {
-      const audio = await generateAudio(pageTexts[i])
+      const audio = await generateAudio(pageTexts[i], lang)
       writeFileSync(outPath, audio)
       console.log(`saved (${(audio.length / 1024).toFixed(0)} KB)`)
     } catch (e) {
