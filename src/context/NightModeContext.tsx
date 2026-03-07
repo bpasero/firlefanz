@@ -14,6 +14,7 @@ export function NightModeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem('firlefanz-night-mode', String(nightMode))
+    document.documentElement.style.backgroundColor = nightMode ? '#14100c' : '#edd3a4'
   }, [nightMode])
 
   return (
