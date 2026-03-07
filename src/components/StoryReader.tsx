@@ -3,6 +3,7 @@ import type { Story } from '../types/story'
 import { localizeStory } from '../types/story'
 import { useNightMode } from '../context/NightModeContext'
 import { useLanguage } from '../context/LanguageContext'
+import { useMobileImages, getMobileSrc } from '../hooks/useMobileImages'
 import NightModeToggle from './NightModeToggle'
 import LanguageToggle from './LanguageToggle'
 import NarrationToggle from './NarrationToggle'
@@ -15,16 +16,17 @@ interface StoryReaderProps {
 }
 
 
-function PageContent({ story, pageIndex, nightMode, language }: { story: Story; pageIndex: number; nightMode: boolean; language: string }) {
+function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { story: Story; pageIndex: number; nightMode: boolean; language: string; mobileImages: boolean }) {
   const localized = localizeStory(story, language)
   const page = localized.pages[pageIndex]
+  const imageSrc = `${base}${getMobileSrc(page.image, mobileImages).replace(/^\//, '')}`
   return (
     <div className="absolute inset-0 flex flex-col md:flex-row">
       {/* Left page — illustration */}
       <div className="h-2/5 md:h-auto md:w-1/2 relative overflow-hidden" style={{ backgroundColor: nightMode ? '#1e1a14' : '#faf3e3' }}>
         <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-black/10 to-transparent z-10 hidden md:block" />
         <img
-          src={`${base}${page.image.replace(/^\//, '')}`}
+          src={imageSrc}
           alt={`Seite ${pageIndex + 1}`}
           className={`w-full h-full object-cover ${nightMode ? 'brightness-75' : ''}`}
         />
@@ -116,6 +118,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
   const isLastRef = useRef(false)
   const { nightMode } = useNightMode()
   const { language } = useLanguage()
+  const mobileImages = useMobileImages()
   const localized = localizeStory(story, language)
   const isFirst = pageIndex === 0
   const isLast = pageIndex === story.pages.length - 1
@@ -127,9 +130,9 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
     )
     for (const i of toPreload) {
       const img = new Image()
-      img.src = `${base}${story.pages[i].image.replace(/^\//, '')}`
+      img.src = `${base}${getMobileSrc(story.pages[i].image, mobileImages).replace(/^\//, '')}`
     }
-  }, [pageIndex, story])
+  }, [pageIndex, story, mobileImages])
 
   // Narrate current page: prefer pre-generated audio file, fall back to Web Speech API
   useEffect(() => {
@@ -346,7 +349,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
           {flip ? (
             <>
               {/* Bottom page — target page revealed during flip */}
-              <PageContent story={story} pageIndex={flip.toPage} nightMode={nightMode} language={language} />
+              <PageContent story={story} pageIndex={flip.toPage} nightMode={nightMode} language={language} mobileImages={mobileImages} />
               {/* Shadow cast by turning page onto bottom page */}
               <div
                 className="absolute inset-0 bg-black pointer-events-none"
@@ -376,7 +379,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
                     WebkitBackfaceVisibility: 'hidden' as never,
                   }}
                 >
-                  <PageContent story={story} pageIndex={flip.fromPage} nightMode={nightMode} language={language} />
+                  <PageContent story={story} pageIndex={flip.fromPage} nightMode={nightMode} language={language} mobileImages={mobileImages} />
                   {/* Fold crease shadow near hinge */}
                   <div
                     className="absolute top-0 bottom-0 pointer-events-none"
@@ -416,7 +419,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
               </div>
             </>
           ) : (
-            <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} />
+            <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} mobileImages={mobileImages} />
           )}
         </div>
       </div>

@@ -44,7 +44,7 @@ async function generate(spec, referenceImagePath = null) {
     formData.append('model', 'gpt-image-1');
     formData.append('prompt', spec.prompt);
     formData.append('size', '1536x1024');
-    formData.append('quality', 'medium');
+    formData.append('quality', 'high');
     const imageData = fs.readFileSync(referenceImagePath);
     formData.append('image', new Blob([imageData], { type: 'image/png' }), 'reference.png');
     res = await fetch('https://api.openai.com/v1/images/edits', {
@@ -56,7 +56,7 @@ async function generate(spec, referenceImagePath = null) {
     res = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'gpt-image-1', prompt: spec.prompt, size: '1536x1024', quality: 'medium' }),
+      body: JSON.stringify({ model: 'gpt-image-1', prompt: spec.prompt, size: '1536x1024', quality: 'high' }),
     });
   }
   if (!res.ok) throw new Error(`API error: ${res.status} ${await res.text()}`);

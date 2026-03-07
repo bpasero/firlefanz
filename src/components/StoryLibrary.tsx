@@ -2,6 +2,7 @@ import type { Story } from '../types/story'
 import { localizeStory } from '../types/story'
 import { useNightMode } from '../context/NightModeContext'
 import { useLanguage } from '../context/LanguageContext'
+import { useMobileImages, getMobileSrc } from '../hooks/useMobileImages'
 import NightModeToggle from './NightModeToggle'
 import LanguageToggle from './LanguageToggle'
 
@@ -15,6 +16,7 @@ interface StoryLibraryProps {
 export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryProps) {
   const { nightMode } = useNightMode()
   const { language } = useLanguage()
+  const mobileImages = useMobileImages()
 
   return (
     <div
@@ -112,7 +114,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
                   {/* Spine edge */}
                   <div className={`absolute left-0 top-0 bottom-0 w-2 sm:w-3 z-10 rounded-l-xl sm:rounded-l-2xl ${nightMode ? 'bg-gradient-to-r from-black/50 to-transparent' : 'bg-gradient-to-r from-amber-800/40 to-transparent'}`} />
                   <img
-                    src={`${base}${story.coverImage.replace(/^\//, '')}`}
+                    src={`${base}${getMobileSrc(story.coverImage, mobileImages).replace(/^\//, '')}`}
                     alt={localized.title}
                     className={`w-full aspect-[2/3] object-cover ${nightMode ? 'brightness-75' : ''}`}
                   />

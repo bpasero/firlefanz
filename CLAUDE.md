@@ -74,7 +74,9 @@ Every Firlefanz story follows a consistent arc:
 - Copyright footer visible in the app
 - PDF metadata includes author, copyright, and keywords
 - All images have **invisible watermarking**: EXIF metadata + LSB steganography encoding copyright message
+- Always generate images at **high quality** (`quality: 'high'`) — mobile bandwidth is handled by compressed WebP variants, not by reducing source quality
 - After generating images, always run `node scripts/watermark-images.mjs` before committing
+- After watermarking, run `node scripts/compress-images.mjs` to regenerate mobile WebP variants from the watermarked PNGs (run compress *after* watermark so variants are derived from the final files)
 - After watermarking, regenerate PDFs so they contain watermarked images
 
 ## Deployment
@@ -120,8 +122,9 @@ Every Firlefanz story follows a consistent arc:
 
 ## Scripts
 
-- `node scripts/generate-images-<story-slug>.mjs` — generate story illustrations via OpenAI
+- `node scripts/generate-images-<story-slug>.mjs` — generate story illustrations via OpenAI (`gpt-image-1`, `quality: 'high'`, `1536x1024`); always generate at high quality — mobile bandwidth is handled by the compressed WebP variants
 - `node scripts/watermark-images.mjs [story-id]` — watermark images (EXIF + steganography); all stories if no id given
+- `node scripts/compress-images.mjs [story-id]` — generate compressed mobile WebP variants (`<name>-mobile.webp`) alongside each PNG; max 800px wide, WebP quality 82 (~30–55 KB vs ~3.8 MB originals); served automatically on narrow viewports (≤768px) or slow connections via `src/hooks/useMobileImages.ts`
 - `node scripts/generate-pdf.mjs <story-id>` — generate downloadable PDF for a story
 - `node scripts/translate-stories.mjs [lang]` — translate all stories to target language (default: `en`) using GPT-4o-mini; adds `translations.<lang>` to each `story.json`; skips stories that already have that translation
 - `node scripts/generate-icons.mjs` — generate PWA icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`) from a cover image using Sharp
@@ -143,8 +146,9 @@ Every Firlefanz story follows a consistent arc:
 2. Translate to English: `node scripts/translate-stories.mjs en` (adds `translations.en` to `story.json`)
 3. Create and run image generation script: `node scripts/generate-images-<slug>.mjs`
 4. Watermark images: `node scripts/watermark-images.mjs <id>`
-5. Generate PDF: `node scripts/generate-pdf.mjs <id>`
-6. Generate audio for both languages: `node scripts/generate-audio.mjs <id> all`
-7. Add story id to the `storyIds` array in `src/App.tsx`
-8. Remove from `drafts.json` if applicable
-9. Commit and push
+5. Generate mobile WebP variants: `node scripts/compress-images.mjs <id>`
+6. Generate PDF: `node scripts/generate-pdf.mjs <id>`
+7. Generate audio for both languages: `node scripts/generate-audio.mjs <id> all`
+8. Add story id to the `storyIds` array in `src/App.tsx`
+9. Remove from `drafts.json` if applicable
+10. Commit and push

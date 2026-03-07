@@ -30,7 +30,7 @@ async function generateWithOpenAI(prompt, outPath) {
       model: 'gpt-image-1',
       prompt,
       size: '1536x1024',
-      quality: 'medium',
+      quality: 'high',
     }),
   });
 
