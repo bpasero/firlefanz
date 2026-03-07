@@ -6,7 +6,7 @@
   "scope": "/firlefanz/",
   "display": "standalone",
   "background_color": "#f9e8c9",
-  "theme_color": "#d4a05a",
+  "theme_color": "#f9e8c9",
   "icons": [
     {
       "src": "icons/icon-192.png",

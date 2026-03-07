@@ -11,6 +11,8 @@ export function NightModeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem('firlefanz-night-mode', String(nightMode))
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (meta) meta.setAttribute('content', nightMode ? '#1e1810' : '#f9e8c9')
   }, [nightMode])
 
   return (
