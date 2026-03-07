@@ -1,3 +1,6 @@
+// © 2026 Benjamin Pasero. All rights reserved.
+// https://github.com/bpasero/firlefanz
+
 import { useState, useEffect } from 'react'
 
 type NetworkInfo = {

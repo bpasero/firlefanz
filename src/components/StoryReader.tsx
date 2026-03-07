@@ -1,3 +1,6 @@
+// © 2026 Benjamin Pasero. All rights reserved.
+// https://github.com/bpasero/firlefanz
+
 import { useState, useCallback, useRef, useEffect } from 'react'
 import type { Story } from '../types/story'
 import { localizeStory } from '../types/story'

@@ -1,24 +1,27 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+// © 2026 Benjamin Pasero. All rights reserved.
+// https://github.com/bpasero/firlefanz
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rootDir = path.resolve(__dirname, '..');
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const rootDir = path.resolve(__dirname, '..')
 
 // Load .env
-const envContent = fs.readFileSync(path.join(rootDir, '.env'), 'utf-8');
-function envVar(name) {
-  return envContent.match(new RegExp(`${name}=(.+)`))?.[1]?.trim();
+const envContent = fs.readFileSync(path.join(rootDir, '.env'), 'utf-8')
+function envVar(name: string): string | undefined {
+  return envContent.match(new RegExp(`${name}=(.+)`))?.[1]?.trim()
 }
 
 // Pick provider from CLI arg: --provider=openai or --provider=google (default: openai)
-const provider = process.argv.find(a => a.startsWith('--provider='))?.split('=')[1] || 'openai';
+const provider = process.argv.find((a) => a.startsWith('--provider='))?.split('=')[1] ?? 'openai'
 
 // --- Provider implementations ---
 
-async function generateWithOpenAI(prompt, outPath) {
-  const apiKey = envVar('OPENAI_API_KEY');
-  if (!apiKey) throw new Error('Missing OPENAI_API_KEY in .env');
+async function generateWithOpenAI(prompt: string, outPath: string): Promise<number> {
+  const apiKey = envVar('OPENAI_API_KEY')
+  if (!apiKey) throw new Error('Missing OPENAI_API_KEY in .env')
 
   const res = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
@@ -32,28 +35,28 @@ async function generateWithOpenAI(prompt, outPath) {
       size: '1536x1024',
       quality: 'high',
     }),
-  });
+  })
 
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`OpenAI API error: ${res.status} ${err}`);
+    const err = await res.text()
+    throw new Error(`OpenAI API error: ${res.status} ${err}`)
   }
 
-  const data = await res.json();
-  const b64 = data.data?.[0]?.b64_json;
-  if (!b64) throw new Error(`No image in response: ${JSON.stringify(data)}`);
+  const data = await res.json() as { data?: { b64_json?: string }[] }
+  const b64 = data.data?.[0]?.b64_json
+  if (!b64) throw new Error(`No image in response: ${JSON.stringify(data)}`)
 
-  const buffer = Buffer.from(b64, 'base64');
-  fs.writeFileSync(outPath, buffer);
-  return buffer.length;
+  const buffer = Buffer.from(b64, 'base64')
+  fs.writeFileSync(outPath, buffer)
+  return buffer.length
 }
 
-async function generateWithGoogle(prompt, outPath) {
-  const apiKey = envVar('VITE_GOOGLE_AI_API_KEY');
-  if (!apiKey) throw new Error('Missing VITE_GOOGLE_AI_API_KEY in .env');
+async function generateWithGoogle(prompt: string, outPath: string): Promise<number> {
+  const apiKey = envVar('VITE_GOOGLE_AI_API_KEY')
+  if (!apiKey) throw new Error('Missing VITE_GOOGLE_AI_API_KEY in .env')
 
-  const model = 'gemini-3.1-flash-image-preview';
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const model = 'gemini-3.1-flash-image-preview'
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
 
   const res = await fetch(endpoint, {
     method: 'POST',
@@ -65,35 +68,43 @@ async function generateWithGoogle(prompt, outPath) {
         imageConfig: { aspectRatio: '3:2', imageSize: '2K' },
       },
     }),
-  });
+  })
 
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Google API error: ${res.status} ${err}`);
+    const err = await res.text()
+    throw new Error(`Google API error: ${res.status} ${err}`)
   }
 
-  const data = await res.json();
-  const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-  if (!imagePart) throw new Error(`No image in response: ${JSON.stringify(data)}`);
+  const data = await res.json() as { candidates?: { content: { parts: { inlineData?: { data: string } }[] } }[] }
+  const imagePart = data.candidates?.[0]?.content?.parts?.find((p) => p.inlineData)
+  if (!imagePart?.inlineData) throw new Error(`No image in response: ${JSON.stringify(data)}`)
 
-  const buffer = Buffer.from(imagePart.inlineData.data, 'base64');
-  fs.writeFileSync(outPath, buffer);
-  return buffer.length;
+  const buffer = Buffer.from(imagePart.inlineData.data, 'base64')
+  fs.writeFileSync(outPath, buffer)
+  return buffer.length
 }
 
-const generators = { openai: generateWithOpenAI, google: generateWithGoogle };
+const generators: Record<string, (prompt: string, outPath: string) => Promise<number>> = {
+  openai: generateWithOpenAI,
+  google: generateWithGoogle,
+}
 
 // --- Image prompts ---
 
-const STYLE_PREFIX = 'Children\'s book illustration, soft watercolor style, warm calming colors.';
-const STYLE_SUFFIX = 'Gentle, cozy atmosphere suitable for a bedtime story. No text in the image.';
-const FIRLEFANZ_DESC = 'Firlefanz is a small friendly green dragon/dinosaur creature';
-const PAPERLAPAPP_DESC = 'Papalapapp is the same species as Firlefanz but larger and fatherly';
-const GOLDI_DESC = 'Goldi is a golden-furred ape with big friendly eyes';
+const STYLE_PREFIX = "Children's book illustration, soft watercolor style, warm calming colors."
+const STYLE_SUFFIX = 'Gentle, cozy atmosphere suitable for a bedtime story. No text in the image.'
+const FIRLEFANZ_DESC = 'Firlefanz is a small friendly green dragon/dinosaur creature'
+const PAPERLAPAPP_DESC = 'Papalapapp is the same species as Firlefanz but larger and fatherly'
+const GOLDI_DESC = 'Goldi is a golden-furred ape with big friendly eyes'
 
-const storyDir = path.join(rootDir, 'public/stories/goldi-im-labyrinth');
+const storyDir = path.join(rootDir, 'public/stories/goldi-im-labyrinth')
 
-const images = [
+interface ImageSpec {
+  filename: string
+  prompt: string
+}
+
+const images: ImageSpec[] = [
   {
     filename: 'cover.png',
     prompt: `${STYLE_PREFIX} A book cover scene: ${FIRLEFANZ_DESC} standing in front of a tall magical green hedge labyrinth. The labyrinth entrance glows softly with warm lantern light. A golden ape peeks out from inside the maze, waving. Title area at the top. ${STYLE_SUFFIX}`,
@@ -142,33 +153,33 @@ const images = [
     filename: 'page-11.png',
     prompt: `${STYLE_PREFIX} ${FIRLEFANZ_DESC} sleepily leaning against ${PAPERLAPAPP_DESC} while walking home under a silver moon and twinkling stars. A calm night scene with a gentle path ahead. ${GOLDI_DESC} waves goodbye from far behind. Very peaceful and sleepy atmosphere. ${STYLE_SUFFIX}`,
   },
-];
+]
 
 // --- Main ---
 
-async function main() {
-  const generate = generators[provider];
+async function main(): Promise<void> {
+  const generate = generators[provider]
   if (!generate) {
-    console.error(`Unknown provider: ${provider}. Use --provider=openai or --provider=google`);
-    process.exit(1);
+    console.error(`Unknown provider: ${provider}. Use --provider=openai or --provider=google`)
+    process.exit(1)
   }
 
-  console.log(`Using provider: ${provider}\n`);
-  fs.mkdirSync(storyDir, { recursive: true });
+  console.log(`Using provider: ${provider}\n`)
+  fs.mkdirSync(storyDir, { recursive: true })
 
   for (const imageSpec of images) {
-    const outPath = path.join(storyDir, imageSpec.filename);
-    console.log(`Generating ${imageSpec.filename}...`);
+    const outPath = path.join(storyDir, imageSpec.filename)
+    console.log(`Generating ${imageSpec.filename}...`)
     try {
-      const size = await generate(imageSpec.prompt, outPath);
-      console.log(`  Saved ${outPath} (${(size / 1024).toFixed(0)} KB)`);
+      const size = await generate(imageSpec.prompt, outPath)
+      console.log(`  Saved ${outPath} (${(size / 1024).toFixed(0)} KB)`)
     } catch (err) {
-      console.error(`  FAILED: ${err.message}`);
+      console.error(`  FAILED: ${(err as Error).message}`)
     }
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 2000))
   }
 
-  console.log('\nDone!');
+  console.log('\nDone!')
 }
 
-main();
+main()

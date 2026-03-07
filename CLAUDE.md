@@ -72,11 +72,13 @@ Every Firlefanz story follows a consistent arc:
 
 - **All Rights Reserved** license (see `LICENSE`)
 - Copyright footer visible in the app
+- All source files (`src/**/*.ts`, `scripts/**/*.ts`) include a `// © 2026 Benjamin Pasero` header comment
+- Bundled output (JS + CSS) includes the copyright banner via the `copyrightBannerPlugin` in `vite.config.ts`
 - PDF metadata includes author, copyright, and keywords
 - All images have **invisible watermarking**: EXIF metadata + LSB steganography encoding copyright message
 - Always generate images at **high quality** (`quality: 'high'`) — mobile bandwidth is handled by compressed WebP variants, not by reducing source quality
-- After generating images, always run `node scripts/watermark-images.mjs` before committing
-- After watermarking, run `node scripts/compress-images.mjs` to regenerate mobile WebP variants from the watermarked PNGs (run compress *after* watermark so variants are derived from the final files)
+- After generating images, always run `npx tsx scripts/watermark-images.ts` before committing
+- After watermarking, run `npx tsx scripts/compress-images.ts` to regenerate mobile WebP variants from the watermarked PNGs (run compress *after* watermark so variants are derived from the final files)
 - After watermarking, regenerate PDFs so they contain watermarked images
 
 ## Deployment
@@ -92,17 +94,19 @@ Every Firlefanz story follows a consistent arc:
 - **Tailwind CSS v4** for styling (via `@tailwindcss/vite` plugin)
 - **Vitest** with **happy-dom** for testing
 - **PDFKit** for generating downloadable story PDFs
-- **Sharp** for image watermarking (EXIF metadata + LSB steganography) and icon generation
+- **Sharp** for image watermarking (EXIF metadata + LSB steganography), icon generation, and mobile WebP compression
+- **tsx** for running TypeScript scripts directly (`npx tsx scripts/*.ts`)
 - **Playfair Display** and **Lora** fonts (self-hosted via `@fontsource`, Latin subset only)
 - **Web Speech API** (browser built-in) for audio narration
 - **Umami** for privacy-friendly analytics (script tag in `index.html`)
+- **Copyright banner** injected into all bundled JS and CSS via a custom Vite plugin (`copyrightBannerPlugin` in `vite.config.ts`); uses `writeBundle` hook to reliably run after Vite's modulepreload polyfill injection
 
 ## PWA
 
 - Installable as a PWA on iOS ("Add to Home Screen"), Android (install prompt), and desktop
 - Web app manifest at `public/manifest.json` — `start_url` and `scope` set to `/firlefanz/`
 - Service worker at `public/sw.js` — stale-while-revalidate caching strategy; offline-capable after first visit
-- App icons at `public/icons/icon-192.png` and `public/icons/icon-512.png` (generated via `node scripts/generate-icons.mjs`)
+- App icons at `public/icons/icon-192.png` and `public/icons/icon-512.png` (generated via `npx tsx scripts/generate-icons.ts`)
 - Registered in `src/main.tsx` via `navigator.serviceWorker.register`
 - SW cache name is `firlefanz-v1` — bump this when deploying breaking changes
 
@@ -122,13 +126,13 @@ Every Firlefanz story follows a consistent arc:
 
 ## Scripts
 
-- `node scripts/generate-images-<story-slug>.mjs` — generate story illustrations via OpenAI (`gpt-image-1`, `quality: 'high'`, `1536x1024`); always generate at high quality — mobile bandwidth is handled by the compressed WebP variants
-- `node scripts/watermark-images.mjs [story-id]` — watermark images (EXIF + steganography); all stories if no id given
-- `node scripts/compress-images.mjs [story-id]` — generate compressed mobile WebP variants (`<name>-mobile.webp`) alongside each PNG; max 800px wide, WebP quality 82 (~30–55 KB vs ~3.8 MB originals); served automatically on narrow viewports (≤768px) or slow connections via `src/hooks/useMobileImages.ts`
-- `node scripts/generate-pdf.mjs <story-id>` — generate downloadable PDF for a story
-- `node scripts/translate-stories.mjs [lang]` — translate all stories to target language (default: `en`) using GPT-4o-mini; adds `translations.<lang>` to each `story.json`; skips stories that already have that translation
-- `node scripts/generate-icons.mjs` — generate PWA icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`) from a cover image using Sharp
-- `node scripts/generate-audio.mjs <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`gpt-4o-mini-tts`, speed 0.9); saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer); language-specific `instructions` are passed to the API to ensure native accent (e.g. native German for `de`)
+- `npx tsx scripts/generate-images-<story-slug>.ts` — generate story illustrations via OpenAI (`gpt-image-1`, `quality: 'high'`, `1536x1024`); always generate at high quality — mobile bandwidth is handled by the compressed WebP variants
+- `npx tsx scripts/watermark-images.ts [story-id]` — watermark images (EXIF + steganography); all stories if no id given
+- `npx tsx scripts/compress-images.ts [story-id]` — generate compressed mobile WebP variants (`<name>-mobile.webp`) alongside each PNG; max 800px wide, WebP quality 82 (~30–55 KB vs ~3.8 MB originals); served automatically on narrow viewports (≤768px) or slow connections via `src/hooks/useMobileImages.ts`
+- `npx tsx scripts/generate-pdf.ts <story-id>` — generate downloadable PDF for a story
+- `npx tsx scripts/translate-stories.ts [lang]` — translate all stories to target language (default: `en`) using GPT-4o-mini; adds `translations.<lang>` to each `story.json`; skips stories that already have that translation
+- `npx tsx scripts/generate-icons.ts` — generate PWA icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`) from a cover image using Sharp
+- `npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`gpt-4o-mini-tts`, speed 0.9); saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer); language-specific `instructions` are passed to the API to ensure native accent (e.g. native German for `de`)
   - der-wolkenfluester → `fable` (warm British male)
   - am-ende-der-welt → `nova` (warm female)
   - die-stadt-der-vergessenen-spielzeuge → `fable` (warm British male)
@@ -136,19 +140,19 @@ Every Firlefanz story follows a consistent arc:
 
 ## Adding a New Language
 
-1. Run `node scripts/translate-stories.mjs <lang>` (e.g. `fr`)
+1. Run `npx tsx scripts/translate-stories.ts <lang>` (e.g. `fr`)
 2. Add the language code to the `SUPPORTED` array in `src/context/LanguageContext.tsx`
 3. Commit and push
 
 ## Workflow for Adding a New Story
 
 1. Write `story.json` in `public/stories/<id>/` (German base text)
-2. Translate to English: `node scripts/translate-stories.mjs en` (adds `translations.en` to `story.json`)
-3. Create and run image generation script: `node scripts/generate-images-<slug>.mjs`
-4. Watermark images: `node scripts/watermark-images.mjs <id>`
-5. Generate mobile WebP variants: `node scripts/compress-images.mjs <id>`
-6. Generate PDF: `node scripts/generate-pdf.mjs <id>`
-7. Generate audio for both languages: `node scripts/generate-audio.mjs <id> all`
+2. Translate to English: `npx tsx scripts/translate-stories.ts en` (adds `translations.en` to `story.json`)
+3. Create and run image generation script: `npx tsx scripts/generate-images-<slug>.ts`
+4. Watermark images: `npx tsx scripts/watermark-images.ts <id>`
+5. Generate mobile WebP variants: `npx tsx scripts/compress-images.ts <id>`
+6. Generate PDF: `npx tsx scripts/generate-pdf.ts <id>`
+7. Generate audio for both languages: `npx tsx scripts/generate-audio.ts <id> all`
 8. Add story id to the `storyIds` array in `src/App.tsx`
 9. Remove from `drafts.json` if applicable
 10. Commit and push

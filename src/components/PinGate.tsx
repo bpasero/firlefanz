@@ -1,3 +1,6 @@
+// © 2026 Benjamin Pasero. All rights reserved.
+// https://github.com/bpasero/firlefanz
+
 import { useState, useRef, useEffect } from 'react'
 import { useNightMode } from '../context/NightModeContext'
 import NightModeToggle from './NightModeToggle'

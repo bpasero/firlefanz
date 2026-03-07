@@ -1,3 +1,6 @@
+// © 2026 Benjamin Pasero. All rights reserved.
+// https://github.com/bpasero/firlefanz
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@fontsource/playfair-display/latin-400.css'

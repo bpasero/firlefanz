@@ -1,3 +1,6 @@
+// © 2026 Benjamin Pasero. All rights reserved.
+// https://github.com/bpasero/firlefanz
+
 import { createContext, useContext, useState, useEffect } from 'react'
 
 const NightModeContext = createContext({ nightMode: false, toggleNightMode: () => {} })

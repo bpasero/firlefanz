@@ -1,26 +1,36 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+// © 2026 Benjamin Pasero. All rights reserved.
+// https://github.com/bpasero/firlefanz
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rootDir = path.resolve(__dirname, '..');
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const envContent = fs.readFileSync(path.join(rootDir, '.env'), 'utf-8');
-const apiKey = envContent.match(/OPENAI_API_KEY=(.+)/)?.[1]?.trim();
-if (!apiKey) { console.error('Missing OPENAI_API_KEY in .env'); process.exit(1); }
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const rootDir = path.resolve(__dirname, '..')
 
-const storyDir = path.join(rootDir, 'public/stories/die-stadt-der-vergessenen-spielzeuge');
-fs.mkdirSync(storyDir, { recursive: true });
+const envContent = fs.readFileSync(path.join(rootDir, '.env'), 'utf-8')
+const apiKey = envContent.match(/OPENAI_API_KEY=(.+)/)?.[1]?.trim()
+if (!apiKey) { console.error('Missing OPENAI_API_KEY in .env'); process.exit(1) }
 
-const S = "Children's book illustration, soft watercolor style, warm calming colors.";
-const E = 'Gentle, cozy, dreamy atmosphere suitable for a bedtime story. No text in the image.';
-const F = 'Firlefanz is a small friendly green dragon/dinosaur creature with a slim, slender build';
-const P = 'Papalapapp is the same species as Firlefanz but taller and fatherly, with a normal slim build';
-const B = 'Brummel is a large old teddy bear with thin fur in places, tiny glasses, and a warm smile';
-const OUTFIT = 'Firlefanz wears a green hat, brown boots, and a warm jacket, holding a walking stick, with a small bag carrying a toy train. Papalapapp wears a scarf and carries a bag of cookies.';
-const OUTFIT_PAGE = 'page-5.png';
+const storyDir = path.join(rootDir, 'public/stories/die-stadt-der-vergessenen-spielzeuge')
+fs.mkdirSync(storyDir, { recursive: true })
 
-const images = [
+const S = "Children's book illustration, soft watercolor style, warm calming colors."
+const E = 'Gentle, cozy, dreamy atmosphere suitable for a bedtime story. No text in the image.'
+const F = 'Firlefanz is a small friendly green dragon/dinosaur creature with a slim, slender build'
+const P = 'Papalapapp is the same species as Firlefanz but taller and fatherly, with a normal slim build'
+const B = 'Brummel is a large old teddy bear with thin fur in places, tiny glasses, and a warm smile'
+const OUTFIT = 'Firlefanz wears a green hat, brown boots, and a warm jacket, holding a walking stick, with a small bag carrying a toy train. Papalapapp wears a scarf and carries a bag of cookies.'
+const OUTFIT_PAGE = 'page-5.png'
+
+interface ImageSpec {
+  filename: string
+  prompt: string
+  isOutfitPage?: boolean
+  useOutfitRef?: boolean
+}
+
+const images: ImageSpec[] = [
   { filename: 'cover.png', prompt: `${S} A book cover: ${F} standing at the entrance of a tiny colorful city made of building blocks, paper roofs, and marble streets. An old teddy bear with glasses welcomes him. Toys peek from windows. Magical, warm, inviting. ${E}` },
   { filename: 'page-1.png', prompt: `${S} ${F} in bed, looking up at the ceiling. Morning light. A faint sound from the attic above. Curious expression, cozy small bedroom. ${E}` },
   { filename: 'page-2.png', prompt: `${S} ${F} on a dusty attic, surrounded by old boxes and draped cloths. He holds a small red wooden toy train with chipped paint. Warm light from a small window. Wonder and curiosity. ${E}` },
@@ -34,48 +44,48 @@ const images = [
   { filename: 'page-10.png', prompt: `${S} ${F} holding out a small red wooden toy train to ${B}. ${OUTFIT} Brummel looks at it with tears of joy in his eyes, gently taking it in his paws. Emotional, warm reunion moment. Soft lighting. ${E}`, useOutfitRef: true },
   { filename: 'page-11.png', prompt: `${S} ${F}, ${P}, ${B} and various toys sitting together on a town square, sharing cookies. ${OUTFIT} A small red toy train circles around them happily. Toys singing together. Warm evening light, cozy, communal. ${E}`, useOutfitRef: true },
   { filename: 'page-12.png', prompt: `${S} ${P} carrying sleeping ${F} on his back, walking home under a starry sky. ${OUTFIT} ${B} waves goodbye from the toy city gate in the background. Firlefanz holds a tiny wooden cube in his hand. Peaceful, sleepy, the toy city glows warmly behind them. ${E}`, useOutfitRef: true },
-];
+]
 
-async function generate(spec, referenceImagePath = null) {
-  console.log(`Generating ${spec.filename}...`);
-  let res;
+async function generate(spec: ImageSpec, referenceImagePath: string | null = null): Promise<void> {
+  console.log(`Generating ${spec.filename}...`)
+  let res: Response
   if (referenceImagePath && fs.existsSync(referenceImagePath)) {
-    const formData = new FormData();
-    formData.append('model', 'gpt-image-1');
-    formData.append('prompt', spec.prompt);
-    formData.append('size', '1536x1024');
-    formData.append('quality', 'high');
-    const imageData = fs.readFileSync(referenceImagePath);
-    formData.append('image', new Blob([imageData], { type: 'image/png' }), 'reference.png');
+    const formData = new FormData()
+    formData.append('model', 'gpt-image-1')
+    formData.append('prompt', spec.prompt)
+    formData.append('size', '1536x1024')
+    formData.append('quality', 'high')
+    const imageData = fs.readFileSync(referenceImagePath)
+    formData.append('image', new Blob([imageData], { type: 'image/png' }), 'reference.png')
     res = await fetch('https://api.openai.com/v1/images/edits', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}` },
       body: formData,
-    });
+    })
   } else {
     res = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: 'gpt-image-1', prompt: spec.prompt, size: '1536x1024', quality: 'high' }),
-    });
+    })
   }
-  if (!res.ok) throw new Error(`API error: ${res.status} ${await res.text()}`);
-  const data = await res.json();
-  const b64 = data.data?.[0]?.b64_json;
-  if (!b64) throw new Error('No image in response');
-  const buf = Buffer.from(b64, 'base64');
-  fs.writeFileSync(path.join(storyDir, spec.filename), buf);
-  console.log(`  Saved ${spec.filename} (${(buf.length / 1024).toFixed(0)} KB)`);
+  if (!res.ok) throw new Error(`API error: ${res.status} ${await res.text()}`)
+  const data = await res.json() as { data?: { b64_json?: string }[] }
+  const b64 = data.data?.[0]?.b64_json
+  if (!b64) throw new Error('No image in response')
+  const buf = Buffer.from(b64, 'base64')
+  fs.writeFileSync(path.join(storyDir, spec.filename), buf)
+  console.log(`  Saved ${spec.filename} (${(buf.length / 1024).toFixed(0)} KB)`)
 }
 
-let outfitRefPath = null;
+let outfitRefPath: string | null = null
 for (const spec of images) {
   try {
-    await generate(spec, spec.useOutfitRef ? outfitRefPath : null);
+    await generate(spec, spec.useOutfitRef ? outfitRefPath : null)
     if (spec.isOutfitPage) {
-      outfitRefPath = path.join(storyDir, OUTFIT_PAGE);
+      outfitRefPath = path.join(storyDir, OUTFIT_PAGE)
     }
-  } catch (e) { console.error(`  FAILED: ${e.message}`); }
-  await new Promise(r => setTimeout(r, 2000));
+  } catch (e) { console.error(`  FAILED: ${(e as Error).message}`) }
+  await new Promise((r) => setTimeout(r, 2000))
 }
-console.log('\nDone!');
+console.log('\nDone!')

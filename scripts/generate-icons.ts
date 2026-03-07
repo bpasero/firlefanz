@@ -1,3 +1,6 @@
+// © 2026 Benjamin Pasero. All rights reserved.
+// https://github.com/bpasero/firlefanz
+
 import sharp from 'sharp'
 import { mkdirSync } from 'fs'
 

@@ -1,6 +1,9 @@
+// © 2026 Benjamin Pasero. All rights reserved.
+// https://github.com/bpasero/firlefanz
+
 /**
  * Generates per-page audio files for a story using OpenAI TTS.
- * Usage: node scripts/generate-audio.mjs <story-id> [lang|all]
+ * Usage: npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]
  *
  * lang defaults to 'de'. Pass 'all' to generate for all available languages.
  * Audio files are saved as: public/stories/<id>/audio-<lang>-page-<N>.mp3
@@ -8,13 +11,14 @@
 
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { join } from 'path'
+import type { Story } from '../src/types/story.ts'
 
 const storyId = process.argv[2]
 const langArg = process.argv[3] ?? 'de'
 const voiceArg = process.argv[4] ?? null
 
 if (!storyId) {
-  console.error('Usage: node scripts/generate-audio.mjs <story-id> [lang|all] [voice]')
+  console.error('Usage: npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]')
   console.error('Voices: alloy, echo, fable, onyx, nova, shimmer')
   process.exit(1)
 }
@@ -26,7 +30,7 @@ if (!apiKey) {
     const env = readFileSync('.env', 'utf-8')
     const match = env.match(/OPENAI_API_KEY=(.+)/)
     if (match) apiKey = match[1].trim()
-  } catch {}
+  } catch { /* ignore */ }
 }
 if (!apiKey) { console.error('No OPENAI_API_KEY found'); process.exit(1) }
 
@@ -36,32 +40,31 @@ if (!existsSync(storyPath)) {
   process.exit(1)
 }
 
-const story = JSON.parse(readFileSync(storyPath, 'utf-8'))
+const story: Story = JSON.parse(readFileSync(storyPath, 'utf-8'))
 
-function getPageTexts(lang) {
+function getPageTexts(lang: string): string[] {
   if (lang === 'de') {
-    return story.pages.map(p => p.text.join(' '))
+    return story.pages.map((p) => p.text.join(' '))
   }
   const t = story.translations?.[lang]
   if (!t) throw new Error(`No translation for language: ${lang}`)
-  return t.pages.map(p => p.text.join(' '))
+  return t.pages.map((p) => p.text.join(' '))
 }
 
 const langs = langArg === 'all'
   ? ['de', ...Object.keys(story.translations ?? {})]
   : [langArg]
 
-// Voice selection: fable is a warm, calm male voice — great for storytelling
 const VOICE = voiceArg ?? 'fable'
 const MODEL = 'gpt-4o-mini-tts'
-const SPEED = 0.9  // slightly slower for young children
+const SPEED = 0.9
 
-const LANG_INSTRUCTIONS = {
+const LANG_INSTRUCTIONS: Record<string, string> = {
   de: 'Speak in German with a native German accent. You are a warm, calm storyteller reading a bedtime story to young children aged 3–6.',
   en: 'Speak in English with a native English accent. You are a warm, calm storyteller reading a bedtime story to young children aged 3–6.',
 }
 
-async function generateAudio(text, lang) {
+async function generateAudio(text: string, lang: string): Promise<Buffer> {
   const instructions = LANG_INSTRUCTIONS[lang] ?? `Speak in the language of the provided text with a native accent. You are a warm, calm storyteller reading a bedtime story to young children aged 3–6.`
   const res = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
@@ -69,13 +72,7 @@ async function generateAudio(text, lang) {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: MODEL,
-      voice: VOICE,
-      input: text,
-      speed: SPEED,
-      instructions,
-    }),
+    body: JSON.stringify({ model: MODEL, voice: VOICE, input: text, speed: SPEED, instructions }),
   })
   if (!res.ok) {
     const err = await res.text()
@@ -88,11 +85,11 @@ const outDir = join('public', 'stories', storyId)
 
 for (const lang of langs) {
   console.log(`\nGenerating audio for language: ${lang}`)
-  let pageTexts
+  let pageTexts: string[]
   try {
     pageTexts = getPageTexts(lang)
   } catch (e) {
-    console.error(`  ${e.message}, skipping`)
+    console.error(`  ${(e as Error).message}, skipping`)
     continue
   }
 
@@ -109,7 +106,7 @@ for (const lang of langs) {
       writeFileSync(outPath, audio)
       console.log(`saved (${(audio.length / 1024).toFixed(0)} KB)`)
     } catch (e) {
-      console.error(`error - ${e.message}`)
+      console.error(`error - ${(e as Error).message}`)
     }
   }
 }
