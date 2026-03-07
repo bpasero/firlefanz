@@ -103,6 +103,11 @@ function PageContent({ story, pageIndex, nightMode, language }: { story: Story; 
 export default function StoryReader({ story, onBack }: StoryReaderProps) {
   const [pageIndex, setPageIndex] = useState(0)
   const [narrating, setNarrating] = useState(false)
+  const [flip, setFlip] = useState<{
+    direction: 'forward' | 'back'
+    fromPage: number
+    toPage: number
+  } | null>(null)
   const bookRef = useRef<HTMLDivElement>(null)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -187,11 +192,19 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
   }, [])
 
   const turnPage = useCallback((direction: 'forward' | 'back') => {
+    if (flip) return
     if (direction === 'forward' && isLast) return
     if (direction === 'back' && isFirst) return
     const next = pageIndex + (direction === 'forward' ? 1 : -1)
-    setPageIndex(next)
-  }, [isFirst, isLast, pageIndex])
+    setFlip({ direction, fromPage: pageIndex, toPage: next })
+  }, [isFirst, isLast, pageIndex, flip])
+
+  const handleFlipEnd = useCallback(() => {
+    if (flip) {
+      setPageIndex(flip.toPage)
+      setFlip(null)
+    }
+  }, [flip])
 
   // Keep refs current for use inside audio/speech callbacks
   turnPageRef.current = turnPage
@@ -316,7 +329,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         className="w-full max-w-5xl cursor-pointer select-none relative z-10 flex-1 md:flex-none"
-        style={{ perspective: '2500px', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+        style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
       >
         <div
           className="relative rounded-xl sm:rounded-2xl overflow-hidden h-full"
@@ -330,7 +343,81 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
             WebkitTransform: 'translateZ(0)',
           }}
         >
-          <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} />
+          {flip ? (
+            <>
+              {/* Bottom page — target page revealed during flip */}
+              <PageContent story={story} pageIndex={flip.toPage} nightMode={nightMode} language={language} />
+              {/* Shadow cast by turning page onto bottom page */}
+              <div
+                className="absolute inset-0 bg-black pointer-events-none"
+                style={{
+                  zIndex: 25,
+                  animation: 'flipShadow 700ms ease-in-out forwards',
+                }}
+              />
+              {/* Flipping page */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  zIndex: 30,
+                  transformOrigin: flip.direction === 'forward' ? 'left center' : 'right center',
+                  transformStyle: 'preserve-3d',
+                  WebkitTransformStyle: 'preserve-3d' as never,
+                  animation: `${flip.direction === 'forward' ? 'flipForward' : 'flipBackward'} 700ms cubic-bezier(0.645, 0.045, 0.355, 1) forwards`,
+                  willChange: 'transform',
+                }}
+                onAnimationEnd={handleFlipEnd}
+              >
+                {/* Front face — current page content */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden' as never,
+                  }}
+                >
+                  <PageContent story={story} pageIndex={flip.fromPage} nightMode={nightMode} language={language} />
+                  {/* Fold crease shadow near hinge */}
+                  <div
+                    className="absolute top-0 bottom-0 pointer-events-none"
+                    style={{
+                      zIndex: 35,
+                      width: '5rem',
+                      ...(flip.direction === 'forward'
+                        ? { left: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.12), transparent)' }
+                        : { right: 0, background: 'linear-gradient(to left, rgba(0,0,0,0.12), transparent)' }),
+                      animation: 'foldGradient 700ms ease-in-out forwards',
+                    }}
+                  />
+                </div>
+                {/* Back face — page back texture */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden' as never,
+                    transform: 'rotateY(180deg)',
+                    background: nightMode
+                      ? 'linear-gradient(135deg, #2a2418, #1e1a12 50%, #252015)'
+                      : 'linear-gradient(135deg, #f5ead4, #fdf8ed 50%, #f0e4cc)',
+                  }}
+                >
+                  {/* Fold shadow on back face */}
+                  <div
+                    className="absolute top-0 bottom-0 pointer-events-none"
+                    style={{
+                      width: '6rem',
+                      ...(flip.direction === 'forward'
+                        ? { right: 0, background: 'linear-gradient(to left, rgba(0,0,0,0.18), transparent)' }
+                        : { left: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.18), transparent)' }),
+                    }}
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} />
+          )}
         </div>
       </div>
 

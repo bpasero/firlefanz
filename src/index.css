@@ -21,3 +21,29 @@ html, body {
     radial-gradient(ellipse at 20% 50%, rgba(255,248,230,0.3) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 50%, rgba(245,235,210,0.3) 0%, transparent 60%);
 }
+
+/* Page flip animations */
+@keyframes flipForward {
+  0% { transform: perspective(2500px) rotateY(0deg); }
+  100% { transform: perspective(2500px) rotateY(-180deg); }
+}
+
+@keyframes flipBackward {
+  0% { transform: perspective(2500px) rotateY(0deg); }
+  100% { transform: perspective(2500px) rotateY(180deg); }
+}
+
+/* Shadow cast on the page underneath during flip — peaks at midpoint */
+@keyframes flipShadow {
+  0% { opacity: 0; }
+  50% { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+
+/* Fold crease shadow — appears as page lifts */
+@keyframes foldGradient {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
