@@ -17,8 +17,8 @@ fs.mkdirSync(storyDir, { recursive: true })
 
 const S = "Children's book illustration, soft watercolor style, warm calming colors."
 const E = 'Gentle, cozy, dreamy atmosphere suitable for a bedtime story. No text in the image.'
-const F = 'Firlefanz is a small friendly green dragon/dinosaur creature with a slim, slender build'
-const P = 'Papalapapp is the same species as Firlefanz but taller and fatherly, with a normal slim build'
+const F = 'Firlefanz is a small friendly green dragon/dinosaur creature'
+const P = 'Papalapapp is the same species as Firlefanz but larger and fatherly'
 const W = 'Wölkchen is a small fluffy cloud-like creature with long floppy ears, soft white fur, and gentle eyes'
 const OUTFIT = 'Firlefanz wears a green hat, brown boots, and a warm jacket, holding a wooden walking stick. Papalapapp wears a scarf and gloves and carries a bag of cookies.'
 const OUTFIT_PAGE = 'page-4.png'
