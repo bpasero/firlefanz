@@ -108,6 +108,10 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
   const [narrating, setNarrating] = useState(false)
   const bookRef = useRef<HTMLDivElement>(null)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioFailedRef = useRef<Set<string>>(new Set())
+  const turnPageRef = useRef<((dir: 'forward' | 'back') => void) | null>(null)
+  const isLastRef = useRef(false)
   const { nightMode } = useNightMode()
   const { language } = useLanguage()
   const localized = localizeStory(story, language)
@@ -125,37 +129,64 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
     }
   }, [pageIndex, story])
 
-  // Speak the current page when narrating; cancel on cleanup / page change
+  // Narrate current page: prefer pre-generated audio file, fall back to Web Speech API
   useEffect(() => {
-    const synth = window.speechSynthesis
-    synth.cancel()
+    window.speechSynthesis.cancel()
+    audioRef.current?.pause()
     if (!narrating) return
 
-    const text = localized.pages[pageIndex].text.join(' ')
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = language === 'en' ? 'en-US' : 'de-DE'
-    utterance.rate = 0.88
+    const cacheKey = `${story.id}-${language}`
 
-    const speak = () => {
-      const voices = synth.getVoices()
-      const voice = voices.find((v) => v.lang.startsWith(language === 'en' ? 'en' : 'de'))
-      if (voice) utterance.voice = voice
-      synth.speak(utterance)
+    const speakFallback = () => {
+      const synth = window.speechSynthesis
+      const text = localizeStory(story, language).pages[pageIndex].text.join(' ')
+      const utterance = new SpeechSynthesisUtterance(text)
+      utterance.lang = language === 'en' ? 'en-US' : 'de-DE'
+      utterance.rate = 0.88
+      utterance.onend = () => { if (!isLastRef.current) turnPageRef.current?.('forward') }
+      const speak = () => {
+        const voices = synth.getVoices()
+        const voice = voices.find((v) => v.lang.startsWith(language === 'en' ? 'en' : 'de'))
+        if (voice) utterance.voice = voice
+        synth.speak(utterance)
+      }
+      if (synth.getVoices().length > 0) speak()
+      else synth.addEventListener('voiceschanged', speak, { once: true })
+      return () => synth.cancel()
     }
 
-    // Voices may not be loaded yet on first call
-    if (synth.getVoices().length > 0) {
-      speak()
-    } else {
-      synth.addEventListener('voiceschanged', speak, { once: true })
+    if (audioFailedRef.current.has(cacheKey)) {
+      const cleanup = speakFallback()
+      return cleanup
     }
 
-    return () => synth.cancel()
-  }, [pageIndex, narrating, language, localized.pages])
+    const audioUrl = `${base}stories/${story.id}/audio-${language}-page-${pageIndex + 1}.mp3`
+    const audio = new Audio(audioUrl)
+    audioRef.current = audio
 
-  // Cancel speech when leaving the reader
+    const handleEnded = () => { if (!isLastRef.current) turnPageRef.current?.('forward') }
+    audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('error', () => {
+      audioFailedRef.current.add(cacheKey)
+      audio.removeEventListener('ended', handleEnded)
+      speakFallback()
+    }, { once: true })
+
+    audio.play().catch(() => {})
+
+    return () => {
+      audio.pause()
+      audio.removeEventListener('ended', handleEnded)
+      window.speechSynthesis.cancel()
+    }
+  }, [pageIndex, narrating, language, story])
+
+  // Cancel narration when leaving the reader
   useEffect(() => {
-    return () => window.speechSynthesis.cancel()
+    return () => {
+      window.speechSynthesis.cancel()
+      audioRef.current?.pause()
+    }
   }, [])
 
   const turnPage = useCallback((direction: 'forward' | 'back') => {
@@ -172,6 +203,10 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       setTurnState(null)
     }, 800)
   }, [isFirst, isLast, pageIndex, turnState])
+
+  // Keep refs current for use inside audio/speech callbacks
+  turnPageRef.current = turnPage
+  isLastRef.current = isLast
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -247,7 +282,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       {/* Header */}
       <div className="w-full max-w-5xl mb-1.5 sm:mb-5 flex items-center justify-between relative z-10 gap-2">
         <button
-          onClick={() => { window.speechSynthesis.cancel(); onBack() }}
+          onClick={() => { window.speechSynthesis.cancel(); audioRef.current?.pause(); onBack() }}
           className="text-xs sm:text-sm font-medium transition-colors px-2.5 py-1.5 sm:px-3 rounded-full shrink-0"
           style={{
             fontFamily: "'Lora', serif",

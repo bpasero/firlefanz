@@ -120,6 +120,11 @@ Every Firlefanz story follows a consistent arc:
 - `node scripts/generate-pdf.mjs <story-id>` — generate downloadable PDF for a story
 - `node scripts/translate-stories.mjs [lang]` — translate all stories to target language (default: `en`) using GPT-4o-mini; adds `translations.<lang>` to each `story.json`; skips stories that already have that translation
 - `node scripts/generate-icons.mjs` — generate PWA icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`) from a cover image using Sharp
+- `node scripts/generate-audio.mjs <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`tts-1-hd`, speed 0.9); saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer)
+  - der-wolkenfluester → `fable` (warm British male)
+  - am-ende-der-welt → `onyx` (deep male)
+  - die-stadt-der-vergessenen-spielzeuge → `echo` (soft male)
+  - goldi-im-labyrinth → `alloy` (neutral)
 
 ## Adding a New Language
 
@@ -133,6 +138,7 @@ Every Firlefanz story follows a consistent arc:
 2. Create and run image generation script: `node scripts/generate-images-<slug>.mjs`
 3. Watermark images: `node scripts/watermark-images.mjs <id>`
 4. Generate PDF: `node scripts/generate-pdf.mjs <id>`
-5. Add story id to the `storyIds` array in `src/App.tsx`
-6. Remove from `drafts.json` if applicable
-7. Commit and push
+5. Generate audio: `node scripts/generate-audio.mjs <id> all`
+6. Add story id to the `storyIds` array in `src/App.tsx`
+7. Remove from `drafts.json` if applicable
+8. Commit and push
