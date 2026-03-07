@@ -134,11 +134,12 @@ Every Firlefanz story follows a consistent arc:
 
 ## Workflow for Adding a New Story
 
-1. Write `story.json` in `public/stories/<id>/`
-2. Create and run image generation script: `node scripts/generate-images-<slug>.mjs`
-3. Watermark images: `node scripts/watermark-images.mjs <id>`
-4. Generate PDF: `node scripts/generate-pdf.mjs <id>`
-5. Generate audio: `node scripts/generate-audio.mjs <id> all`
-6. Add story id to the `storyIds` array in `src/App.tsx`
-7. Remove from `drafts.json` if applicable
-8. Commit and push
+1. Write `story.json` in `public/stories/<id>/` (German base text)
+2. Translate to English: `node scripts/translate-stories.mjs en` (adds `translations.en` to `story.json`)
+3. Create and run image generation script: `node scripts/generate-images-<slug>.mjs`
+4. Watermark images: `node scripts/watermark-images.mjs <id>`
+5. Generate PDF: `node scripts/generate-pdf.mjs <id>`
+6. Generate audio for both languages: `node scripts/generate-audio.mjs <id> all`
+7. Add story id to the `storyIds` array in `src/App.tsx`
+8. Remove from `drafts.json` if applicable
+9. Commit and push
