@@ -45,3 +45,38 @@
 - Swipe support for touch, arrow keys for desktop
 - No bounce/overscroll on mobile
 - Tight spacing on mobile between book and nav buttons
+- Toggle buttons are small rounded pills: `rgba(255,255,255,0.4)` day / `rgba(255,255,255,0.12)` night, colour `#7c4a1e` day / `#e8d5b7` night
+
+## Features Added (not in original CLAUDE.md)
+
+### Night Mode (`src/context/NightModeContext.tsx`)
+- Defaults to OS `prefers-color-scheme`, persisted in `localStorage`
+- Toggle in library (top-right) and reader header
+- Day palette: bg `#f9e8c9→#d4a05a`, text `#7c4a1e`, page `#fdf8ed`
+- Night palette: bg `#1e1810→#12100c`, text `#e8d5b7`, page `#2a2418`
+
+### Multi-language (`src/context/LanguageContext.tsx`)
+- Defaults to browser language, persisted in `localStorage`; falls back to `de`
+- `SUPPORTED = ['de', 'en']` — add new codes here to enable more languages
+- Translations stored inline in `story.json` under `translations.<lang>`; German is always the base
+- `localizeStory(story, lang)` in `src/types/story.ts` returns title/teaser/pages in active language
+- Translate new stories: `node scripts/translate-stories.mjs [lang]` (uses GPT-4o-mini)
+
+### Audio Narration (`src/components/NarrationToggle.tsx`)
+- Web Speech API, no external dependency
+- Rate `0.88`, lang `de-DE` or `en-US` matching active language
+- Picks best matching installed voice; falls back to default
+- Toggle in reader header; cancels on page turn, back navigation, and unmount
+
+### PWA
+- Manifest: `public/manifest.json`, SW: `public/sw.js` (stale-while-revalidate)
+- Cache name `firlefanz-v1` — bump when deploying breaking changes
+- Icons at `public/icons/` — regenerate with `node scripts/generate-icons.mjs`
+- Registered in `src/main.tsx`
+
+### Analytics
+- Umami script tag in `index.html` (privacy-friendly, no cookies)
+
+### Performance
+- Adjacent page images preloaded in `StoryReader` on every page change
+- Book container has explicit `backgroundColor` to prevent white flicker during 3D flip on mobile
