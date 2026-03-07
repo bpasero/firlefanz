@@ -120,7 +120,7 @@ Every Firlefanz story follows a consistent arc:
 - `node scripts/generate-pdf.mjs <story-id>` — generate downloadable PDF for a story
 - `node scripts/translate-stories.mjs [lang]` — translate all stories to target language (default: `en`) using GPT-4o-mini; adds `translations.<lang>` to each `story.json`; skips stories that already have that translation
 - `node scripts/generate-icons.mjs` — generate PWA icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`) from a cover image using Sharp
-- `node scripts/generate-audio.mjs <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`tts-1-hd`, speed 0.9); saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer)
+- `node scripts/generate-audio.mjs <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`gpt-4o-mini-tts`, speed 0.9); saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer); language-specific `instructions` are passed to the API to ensure native accent (e.g. native German for `de`)
   - der-wolkenfluester → `fable` (warm British male)
   - am-ende-der-welt → `nova` (warm female)
   - die-stadt-der-vergessenen-spielzeuge → `fable` (warm British male)
