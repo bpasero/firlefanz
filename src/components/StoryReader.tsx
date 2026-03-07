@@ -75,10 +75,13 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
         />
 
         <div className="relative z-10">
-          {page.text.map((paragraph, i) => (
+          {page.text.map((paragraph, i) => {
+            const totalLength = page.text.join(' ').length
+            const isLong = totalLength > 450
+            return (
             <p
               key={i}
-              className="text-base sm:text-lg md:text-xl leading-relaxed mb-4 md:mb-5 last:mb-0"
+              className={`${isLong ? 'text-sm sm:text-base md:text-lg' : 'text-base sm:text-lg md:text-xl'} leading-relaxed ${isLong ? 'mb-3 md:mb-4' : 'mb-4 md:mb-5'} last:mb-0`}
               style={{
                 fontFamily: "'Lora', serif",
                 color: nightMode ? '#d4c4a8' : '#4a3520',
@@ -86,7 +89,8 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
             >
               {paragraph}
             </p>
-          ))}
+            )
+          })}
         </div>
 
         <div className="absolute bottom-3 right-4 md:bottom-6 md:right-8">
