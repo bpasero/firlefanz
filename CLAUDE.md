@@ -112,6 +112,11 @@ Every Firlefanz story follows a consistent arc:
 - `npm run lint` — lint with ESLint
 - `npm test` — run tests once
 - `npm run test:watch` — run tests in watch mode
+- `npm run test:e2e` — run Playwright UI smoke tests (reuses dev server if running)
+
+## Testing Policy
+
+**Always run `npm run test:e2e` after making changes to the UI** to verify nothing is broken. Fix any failures before considering the task done.
 
 ## Scripts
 
