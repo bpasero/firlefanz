@@ -5,6 +5,12 @@ html, body {
   overscroll-behavior: none;
 }
 
+/* iOS PWA: push content below transparent status bar */
+body {
+  padding-top: env(safe-area-inset-top);
+  background: #f9e8c9;
+}
+
 /* Page flip: forward (current page swings away to the left) */
 @keyframes flip-forward {
   0% {
