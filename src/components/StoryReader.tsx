@@ -264,7 +264,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
 
   return (
     <div
-      className="min-h-screen min-h-dvh flex flex-col items-center justify-center px-2 py-1.5 sm:p-4 relative overflow-hidden"
+      className="h-screen h-dvh flex flex-col items-center px-2 py-1.5 sm:p-4 relative overflow-hidden"
       style={{
         background: nightMode
           ? 'linear-gradient(170deg, #1e1810 0%, #1a1410 40%, #14100c 100%)'
@@ -338,7 +338,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
         onClick={handleBookClick}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="w-full max-w-5xl cursor-pointer select-none relative z-10 flex-1 md:flex-none"
+        className="w-full max-w-5xl cursor-pointer select-none relative z-10 flex-1 min-h-0"
         style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
       >
         <div
@@ -348,8 +348,6 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
             boxShadow: nightMode
               ? '0 12px 40px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(60,40,20,0.3)'
               : '0 12px 40px rgba(120,70,20,0.25), 0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(180,140,90,0.2)',
-            minHeight: 'min(calc(100dvh - 120px), 780px)',
-            maxHeight: '780px',
             WebkitTransform: 'translateZ(0)',
           }}
         >
