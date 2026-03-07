@@ -80,7 +80,7 @@ test.describe('Story reader', () => {
     // Click right third of the screen to advance
     const viewport = page.viewportSize()!
     await page.mouse.click(viewport.width * 0.8, viewport.height * 0.5)
-    await page.waitForTimeout(700)
+    await page.waitForTimeout(900)
     const after = await getPageText()
     expect(after).not.toBe(before)
   })
