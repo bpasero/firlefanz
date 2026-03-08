@@ -59,7 +59,7 @@ Every Firlefanz story follows a consistent arc:
 ### Global UI Features
 - **Night mode** — warm dark colour palette for bedtime reading; defaults to OS `prefers-color-scheme`, persisted in `localStorage`
 - **Language toggle** — DE/EN (cycles through `SUPPORTED` in `src/context/LanguageContext.tsx`); defaults to browser language, persisted in `localStorage`
-- **Audio narration** — Web Speech API reads each page aloud at rate 0.88; uses `de-DE`/`en-US` voice matching the active language; toggle in story reader header
+- **Audio narration** — pre-generated OpenAI TTS audio files (per-page MP3s) with `playbackRate = 1.2`; falls back to Web Speech API if audio file not found; toggle in story reader header
 - All three toggles share the same visual style (small rounded pill buttons)
 
 ### Story Data
