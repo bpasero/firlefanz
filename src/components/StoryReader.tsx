@@ -31,7 +31,7 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
         <img
           src={imageSrc}
           alt={`Seite ${pageIndex + 1}`}
-          className={`w-full h-full object-cover ${nightMode ? 'brightness-75' : ''}`}
+          className={`w-full h-full object-contain ${nightMode ? 'brightness-75' : ''}`}
         />
       </div>
 
