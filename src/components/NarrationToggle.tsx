@@ -2,6 +2,8 @@
 // https://github.com/bpasero/firlefanz
 
 import { useNightMode } from '../context/NightModeContext'
+import { useLanguage } from '../context/LanguageContext'
+import Tooltip from './Tooltip'
 
 interface Props {
   narrating: boolean
@@ -10,18 +12,26 @@ interface Props {
 
 export default function NarrationToggle({ narrating, onToggle }: Props) {
   const { nightMode } = useNightMode()
+  const { language } = useLanguage()
+
+  const bg = narrating
+    ? (nightMode ? 'rgba(180,140,90,0.35)' : 'rgba(180,140,90,0.4)')
+    : (nightMode ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.4)')
+  const hoverBg = narrating
+    ? (nightMode ? 'rgba(180,140,90,0.5)' : 'rgba(180,140,90,0.55)')
+    : (nightMode ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.6)')
 
   return (
+    <Tooltip label={narrating ? (language === 'en' ? 'Stop narration' : 'Vorlesen stoppen') : (language === 'en' ? 'Read aloud' : 'Vorlesen')}>
     <button
       onClick={onToggle}
       className="w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors"
       style={{
-        backgroundColor: narrating
-          ? (nightMode ? 'rgba(180,140,90,0.35)' : 'rgba(180,140,90,0.4)')
-          : (nightMode ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.4)'),
+        backgroundColor: bg,
         color: nightMode ? '#e8d5b7' : '#7c4a1e',
       }}
-      title={narrating ? 'Vorlesen stoppen' : 'Vorlesen'}
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hoverBg}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bg}
     >
       {narrating ? (
         // Speaker with sound waves
@@ -36,5 +46,6 @@ export default function NarrationToggle({ narrating, onToggle }: Props) {
         </svg>
       )}
     </button>
+    </Tooltip>
   )
 }

@@ -10,6 +10,7 @@ import { useMobileImages, getMobileSrc } from '../hooks/useMobileImages'
 import NightModeToggle from './NightModeToggle'
 import LanguageToggle from './LanguageToggle'
 import NarrationToggle from './NarrationToggle'
+import FullscreenToggle from './FullscreenToggle'
 
 const base = import.meta.env.BASE_URL
 
@@ -310,7 +311,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       </div>
 
       {/* Header */}
-      <div className="w-full max-w-5xl md:max-w-[90vw] mb-1.5 sm:mb-5 flex items-center justify-between relative z-10 gap-2">
+      <div className="w-full max-w-5xl md:max-w-[90vw] mb-1.5 sm:mb-5 flex items-center justify-between relative z-20 gap-2">
         <button
           onClick={() => { window.speechSynthesis.cancel(); audioRef.current?.pause(); onBack() }}
           className="text-xs sm:text-sm font-medium transition-colors px-2.5 py-1.5 sm:px-3 rounded-full shrink-0"
@@ -337,6 +338,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
           <NarrationToggle narrating={narrating} onToggle={() => setNarrating((n) => !n)} />
           <LanguageToggle />
           <NightModeToggle />
+          <FullscreenToggle />
           <span
             className="text-xs sm:text-sm px-2.5 py-1.5 sm:px-3 rounded-full whitespace-nowrap"
             style={{
