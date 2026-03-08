@@ -154,7 +154,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       const text = localizeStory(story, language).pages[pageIndex].text.join(' ')
       const utterance = new SpeechSynthesisUtterance(text)
       utterance.lang = language === 'en' ? 'en-US' : 'de-DE'
-      utterance.rate = 0.88
+      utterance.rate = 1.06
       utterance.onend = () => { if (!isLastRef.current) turnPageRef.current?.('forward') }
       const speak = () => {
         const voices = synth.getVoices()
@@ -184,6 +184,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       speakFallback()
     }, { once: true })
 
+    audio.playbackRate = 1.2
     audio.play().catch(() => {})
 
     return () => {
