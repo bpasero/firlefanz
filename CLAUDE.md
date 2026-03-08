@@ -52,8 +52,8 @@ Every Firlefanz story follows a consistent arc:
 - Adjacent page images preloaded for smooth page turns
 - Navigation: click left/right thirds, arrow keys, swipe left/right on touch, or nav buttons
 - Overscroll bounce disabled to prevent accidental navigation
-- **No scrollbars** — the reader must never show scrollbars, neither on the page itself nor on the text panel; the entire layout fits within the viewport (`h-dvh`); text uses dynamic font scaling (`useLayoutEffect` overflow detection with progressive `FONT_STEPS`) to shrink until it fits
-- Fully responsive with dynamic viewport height (`dvh`) for proper mobile sizing
+- **No scrollbars** — the reader must never show scrollbars, neither on the page itself nor on the text panel; the reader uses `fixed inset-0` positioning to lock to the viewport; text uses dynamic font scaling (`useLayoutEffect` overflow detection with progressive `FONT_STEPS`) to shrink until it fits
+- **Mobile**: compact spacing — smaller padding (`px-1.5 py-1`), smaller nav buttons (`w-9 h-9`), tighter text padding (`p-3`); mobile e2e tests verify no scrolling
 - Header contains: back button, story title, narration toggle, language toggle, night mode toggle, page counter
 
 ### URL Hash Routing
