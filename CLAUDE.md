@@ -139,6 +139,7 @@ Every Firlefanz story follows a consistent arc:
   - am-ende-der-welt → `nova` (warm female)
   - die-stadt-der-vergessenen-spielzeuge → `fable` (warm British male)
   - goldi-im-labyrinth → `nova` (warm female)
+  - das-tal-der-sanften-riesen → `shimmer` (warm female)
   - das-rockfestival → `fable` (warm British male)
   - der-zauber-zoo → `fable` (warm British male)
 
