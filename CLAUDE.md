@@ -56,6 +56,13 @@ Every Firlefanz story follows a consistent arc:
 - Fully responsive with dynamic viewport height (`dvh`) for proper mobile sizing
 - Header contains: back button, story title, narration toggle, language toggle, night mode toggle, page counter
 
+### URL Hash Routing
+- Story and page state is persisted in the URL hash: `#/story-id/page-number` (1-based)
+- Reloading the page restores the active story and page position
+- Browser back/forward buttons navigate between stories/pages via `hashchange` listener
+- Going back to the library clears the hash
+- No router dependency — uses `window.location.hash` directly
+
 ### Global UI Features
 - **Night mode** — warm dark colour palette for bedtime reading; defaults to OS `prefers-color-scheme`, persisted in `localStorage`
 - **Language toggle** — DE/EN (cycles through `SUPPORTED` in `src/context/LanguageContext.tsx`); defaults to browser language, persisted in `localStorage`

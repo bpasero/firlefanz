@@ -16,7 +16,9 @@ const base = import.meta.env.BASE_URL
 
 interface StoryReaderProps {
   story: Story
+  initialPage?: number
   onBack: () => void
+  onPageChange?: (pageIndex: number) => void
 }
 
 
@@ -127,8 +129,8 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
   )
 }
 
-export default function StoryReader({ story, onBack }: StoryReaderProps) {
-  const [pageIndex, setPageIndex] = useState(0)
+export default function StoryReader({ story, initialPage = 0, onBack, onPageChange }: StoryReaderProps) {
+  const [pageIndex, setPageIndex] = useState(initialPage)
   const [narrating, setNarrating] = useState(false)
   const [flip, setFlip] = useState<{
     direction: 'forward' | 'back'
@@ -231,9 +233,10 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
   const handleFlipEnd = useCallback(() => {
     if (flip) {
       setPageIndex(flip.toPage)
+      onPageChange?.(flip.toPage)
       setFlip(null)
     }
-  }, [flip])
+  }, [flip, onPageChange])
 
   // Keep refs current for use inside audio/speech callbacks
   turnPageRef.current = turnPage
