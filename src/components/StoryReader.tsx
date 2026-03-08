@@ -81,7 +81,7 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
       {/* Right page — text */}
       <div
         ref={textContainerRef}
-        className="h-3/5 md:h-auto md:w-1/2 p-5 sm:p-8 md:p-12 flex flex-col paper-texture relative overflow-hidden"
+        className="h-3/5 md:h-auto md:w-1/2 p-3 sm:p-8 md:p-12 flex flex-col paper-texture relative overflow-hidden"
         style={{
           background: nightMode
             ? 'linear-gradient(145deg, #2a2418 0%, #241e14 40%, #1e1a12 100%)'
@@ -286,7 +286,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
 
   return (
     <div
-      className="h-screen h-dvh flex flex-col items-center px-2 py-1.5 sm:p-4 relative overflow-hidden"
+      className="fixed inset-0 flex flex-col items-center px-1.5 py-1 sm:p-4 overflow-hidden"
       style={{
         background: nightMode
           ? 'linear-gradient(170deg, #1e1810 0%, #1a1410 40%, #14100c 100%)'
@@ -314,7 +314,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
       </div>
 
       {/* Header */}
-      <div className="w-full max-w-5xl md:max-w-[90vw] mb-1.5 sm:mb-5 flex items-center justify-between relative z-20 gap-2">
+      <div className="w-full max-w-5xl md:max-w-[90vw] mb-1 sm:mb-5 flex items-center justify-between relative z-20 gap-2">
         <button
           onClick={() => { window.speechSynthesis.cancel(); audioRef.current?.pause(); onBack() }}
           className="text-xs sm:text-sm font-medium transition-colors px-2.5 py-1.5 sm:px-3 rounded-full shrink-0"
@@ -453,11 +453,11 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
       </div>
 
       {/* Navigation — larger touch targets on mobile */}
-      <div className="mt-1.5 sm:mt-6 flex items-center gap-6 sm:gap-8 relative z-10">
+      <div className="mt-1 sm:mt-6 flex items-center gap-6 sm:gap-8 relative z-10">
         <button
           onClick={() => turnPage('back')}
           disabled={isFirst}
-          className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-xl sm:text-lg"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-lg sm:text-lg"
           style={{
             backgroundColor: btnBg,
             color: btnColor,
@@ -470,7 +470,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
         <button
           onClick={() => turnPage('forward')}
           disabled={isLast}
-          className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-xl sm:text-lg"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-lg sm:text-lg"
           style={{
             backgroundColor: btnBg,
             color: btnColor,
