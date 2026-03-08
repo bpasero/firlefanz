@@ -27,6 +27,7 @@ Every Firlefanz story follows a consistent arc:
 - **Warm & safe**: Even uncertain or mysterious moments resolve into happy, friendly encounters.
 - **In German**: All story text must be written in German. Simple, clear German suitable for young children.
 - **Age-appropriate**: Language and themes for children aged 3–6. Simple sentences, gentle pacing, read-aloud friendly.
+- **Length limit**: Total story text per language must not exceed **4096 characters** (OpenAI TTS input limit). The entire story is narrated in a single TTS call for consistent tone.
 
 ## App Layout
 
@@ -133,7 +134,7 @@ Every Firlefanz story follows a consistent arc:
 - `npx tsx scripts/generate-pdf.ts <story-id>` — generate downloadable PDF for a story
 - `npx tsx scripts/translate-stories.ts [lang]` — translate all stories to target language (default: `en`) using GPT-4o-mini; adds `translations.<lang>` to each `story.json`; skips stories that already have that translation
 - `npx tsx scripts/generate-icons.ts` — generate PWA icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`) from a cover image using Sharp
-- `npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`gpt-4o-mini-tts`, speed 0.9); saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer); language-specific `instructions` are passed to the API to ensure native accent (e.g. native German for `de`)
+- `npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`gpt-4o-mini-tts`, speed 1.0); the entire story is narrated in a single TTS call for consistent tone, then split into per-page files using Whisper word-level timestamps + ffmpeg; saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer); requires `ffmpeg` installed locally
   - der-wolkenfluester → `fable` (warm British male)
   - am-ende-der-welt → `nova` (warm female)
   - die-stadt-der-vergessenen-spielzeuge → `fable` (warm British male)
