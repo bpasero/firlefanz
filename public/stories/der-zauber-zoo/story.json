@@ -1,0 +1,177 @@
+{
+  "id": "der-zauber-zoo",
+  "title": "Der Zauber-Zoo",
+  "teaser": "Firlefanz hat von einem magischen Zoo gehört, in dem die Tiere freiwillig leben. Er macht sich auf die Reise zum Schlummersee!",
+  "coverImage": "/stories/der-zauber-zoo/cover.png",
+  "prompt": "Firlefanz hears about a magical zoo at the edge of Schlummersee, where animals live freely because the gentle tortoise zookeeper Schildfried tells them the best bedtime stories.",
+  "pages": [
+    {
+      "text": [
+        "Firlefanz wachte auf und rieb sich die Augen. Er hatte etwas Wunderbares geträumt: eine Giraffe, die gesungen hatte. Eine richtige Melodie, ganz sanft und warm.",
+        "\"Gibt es so etwas wirklich?\", murmelte Firlefanz und schaute aus dem Fenster."
+      ],
+      "image": "/stories/der-zauber-zoo/page-1.png"
+    },
+    {
+      "text": [
+        "In der Küche machte sich Firlefanz ein Honigbrot und eine warme Milch. Dabei erinnerte er sich: Ein Schmetterling hatte ihm einmal von einem Zoo erzählt. Einem Zoo, in dem die Tiere singen, malen und stricken.",
+        "\"Der Zauber-Zoo am Schlummersee\", flüsterte Firlefanz. \"Den muss ich finden.\""
+      ],
+      "image": "/stories/der-zauber-zoo/page-2.png"
+    },
+    {
+      "text": [
+        "Firlefanz rannte zu Papalapapp. Der goss gerade seine Blumen und summte ein Lied.",
+        "\"Papalapapp, kennst du den Zauber-Zoo am Schlummersee?\"",
+        "Papalapapp stellte die Gießkanne ab und lächelte. \"Natürlich! Man muss über die Kicherberge und durch den Flüsterwald. Es ist ein weiter Weg.\" Er nahm seinen Schal. \"Ich komme mit.\""
+      ],
+      "image": "/stories/der-zauber-zoo/page-3.png"
+    },
+    {
+      "text": [
+        "Firlefanz zog sich warm an: den grünen Hut, die dicken Stiefel und die kuschelige Jacke. Den Wanderstock nahm er auch mit.",
+        "Papalapapp packte eine Tüte Kekse ein. \"Für unterwegs\", sagte er und zwinkerte. \"Und vielleicht mögen die Tiere im Zoo auch Kekse.\""
+      ],
+      "image": "/stories/der-zauber-zoo/page-4.png"
+    },
+    {
+      "text": [
+        "Sie wanderten los. Über sieben Meere, sieben Wüsten, sieben hohe Berge, sieben Flüsse, sieben Wälder und sieben blühende Wiesen.",
+        "Dann kamen sie zu den Kicherbergen. Bei jedem Schritt kicherten die Steine unter ihren Füßen. Firlefanz musste so sehr lachen, dass er sich auf einen Felsen setzen musste — und der Felsen kicherte auch!"
+      ],
+      "image": "/stories/der-zauber-zoo/page-5.png"
+    },
+    {
+      "text": [
+        "Hinter den Kicherbergen lag der Flüsterwald. Die Bäume hatten silberne Blätter, die leise Geheimnisse flüsterten.",
+        "\"Geradeaus\", wisperte eine alte Eiche. \"Immer dem Leuchten folgen.\" Firlefanz und Papalapapp gingen still durch den Wald, bis sie am anderen Ende ein sanftes Schimmern sahen."
+      ],
+      "image": "/stories/der-zauber-zoo/page-6.png"
+    },
+    {
+      "text": [
+        "Da lag er: der Schlummersee. Das Wasser leuchtete sanft, als wäre warme Milch darin. Am Ufer stand ein altes Holzschild: \"Willkommen, wenn du magst.\"",
+        "Dahinter lag der Zauber-Zoo. Aber es gab keine Zäune. Keine Käfige. Nur sanfte Wege zwischen Bäumen und Blumenwiesen."
+      ],
+      "image": "/stories/der-zauber-zoo/page-7.png"
+    },
+    {
+      "text": [
+        "Als Erstes trafen sie Melodina, eine Giraffe mit einem langen, schimmernden Hals. Sie summte ein Schlaflied, und ihr Hals vibrierte dabei wie eine Stimmgabel.",
+        "\"Das ist die Giraffe aus meinem Traum!\", rief Firlefanz leise. Melodina beugte ihren langen Hals herunter und summte ihm zur Begrüßung eine kleine Melodie."
+      ],
+      "image": "/stories/der-zauber-zoo/page-8.png"
+    },
+    {
+      "text": [
+        "Dann kam Brummbär Bruno angetrottet, ein dicker, gemütlicher Bär. Er hatte Farbe an den Pfoten und malte gerade ein Bild von Wolken und Mondschein.",
+        "\"Er malt nur Wolken und Monde\", flüsterte eine freundliche Schlange, die neben ihnen auftauchte. Das war die Schlummerschlange. Sie strickte winzige Decken für Tiere, die froren."
+      ],
+      "image": "/stories/der-zauber-zoo/page-9.png"
+    },
+    {
+      "text": [
+        "\"Willkommen im Zauber-Zoo!\", sagte eine tiefe, langsame Stimme. Vor ihnen stand Herr Schildfried, eine uralte Schildkröte mit einer kleinen Brille auf der Nase.",
+        "\"Ich bin der Wärter hier. Aber eigentlich passe ich auf niemanden auf. Die Tiere leben hier, weil sie es mögen.\" Er lächelte. \"Und weil ich abends die besten Geschichten erzähle.\""
+      ],
+      "image": "/stories/der-zauber-zoo/page-10.png"
+    },
+    {
+      "text": [
+        "Als die Sonne unterging, leuchtete der Schlummersee in sanftem Gold. Alle Tiere versammelten sich um Herrn Schildfried. Melodina legte sich ins Gras, Bruno stellte seine Pinsel weg, und die Schlummerschlange rollte sich gemütlich zusammen.",
+        "Herr Schildfried begann zu erzählen. Seine Stimme war so warm und ruhig, dass sogar Papalapapp die Augen zufielen."
+      ],
+      "image": "/stories/der-zauber-zoo/page-11.png"
+    },
+    {
+      "text": [
+        "Firlefanz lehnte sich an Papalapapp und gähnte. \"Das war der schönste Zoo der Welt\", murmelte er.",
+        "Melodina summte ihnen ein Abschiedslied, und Herr Schildfried winkte langsam mit seiner alten Pfote. \"Kommt bald wieder. Es gibt noch so viele Geschichten.\"",
+        "Auf dem Heimweg schlief Firlefanz auf Papalapapps Rücken ein. Und über dem Schlummersee leuchteten die Sterne wie kleine Nachtlichter, nur für ihn."
+      ],
+      "image": "/stories/der-zauber-zoo/page-12.png"
+    }
+  ],
+  "translations": {
+    "en": {
+      "title": "The Magic Zoo",
+      "teaser": "Firlefanz has heard of a magical zoo where the animals live willingly. He sets off on a journey to the Dream Lake!",
+      "pages": [
+        {
+          "text": [
+            "Firlefanz woke up and rubbed his eyes. He had dreamed something wonderful: a giraffe that sang. A real melody, soft and warm.",
+            "\"Does such a thing really exist?\" murmured Firlefanz as he looked out the window."
+          ]
+        },
+        {
+          "text": [
+            "In the kitchen, Firlefanz made himself a honey bread and warm milk. While doing so, he remembered: A butterfly once told him about a zoo. A zoo where the animals sing, paint, and knit.",
+            "\"The Magic Zoo at Dream Lake,\" whispered Firlefanz. \"I must find it.\""
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz ran to Papalapapp. He was watering his flowers and humming a song.",
+            "\"Papalapapp, do you know the Magic Zoo at Dream Lake?\"",
+            "Papalapapp set down the watering can and smiled. \"Of course! You have to go over the Giggle Mountains and through the Whispering Forest. It's a long way.\" He took his scarf. \"I'll come with you.\""
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz dressed warmly: the green hat, the thick boots, and the cozy jacket. He took his walking stick with him too.",
+            "Papalapapp packed a bag of cookies. \"For the journey,\" he said with a wink. \"And maybe the animals in the zoo like cookies too.\""
+          ]
+        },
+        {
+          "text": [
+            "They set off on their journey. Over seven seas, seven deserts, seven high mountains, seven rivers, seven forests, and seven blooming meadows.",
+            "Then they came to the Giggle Mountains. With every step, the stones beneath their feet giggled. Firlefanz laughed so hard that he had to sit on a rock — and the rock giggled too!"
+          ]
+        },
+        {
+          "text": [
+            "Behind the Giggle Mountains lay the Whispering Forest. The trees had silver leaves that whispered secrets softly.",
+            "\"Straight ahead,\" whispered an old oak tree. \"Always follow the glow.\" Firlefanz and Papalapapp walked quietly through the forest until they saw a gentle shimmer at the other end."
+          ]
+        },
+        {
+          "text": [
+            "There it was: the Dream Lake. The water glowed softly, as if warm milk was in it. On the shore stood an old wooden sign: \"Welcome, if you like.\"",
+            "Behind it lay the Magic Zoo. But there were no fences. No cages. Just gentle paths between trees and flower meadows."
+          ]
+        },
+        {
+          "text": [
+            "First, they met Melodina, a giraffe with a long, shimmering neck. She was humming a lullaby, and her neck vibrated like a tuning fork.",
+            "\"That's the giraffe from my dream!\" whispered Firlefanz. Melodina bent her long neck down and greeted him with a little melody."
+          ]
+        },
+        {
+          "text": [
+            "Then Brummbär Bruno came trotting along, a big, cozy bear. He had paint on his paws and was painting a picture of clouds and moonlight.",
+            "\"He only paints clouds and moons,\" whispered a friendly snake that appeared beside them. That was the Dream Snake. She knitted tiny blankets for animals that were cold."
+          ]
+        },
+        {
+          "text": [
+            "\"Welcome to the Magic Zoo!\" said a deep, slow voice. In front of them stood Mr. Schildfried, an ancient turtle with a small pair of glasses on his nose.",
+            "\"I am the keeper here. But actually, I don't watch over anyone. The animals live here because they like it.\" He smiled. \"And because I tell the best stories in the evening.\""
+          ]
+        },
+        {
+          "text": [
+            "As the sun set, the Dream Lake glowed in soft gold. All the animals gathered around Mr. Schildfried. Melodina lay down in the grass, Bruno put away his brushes, and the Dream Snake curled up comfortably.",
+            "Mr. Schildfried began to tell stories. His voice was so warm and calm that even Papalapapp's eyes began to close."
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz leaned against Papalapapp and yawned. \"That was the most beautiful zoo in the world,\" he murmured.",
+            "Melodina hummed them a goodbye song, and Mr. Schildfried waved slowly with his old paw. \"Come back soon. There are still so many stories.\"",
+            "On the way home, Firlefanz fell asleep on Papalapapp's back. And above the Dream Lake, the stars shone like little night lights, just for him."
+          ]
+        }
+      ]
+    }
+  }
+}

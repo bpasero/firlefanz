@@ -140,6 +140,7 @@ Every Firlefanz story follows a consistent arc:
   - die-stadt-der-vergessenen-spielzeuge → `fable` (warm British male)
   - goldi-im-labyrinth → `nova` (warm female)
   - das-rockfestival → `fable` (warm British male)
+  - der-zauber-zoo → `fable` (warm British male)
 
 ## Adding a New Language
 
