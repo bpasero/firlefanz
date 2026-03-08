@@ -1,7 +1,7 @@
 // © 2026 Benjamin Pasero. All rights reserved.
 // https://github.com/bpasero/firlefanz
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react'
 import type { Story } from '../types/story'
 import { localizeStory } from '../types/story'
 import { useNightMode } from '../context/NightModeContext'
@@ -19,10 +19,29 @@ interface StoryReaderProps {
 }
 
 
+const FONT_STEPS = [1.25, 1.125, 1, 0.9375, 0.875, 0.8125, 0.75] // rem: xl, lg, base, down to xs
+
 function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { story: Story; pageIndex: number; nightMode: boolean; language: string; mobileImages: boolean }) {
   const localized = localizeStory(story, language)
   const page = localized.pages[pageIndex]
   const imageSrc = `${base}${getMobileSrc(page.image, mobileImages).replace(/^\//, '')}`
+  const textContainerRef = useRef<HTMLDivElement>(null)
+  const [fontStep, setFontStep] = useState(0)
+
+  // Reset font step when page or language changes
+  useEffect(() => { setFontStep(0) }, [pageIndex, language])
+
+  // Shrink font until text fits without overflow
+  useLayoutEffect(() => {
+    const container = textContainerRef.current
+    if (!container) return
+    if (container.scrollHeight > container.clientHeight && fontStep < FONT_STEPS.length - 1) {
+      setFontStep((s) => s + 1)
+    }
+  }, [fontStep, pageIndex, language])
+
+  const fontSize = FONT_STEPS[fontStep]
+
   return (
     <div className="absolute inset-0 flex flex-col md:flex-row">
       {/* Left page — illustration */}
@@ -58,7 +77,8 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
 
       {/* Right page — text */}
       <div
-        className="h-3/5 md:h-auto md:w-1/2 p-5 sm:p-8 md:p-12 flex flex-col justify-center paper-texture relative overflow-y-auto"
+        ref={textContainerRef}
+        className="h-3/5 md:h-auto md:w-1/2 p-5 sm:p-8 md:p-12 flex flex-col paper-texture relative overflow-hidden"
         style={{
           background: nightMode
             ? 'linear-gradient(145deg, #2a2418 0%, #241e14 40%, #1e1a12 100%)'
@@ -74,23 +94,20 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
           }}
         />
 
-        <div className="relative z-10">
-          {page.text.map((paragraph, i) => {
-            const totalLength = page.text.join(' ').length
-            const isLong = totalLength > 450
-            return (
+        <div className="relative z-10 my-auto">
+          {page.text.map((paragraph, i) => (
             <p
               key={i}
-              className={`${isLong ? 'text-sm sm:text-base md:text-lg' : 'text-base sm:text-lg md:text-xl'} leading-relaxed ${isLong ? 'mb-3 md:mb-4' : 'mb-4 md:mb-5'} last:mb-0`}
+              className="leading-relaxed mb-4 last:mb-0"
               style={{
                 fontFamily: "'Lora', serif",
+                fontSize: `${fontSize}rem`,
                 color: nightMode ? '#d4c4a8' : '#4a3520',
               }}
             >
               {paragraph}
             </p>
-            )
-          })}
+          ))}
         </div>
 
         <div className="absolute bottom-3 right-4 md:bottom-6 md:right-8">
@@ -293,7 +310,7 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
       </div>
 
       {/* Header */}
-      <div className="w-full max-w-5xl mb-1.5 sm:mb-5 flex items-center justify-between relative z-10 gap-2">
+      <div className="w-full max-w-5xl md:max-w-[90vw] mb-1.5 sm:mb-5 flex items-center justify-between relative z-10 gap-2">
         <button
           onClick={() => { window.speechSynthesis.cancel(); audioRef.current?.pause(); onBack() }}
           className="text-xs sm:text-sm font-medium transition-colors px-2.5 py-1.5 sm:px-3 rounded-full shrink-0"
@@ -339,11 +356,11 @@ export default function StoryReader({ story, onBack }: StoryReaderProps) {
         onClick={handleBookClick}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="w-full max-w-5xl cursor-pointer select-none relative z-10 flex-1 min-h-0 md:flex md:items-center"
+        className="w-full max-w-5xl md:max-w-[90vw] cursor-pointer select-none relative z-10 flex-1 min-h-0"
         style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
       >
         <div
-          className="relative rounded-xl sm:rounded-2xl overflow-hidden h-full md:h-auto md:w-full md:aspect-[3/1] md:max-h-full"
+          className="relative rounded-xl sm:rounded-2xl overflow-hidden h-full"
           style={{
             backgroundColor: nightMode ? '#1e1a12' : '#fdf8ed',
             boxShadow: nightMode

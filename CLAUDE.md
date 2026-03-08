@@ -45,14 +45,14 @@ Every Firlefanz story follows a consistent arc:
 - Language toggle (DE/EN) and night mode toggle in the top-right corner
 
 ### Story Reader
-- **Desktop**: Open book layout — illustration on the left page, text on the right page, with a spine divider
+- **Desktop**: Open book layout — illustration on the left page, text on the right page, with a spine divider; book uses 90vw width on desktop (`md:max-w-[90vw]`) to fill the screen like a real printed book; images use `object-cover` to fill the page edge-to-edge
 - **Mobile**: Stacked layout — illustration on top, text below, with a horizontal divider
 - Paper-textured text page with page numbers, corner fold detail (desktop)
 - Page turn animation (3D flip with shadows) when navigating
 - Adjacent page images preloaded for smooth page turns
 - Navigation: click left/right thirds, arrow keys, swipe left/right on touch, or nav buttons
 - Overscroll bounce disabled to prevent accidental navigation
-- **No scrollbars** — the reader must never show scrollbars, neither on the page itself nor on the text panel; the entire layout fits within the viewport (`h-dvh`); if text is too long, scale font size down rather than allowing overflow
+- **No scrollbars** — the reader must never show scrollbars, neither on the page itself nor on the text panel; the entire layout fits within the viewport (`h-dvh`); text uses dynamic font scaling (`useLayoutEffect` overflow detection with progressive `FONT_STEPS`) to shrink until it fits
 - Fully responsive with dynamic viewport height (`dvh`) for proper mobile sizing
 - Header contains: back button, story title, narration toggle, language toggle, night mode toggle, page counter
 
