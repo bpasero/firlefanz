@@ -115,8 +115,8 @@ async function getWordTimestamps(audioPath: string): Promise<WhisperWord[]> {
     const err = await res.text()
     throw new Error(`Whisper API error: ${res.status} ${err}`)
   }
-  const data = await res.json()
-  return data.words as WhisperWord[]
+  const data = await res.json() as { words: WhisperWord[] }
+  return data.words
 }
 
 function normalizeForMatching(text: string): string {
