@@ -81,12 +81,7 @@ function App() {
       if (story) {
         setActiveStory(story)
         const page = Math.min(parsed.page, story.pages.length - 1)
-        // Only update initialPage (and remount StoryReader via key change) when the
-        // page comes from real browser back/forward navigation — not from our own
-        // handlePageChange calls, which already update pageRef before setting the hash.
-        if (page !== pageRef.current) {
-          setInitialPage(page)
-        }
+        setInitialPage(page)
         pageRef.current = page
       }
     }
