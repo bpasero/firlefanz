@@ -9,12 +9,12 @@
 </p>
 
 <p align="center">
-  <a href="https://bpasero.github.io/firlefanz/">Live App</a>
+  <a href="https://firlefanz.li">Live App</a>
 </p>
 
 ---
 
-**Firlefanz** is a dragon/dinosaur-like character who lives in a small house in a small village, next to his father **Papalapapp**. Together they embark on epic journeys — over 7 seas, 7 deserts, 7 mountains, 7 rivers, and 7 forests — to discover fantastical places, make new friends, and return home just in time for bed.
+**Firlefanz** is a dragon/dinosaur-like character (no specific gender) who lives in a small house in a small village, next to **Papalapapp**. Together they embark on epic journeys — over 7 seas, 7 deserts, 7 mountains, 7 rivers, and 7 forests — to discover fantastical places, make new friends, and return home just in time for bed.
 
 The app presents pre-generated illustrated stories in a kids' book format, complete with audio narration, page-turn animations, and a cozy bookshelf library. Every story is designed to calm young listeners (ages 3–6) and guide them gently to sleep.
 
