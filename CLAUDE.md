@@ -145,9 +145,9 @@ Playwright projects:
 - `npx tsx scripts/watermark-images.ts [story-id]` — watermark images (EXIF + steganography); all stories if no id given
 - `npx tsx scripts/compress-images.ts [story-id]` — generate compressed mobile WebP variants (`<name>-mobile.webp`) alongside each PNG; max 800px wide, WebP quality 82 (~30–55 KB vs ~3.8 MB originals); served automatically on narrow viewports (≤768px) or slow connections via `src/hooks/useMobileImages.ts`
 - `npx tsx scripts/generate-pdf.ts <story-id>` — generate downloadable PDF for a story
-- `npx tsx scripts/translate-stories.ts [lang]` — translate all stories to target language (default: `en`) using GPT-4o-mini; adds `translations.<lang>` to each `story.json`; skips stories that already have that translation
+- `npx tsx scripts/translate-stories.ts [lang]` — translate all stories to target language (default: `en`) using GPT-4o-mini; adds `translations.<lang>` to each `story.json`; skips stories that already have that translation; to force a retranslation, remove the existing `translations.<lang>` block from `story.json` first
 - `npx tsx scripts/generate-icons.ts` — generate PWA icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`) from a cover image using Sharp
-- `npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`gpt-4o-mini-tts`, speed 1.0); the entire story is narrated in a single TTS call for consistent tone, then split into per-page files using Whisper word-level timestamps + ffmpeg; saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer); requires `ffmpeg` installed locally
+- `npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`gpt-4o-mini-tts`, speed 1.0); the entire story is narrated in a single TTS call for consistent tone, then split into per-page files using Whisper word-level timestamps + ffmpeg; saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer); requires `ffmpeg` installed locally; **skips pages that already exist** — delete existing MP3s first if regenerating after a text change
   - der-wolkenfluester → `fable` (warm British male)
   - am-ende-der-welt → `nova` (warm female)
   - die-stadt-der-vergessenen-spielzeuge → `fable` (warm British male)
@@ -166,12 +166,13 @@ Playwright projects:
 ## Workflow for Adding a New Story
 
 1. Write `story.json` in `public/stories/<id>/` (German base text)
-2. Translate to English: `npx tsx scripts/translate-stories.ts en` (adds `translations.en` to `story.json`)
-3. Create and run image generation script: `npx tsx scripts/generate-images-<slug>.ts`
-4. Watermark images: `npx tsx scripts/watermark-images.ts <id>`
-5. Generate mobile WebP variants: `npx tsx scripts/compress-images.ts <id>`
-6. Generate PDF: `npx tsx scripts/generate-pdf.ts <id>`
-7. Generate audio for both languages: `npx tsx scripts/generate-audio.ts <id> all`
-8. Add story id to the `storyIds` array in `src/App.tsx`
-9. Remove from `drafts.json` if applicable
-10. Commit and push
+2. Verify character count stays under 4096: `node -e "const s=require('./public/stories/<id>/story.json');console.log(s.pages.map(p=>p.text.join(' ')).join(' ').length)"`
+3. Translate to English: `npx tsx scripts/translate-stories.ts en` (adds `translations.en` to `story.json`)
+4. Create and run image generation script: `npx tsx scripts/generate-images-<slug>.ts`
+5. Watermark images: `npx tsx scripts/watermark-images.ts <id>`
+6. Generate mobile WebP variants: `npx tsx scripts/compress-images.ts <id>`
+7. Generate PDF: `npx tsx scripts/generate-pdf.ts <id>`
+8. Generate audio for both languages: `npx tsx scripts/generate-audio.ts <id> all`
+9. Add story id to the `storyIds` array in `src/App.tsx`
+10. Remove from `drafts.json` if applicable
+11. Commit and push
