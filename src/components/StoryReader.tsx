@@ -411,7 +411,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
                   animation: `${flip.direction === 'forward' ? 'flipForward' : 'flipBackward'} 700ms cubic-bezier(0.645, 0.045, 0.355, 1) forwards`,
                   willChange: 'transform',
                 }}
-                onAnimationEnd={handleFlipEnd}
+                onAnimationEnd={(e) => { if (e.target === e.currentTarget) handleFlipEnd() }}
               >
                 {/* Front face — current page content */}
                 <div
