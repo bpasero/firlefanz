@@ -45,7 +45,7 @@ Every Firlefanz story follows a consistent arc:
 - Language toggle (DE/EN) and night mode toggle in the top-right corner
 
 ### Story Reader
-- **Desktop**: Open book layout — illustration on the left page, text on the right page, with a spine divider; book uses 90vw width on desktop (`md:max-w-[90vw]`) to fill the screen like a real printed book; images use `object-cover` to fill the page edge-to-edge
+- **Desktop**: Open book layout — illustration on the left page, text on the right page, with a spine divider; book uses 90vw width on desktop (`md:max-w-[90vw]`) to fill the screen like a real printed book; images use `object-cover` on mobile and `object-contain` on desktop to show the full image without cropping
 - **Mobile**: Stacked layout — illustration on top, text below, with a horizontal divider
 - Paper-textured text page with page numbers, corner fold detail (desktop)
 - Page turn animation (3D flip with shadows) when navigating

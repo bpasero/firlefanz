@@ -57,7 +57,7 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
           src={imageSrc}
           alt={`Seite ${pageIndex + 1}`}
           decoding="sync"
-          className={`w-full h-full object-cover ${nightMode ? 'brightness-75' : ''}`}
+          className={`w-full h-full object-cover md:object-contain ${nightMode ? 'brightness-75' : ''}`}
         />
       </div>
 
