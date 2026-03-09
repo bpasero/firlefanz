@@ -22,7 +22,8 @@ interface StoryReaderProps {
 }
 
 
-const FONT_STEPS = [1.25, 1.125, 1, 0.9375, 0.875, 0.8125, 0.75] // rem: xl, lg, base, down to xs
+const FONT_STEPS_DESKTOP = [1.25, 1.125, 1, 0.9375, 0.875, 0.8125, 0.75] // rem: xl → xs
+const FONT_STEPS_MOBILE = [1, 0.9375, 0.875, 0.8125, 0.75, 0.6875, 0.625] // rem: base → xxs (mobile has less vertical space)
 
 function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { story: Story; pageIndex: number; nightMode: boolean; language: string; mobileImages: boolean }) {
   const localized = localizeStory(story, language)
@@ -30,6 +31,8 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
   const imageSrc = `${base}${getMobileSrc(page.image, mobileImages).replace(/^\//, '')}`
   const textContainerRef = useRef<HTMLDivElement>(null)
   const [fontStep, setFontStep] = useState(0)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const fontSteps = isMobile ? FONT_STEPS_MOBILE : FONT_STEPS_DESKTOP
 
   // Reset font step when page or language changes
   useEffect(() => { setFontStep(0) }, [pageIndex, language])
@@ -38,12 +41,12 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
   useLayoutEffect(() => {
     const container = textContainerRef.current
     if (!container) return
-    if (container.scrollHeight > container.clientHeight && fontStep < FONT_STEPS.length - 1) {
+    if (container.scrollHeight > container.clientHeight && fontStep < fontSteps.length - 1) {
       setFontStep((s) => s + 1)
     }
-  }, [fontStep, pageIndex, language])
+  }, [fontStep, fontSteps.length, pageIndex, language])
 
-  const fontSize = FONT_STEPS[fontStep]
+  const fontSize = fontSteps[fontStep]
 
   return (
     <div className="absolute inset-0 flex flex-col md:flex-row">
