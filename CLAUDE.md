@@ -63,7 +63,6 @@ Every Firlefanz story follows a consistent arc:
 - Browser back/forward buttons navigate between stories/pages via `hashchange` listener
 - Going back to the library clears the hash
 - No router dependency — uses `window.location.hash` directly
-- **Critical invariant**: `StoryReader` is keyed `${activeStory.id}-${initialPage}`; changing `initialPage` forces a full remount (resetting all state including `narrating`). The `hashchange` handler in `App.tsx` must only call `setInitialPage` when the parsed page differs from `pageRef.current` — otherwise every internal page turn (which sets the hash via `handlePageChange`) would remount the reader and kill audio narration. `pageRef.current` is always updated before the hash is written, so internal vs. browser-nav turns are distinguishable.
 
 ### Global UI Features
 - **Night mode** — warm dark colour palette for bedtime reading; defaults to OS `prefers-color-scheme`, persisted in `localStorage`
