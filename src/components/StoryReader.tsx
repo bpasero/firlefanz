@@ -57,7 +57,7 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
           src={imageSrc}
           alt={`Seite ${pageIndex + 1}`}
           decoding="sync"
-          className={`w-full h-full object-cover md:object-contain ${nightMode ? 'brightness-75' : ''}`}
+          className={`w-full h-full object-cover ${nightMode ? 'brightness-75' : ''}`}
         />
       </div>
 
@@ -366,11 +366,11 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
         onClick={handleBookClick}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="w-full max-w-5xl md:max-w-[90vw] cursor-pointer select-none relative z-10 flex-1 min-h-0"
+        className="w-full max-w-5xl md:max-w-[90vw] cursor-pointer select-none relative z-10 flex-1 min-h-0 flex flex-col md:justify-center"
         style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
       >
         <div
-          className="relative rounded-xl sm:rounded-2xl overflow-hidden h-full"
+          className="relative rounded-xl sm:rounded-2xl overflow-hidden h-full md:h-auto md:aspect-[3/1]"
           style={{
             backgroundColor: nightMode ? '#1e1a12' : '#fdf8ed',
             boxShadow: nightMode
