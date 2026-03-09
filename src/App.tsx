@@ -81,8 +81,14 @@ function App() {
       if (story) {
         setActiveStory(story)
         const page = Math.min(parsed.page, story.pages.length - 1)
-        setInitialPage(page)
-        pageRef.current = page
+        // Only update initialPage (which remounts StoryReader via key) when navigating
+        // via browser back/forward to a different page. In-story page turns also update
+        // the hash, but they set pageRef.current first — skip those to avoid remounting
+        // StoryReader on every page turn (which would reset narrating state and audio).
+        if (page !== pageRef.current) {
+          setInitialPage(page)
+          pageRef.current = page
+        }
       }
     }
     window.addEventListener('hashchange', onHashChange)

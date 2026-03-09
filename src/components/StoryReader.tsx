@@ -226,23 +226,38 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
     }
 
     const audioUrl = `${base}stories/${story.id}/audio-${language}-page-${pageIndex + 1}.mp3`
-    const audio = new Audio(audioUrl)
-    audioRef.current = audio
+
+    // Reuse the same Audio element across pages — changing src on an already-unlocked
+    // element avoids iOS autoplay restrictions that block play() on new Audio() elements
+    // created outside of a direct user-gesture handler.
+    if (!audioRef.current) {
+      audioRef.current = new Audio()
+      audioRef.current.playbackRate = 1.2
+    }
+    const audio = audioRef.current
 
     const handleEnded = () => { if (!isLastRef.current) turnPageRef.current?.('forward') }
-    audio.addEventListener('ended', handleEnded)
-    audio.addEventListener('error', () => {
+    const handleError = () => {
       audioFailedRef.current.add(cacheKey)
       audio.removeEventListener('ended', handleEnded)
       speakFallback()
-    }, { once: true })
+    }
+    audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('error', handleError, { once: true })
 
-    audio.playbackRate = 1.2
-    audio.play().catch(() => {})
+    // Defer src assignment and play() so React StrictMode's synchronous cleanup can
+    // cancel this timer before audio starts — preventing the double-invocation stutter
+    // (play → immediate pause → play again) in development mode.
+    const playTimer = setTimeout(() => {
+      audio.src = audioUrl
+      audio.play().catch(() => {})
+    }, 0)
 
     return () => {
+      clearTimeout(playTimer)
       audio.pause()
       audio.removeEventListener('ended', handleEnded)
+      audio.removeEventListener('error', handleError)
       window.speechSynthesis.cancel()
     }
   }, [pageIndex, narrating, language, story])
@@ -259,6 +274,9 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
     if (flip) return
     if (direction === 'forward' && isLast) return
     if (direction === 'back' && isFirst) return
+    // Stop audio immediately so it doesn't bleed into the page flip animation
+    audioRef.current?.pause()
+    window.speechSynthesis.cancel()
     const next = pageIndex + (direction === 'forward' ? 1 : -1)
     setFlip({ direction, fromPage: pageIndex, toPage: next })
   }, [isFirst, isLast, pageIndex, flip])
