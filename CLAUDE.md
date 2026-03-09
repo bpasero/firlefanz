@@ -46,14 +46,15 @@ Every Firlefanz story follows a consistent arc:
 
 ### Story Reader
 - **Desktop**: Open book layout — illustration on the left page, text on the right page, with a spine divider; book uses 90vw width on desktop (`md:max-w-[90vw]`) to fill the screen like a real printed book; the inner book container uses `aspect-[3/1]` on desktop (matching two 3:2 image halves side-by-side) so images fill edge-to-edge without cropping or letterboxing; images use `object-cover` which works perfectly since the container matches the image aspect ratio
-- **Mobile**: Stacked layout — illustration on top, text below, with a horizontal divider
-- Paper-textured text page with page numbers, corner fold detail (desktop)
+- **Mobile portrait**: Stacked layout — illustration on top (40% height), text below (60% height), with a horizontal divider
+- **Mobile landscape**: Open book layout (same as desktop) — when a phone is turned sideways, `useIsLandscapeMobile()` detects `(orientation: landscape) and (max-height: 600px)` and switches to side-by-side layout with a vertical spine; nav buttons are hidden to save vertical space (swipe gestures and click zones still work); smaller font step set (`FONT_STEPS_LANDSCAPE`) is used since height is very limited; spacing is tightened (`px-2 py-0.5`, no `sm:` padding expansion)
+- Paper-textured text page with page numbers, corner fold detail (desktop + landscape mobile)
 - Page turn animation (3D flip with shadows) when navigating
 - **Flicker-free page turns** — the base `PageContent` is always mounted (never conditionally unmounted during flip); the flip overlay is layered on top; the target page starts at `opacity: 0` with a delayed `flipReveal` CSS animation so its opaque background doesn't flash before the image decodes; all `<img>` elements use `decoding="sync"`; adjacent images are pre-decoded (not just prefetched) via `img.decode()`. **Never use conditional rendering (`flip ? ... : ...`) that unmounts the current page's `<img>` elements** — mount overlay layers alongside the stable base instead.
-- Navigation: click left/right thirds, arrow keys, swipe left/right on touch, or nav buttons
+- Navigation: click left/right thirds, arrow keys, swipe left/right on touch, or nav buttons (nav buttons hidden in landscape mobile)
 - Overscroll bounce disabled to prevent accidental navigation
-- **No scrollbars** — the reader must never show scrollbars, neither on the page itself nor on the text panel; the reader uses `fixed inset-0` positioning to lock to the viewport; text uses dynamic font scaling (`useLayoutEffect` overflow detection with progressive `FONT_STEPS`) to shrink until it fits
-- **Mobile**: compact spacing — smaller padding (`px-1.5 py-1`), smaller nav buttons (`w-9 h-9`), tighter text padding (`p-3`); mobile e2e tests verify no scrolling
+- **No scrollbars** — the reader must never show scrollbars, neither on the page itself nor on the text panel; the reader uses `fixed inset-0` positioning to lock to the viewport; text uses dynamic font scaling (`useLayoutEffect` overflow detection with progressive `FONT_STEPS`) to shrink until it fits; three font step sets: `FONT_STEPS_DESKTOP`, `FONT_STEPS_MOBILE`, `FONT_STEPS_LANDSCAPE`
+- **Mobile portrait**: compact spacing — smaller padding (`px-1.5 py-1`), smaller nav buttons (`w-9 h-9`), tighter text padding (`p-3`); mobile e2e tests verify no scrolling
 - Header contains: back button, story title, narration toggle, language toggle, night mode toggle, page counter
 
 ### URL Hash Routing
@@ -132,6 +133,11 @@ Every Firlefanz story follows a consistent arc:
 ## Testing Policy
 
 **Always run `npm run test:e2e` after making changes to the UI** to verify nothing is broken. Fix any failures before considering the task done.
+
+Playwright projects:
+- `chromium` — desktop smoke tests (`smoke.spec.ts`)
+- `mobile` — portrait mobile tests on Pixel 5 412×915 (`mobile.spec.ts`)
+- `mobile-landscape` — landscape mobile tests on Pixel 5 rotated 915×412 (`mobile-landscape.spec.ts`)
 
 ## Scripts
 

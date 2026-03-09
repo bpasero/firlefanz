@@ -24,18 +24,38 @@ interface StoryReaderProps {
 
 const FONT_STEPS_DESKTOP = [1.25, 1.125, 1, 0.9375, 0.875, 0.8125, 0.75] // rem: xl → xs
 const FONT_STEPS_MOBILE = [1, 0.9375, 0.875, 0.8125, 0.75, 0.6875, 0.625] // rem: base → xxs (mobile has less vertical space)
+const FONT_STEPS_LANDSCAPE = [0.875, 0.8125, 0.75, 0.6875, 0.625, 0.5625, 0.5] // rem: smaller still — landscape has very limited height
 
-function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { story: Story; pageIndex: number; nightMode: boolean; language: string; mobileImages: boolean }) {
+// Detect when a mobile phone is turned to landscape (short viewport height).
+// max-height: 600px excludes desktop monitors and tablets.
+function useIsLandscapeMobile() {
+  const [isLandscape, setIsLandscape] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(orientation: landscape) and (max-height: 600px)').matches
+  })
+  useEffect(() => {
+    const mq = window.matchMedia('(orientation: landscape) and (max-height: 600px)')
+    const handler = (e: MediaQueryListEvent) => setIsLandscape(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return isLandscape
+}
+
+function PageContent({ story, pageIndex, nightMode, language, mobileImages, isLandscapeMobile }: { story: Story; pageIndex: number; nightMode: boolean; language: string; mobileImages: boolean; isLandscapeMobile: boolean }) {
   const localized = localizeStory(story, language)
   const page = localized.pages[pageIndex]
   const imageSrc = `${base}${getMobileSrc(page.image, mobileImages).replace(/^\//, '')}`
   const textContainerRef = useRef<HTMLDivElement>(null)
   const [fontStep, setFontStep] = useState(0)
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
-  const fontSteps = isMobile ? FONT_STEPS_MOBILE : FONT_STEPS_DESKTOP
+  // Landscape mobile has very limited height — use the smallest font step set
+  const fontSteps = isLandscapeMobile ? FONT_STEPS_LANDSCAPE : isMobile ? FONT_STEPS_MOBILE : FONT_STEPS_DESKTOP
+  // Use side-by-side (book) layout on desktop or when a phone is in landscape
+  const useRowLayout = !isMobile || isLandscapeMobile
 
-  // Reset font step when page or language changes
-  useEffect(() => { setFontStep(0) }, [pageIndex, language])
+  // Reset font step when page, language, or orientation changes
+  useEffect(() => { setFontStep(0) }, [pageIndex, language, isLandscapeMobile])
 
   // Shrink font until text fits without overflow
   useLayoutEffect(() => {
@@ -44,15 +64,18 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
     if (container.scrollHeight > container.clientHeight && fontStep < fontSteps.length - 1) {
       setFontStep((s) => s + 1)
     }
-  }, [fontStep, fontSteps.length, pageIndex, language])
+  }, [fontStep, fontSteps.length, pageIndex, language, isLandscapeMobile])
 
   const fontSize = fontSteps[fontStep]
 
   return (
-    <div className="absolute inset-0 flex flex-col md:flex-row">
+    <div className={`absolute inset-0 flex ${useRowLayout ? 'flex-row' : 'flex-col'}`}>
       {/* Left page — illustration */}
-      <div className="h-2/5 md:h-auto md:w-1/2 relative overflow-hidden" style={{ backgroundColor: nightMode ? '#1e1a14' : '#faf3e3' }}>
-        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-black/10 to-transparent z-10 hidden md:block" />
+      <div
+        className={`${useRowLayout ? 'w-1/2' : 'h-2/5'} relative overflow-hidden`}
+        style={{ backgroundColor: nightMode ? '#1e1a14' : '#faf3e3' }}
+      >
+        {useRowLayout && <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-black/10 to-transparent z-10" />}
         <img
           src={imageSrc}
           alt={`Seite ${pageIndex + 1}`}
@@ -61,45 +84,49 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
         />
       </div>
 
-      {/* Book spine */}
-      <div
-        className="hidden md:block w-3 relative z-20 shrink-0"
-        style={{
-          background: nightMode
-            ? 'linear-gradient(90deg, #3a2a1c, #4a3828, #3a2a1c)'
-            : 'linear-gradient(90deg, #b8956a, #d4b08c, #b8956a)',
-          boxShadow: '0 0 10px rgba(0,0,0,0.2)',
-        }}
-      />
-      {/* Mobile divider */}
-      <div
-        className="md:hidden h-1 relative z-20 shrink-0"
-        style={{
-          background: nightMode
-            ? 'linear-gradient(180deg, #3a2a1c, #4a3828, #3a2a1c)'
-            : 'linear-gradient(180deg, #b8956a, #d4b08c, #b8956a)',
-          boxShadow: '0 0 6px rgba(0,0,0,0.15)',
-        }}
-      />
+      {/* Book spine (row layout) or horizontal divider (column layout) */}
+      {useRowLayout ? (
+        <div
+          className="w-3 relative z-20 shrink-0"
+          style={{
+            background: nightMode
+              ? 'linear-gradient(90deg, #3a2a1c, #4a3828, #3a2a1c)'
+              : 'linear-gradient(90deg, #b8956a, #d4b08c, #b8956a)',
+            boxShadow: '0 0 10px rgba(0,0,0,0.2)',
+          }}
+        />
+      ) : (
+        <div
+          className="h-1 relative z-20 shrink-0"
+          style={{
+            background: nightMode
+              ? 'linear-gradient(180deg, #3a2a1c, #4a3828, #3a2a1c)'
+              : 'linear-gradient(180deg, #b8956a, #d4b08c, #b8956a)',
+            boxShadow: '0 0 6px rgba(0,0,0,0.15)',
+          }}
+        />
+      )}
 
       {/* Right page — text */}
       <div
         ref={textContainerRef}
-        className="h-3/5 md:h-auto md:w-1/2 p-3 sm:p-8 md:p-12 flex flex-col paper-texture relative overflow-hidden"
+        className={`${useRowLayout ? 'w-1/2' : 'h-3/5'} ${isLandscapeMobile ? 'p-3' : useRowLayout ? 'p-8 md:p-12' : 'p-3 sm:p-8'} flex flex-col paper-texture relative overflow-hidden`}
         style={{
           background: nightMode
             ? 'linear-gradient(145deg, #2a2418 0%, #241e14 40%, #1e1a12 100%)'
             : 'linear-gradient(145deg, #fdf8ed 0%, #f8eed5 40%, #f3e5c0 100%)',
         }}
       >
-        <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-black/5 to-transparent hidden md:block" />
-        <div
-          className="absolute bottom-0 right-0 w-10 h-10 hidden md:block"
-          style={{ background: nightMode
-            ? 'linear-gradient(135deg, transparent 50%, #1a1610 50%)'
-            : 'linear-gradient(135deg, transparent 50%, #eddcb8 50%)'
-          }}
-        />
+        {useRowLayout && <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-black/5 to-transparent" />}
+        {useRowLayout && (
+          <div
+            className="absolute bottom-0 right-0 w-10 h-10"
+            style={{ background: nightMode
+              ? 'linear-gradient(135deg, transparent 50%, #1a1610 50%)'
+              : 'linear-gradient(135deg, transparent 50%, #eddcb8 50%)'
+            }}
+          />
+        )}
 
         <div className="relative z-10 my-auto">
           {page.text.map((paragraph, i) => (
@@ -117,7 +144,7 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
           ))}
         </div>
 
-        <div className="absolute bottom-3 right-4 md:bottom-6 md:right-8">
+        <div className={`absolute bottom-3 right-4 ${!isLandscapeMobile && useRowLayout ? 'md:bottom-6 md:right-8' : ''}`}>
           <span
             className="text-xs sm:text-sm italic"
             style={{
@@ -150,6 +177,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
   const { nightMode } = useNightMode()
   const { language } = useLanguage()
   const mobileImages = useMobileImages()
+  const isLandscapeMobile = useIsLandscapeMobile()
   const localized = localizeStory(story, language)
   const isFirst = pageIndex === 0
   const isLast = pageIndex === story.pages.length - 1
@@ -291,7 +319,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
 
   return (
     <div
-      className="fixed inset-0 flex flex-col items-center px-1.5 py-1 sm:p-4 overflow-hidden"
+      className={`fixed inset-0 flex flex-col items-center overflow-hidden ${isLandscapeMobile ? 'px-2 py-0.5' : 'px-1.5 py-1 sm:p-4'}`}
       style={{
         background: nightMode
           ? 'linear-gradient(170deg, #1e1810 0%, #1a1410 40%, #14100c 100%)'
@@ -319,7 +347,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
       </div>
 
       {/* Header */}
-      <div className="w-full max-w-5xl md:max-w-[90vw] mb-1 sm:mb-5 flex items-center justify-between relative z-20 gap-2">
+      <div className={`w-full max-w-5xl md:max-w-[90vw] flex items-center justify-between relative z-20 gap-2 ${isLandscapeMobile ? 'mb-0.5' : 'mb-1 sm:mb-5'}`}>
         <button
           onClick={() => { window.speechSynthesis.cancel(); audioRef.current?.pause(); onBack() }}
           className="text-xs sm:text-sm font-medium transition-colors px-2.5 py-1.5 sm:px-3 rounded-full shrink-0"
@@ -380,7 +408,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
           }}
         >
           {/* Base layer — always mounted so images are never unmounted/remounted */}
-          <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} mobileImages={mobileImages} />
+          <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} mobileImages={mobileImages} isLandscapeMobile={isLandscapeMobile} />
 
           {/* Flip overlay — layered on top during page turn animation */}
           {flip && (
@@ -390,7 +418,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
                   before the image decodes — the flipping page at z30 covers it anyway
                   for the first ~350ms of the 700ms animation. */}
               <div className="absolute inset-0" style={{ zIndex: 20, opacity: 0, animation: 'flipReveal 1ms 100ms forwards' }}>
-                <PageContent story={story} pageIndex={flip.toPage} nightMode={nightMode} language={language} mobileImages={mobileImages} />
+                <PageContent story={story} pageIndex={flip.toPage} nightMode={nightMode} language={language} mobileImages={mobileImages} isLandscapeMobile={isLandscapeMobile} />
               </div>
               {/* Shadow cast by turning page onto target page */}
               <div
@@ -421,7 +449,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
                     WebkitBackfaceVisibility: 'hidden' as never,
                   }}
                 >
-                  <PageContent story={story} pageIndex={flip.fromPage} nightMode={nightMode} language={language} mobileImages={mobileImages} />
+                  <PageContent story={story} pageIndex={flip.fromPage} nightMode={nightMode} language={language} mobileImages={mobileImages} isLandscapeMobile={isLandscapeMobile} />
                   {/* Fold crease shadow near hinge */}
                   <div
                     className="absolute top-0 bottom-0 pointer-events-none"
@@ -464,8 +492,8 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
         </div>
       </div>
 
-      {/* Navigation — larger touch targets on mobile */}
-      <div className="mt-1 sm:mt-6 flex items-center gap-6 sm:gap-8 relative z-10">
+      {/* Navigation — larger touch targets on mobile; hidden in landscape (use swipe/click zones instead) */}
+      <div className={`mt-1 sm:mt-6 flex items-center gap-6 sm:gap-8 relative z-10 ${isLandscapeMobile ? 'hidden' : ''}`}>
         <button
           onClick={() => turnPage('back')}
           disabled={isFirst}

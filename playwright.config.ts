@@ -13,13 +13,19 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: /mobile\.spec\.ts/,
+      testIgnore: /mobile.*\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'mobile',
       testMatch: /mobile\.spec\.ts/,
       use: { ...devices['Pixel 5'] },
+    },
+    {
+      name: 'mobile-landscape',
+      testMatch: /mobile-landscape\.spec\.ts/,
+      // Pixel 5 dimensions flipped for landscape orientation
+      use: { ...devices['Pixel 5'], viewport: { width: 915, height: 412 } },
     },
   ],
   webServer: {
