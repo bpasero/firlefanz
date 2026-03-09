@@ -27,7 +27,7 @@ Every Firlefanz story follows a consistent arc:
 - **Warm & safe**: Even uncertain or mysterious moments resolve into happy, friendly encounters.
 - **In German**: All story text must be written in German. Simple, clear German suitable for young children.
 - **Age-appropriate**: Language and themes for children aged 3–6. Simple sentences, gentle pacing, read-aloud friendly.
-- **Length limit**: Total story text per language must not exceed **4096 characters** (OpenAI TTS input limit). The entire story is narrated in a single TTS call for consistent tone.
+- **Length limit**: Total story text per language must not exceed **4096 characters** (OpenAI TTS input limit). Each page is narrated in a separate TTS call, so individual pages are well under this limit — the total is checked to keep stories from growing unbounded.
 
 ## App Layout
 
