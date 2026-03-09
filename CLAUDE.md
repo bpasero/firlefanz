@@ -135,7 +135,7 @@ Every Firlefanz story follows a consistent arc:
 
 ## Scripts
 
-- `npx tsx scripts/generate-images-<story-slug>.ts` — generate story illustrations via OpenAI (`gpt-image-1`, `quality: 'high'`, `1536x1024`); always generate at high quality — mobile bandwidth is handled by the compressed WebP variants
+- `npx tsx scripts/generate-images-<story-slug>.ts` — generate story illustrations via OpenAI (`gpt-image-1`, `quality: 'high'`, `1536x1024`); always generate at high quality — mobile bandwidth is handled by the compressed WebP variants; the script first generates a temporary `style-ref.png` character reference sheet (all story characters shown from multiple angles) which is passed as a reference image to every subsequent page generation for visual consistency; each page also includes the previous page as a reference for scene-to-scene continuity; uses `/v1/images/edits` when reference images are present, `/v1/images/generations` otherwise; `style-ref.png` is deleted after all pages are generated
 - `npx tsx scripts/watermark-images.ts [story-id]` — watermark images (EXIF + steganography); all stories if no id given
 - `npx tsx scripts/compress-images.ts [story-id]` — generate compressed mobile WebP variants (`<name>-mobile.webp`) alongside each PNG; max 800px wide, WebP quality 82 (~30–55 KB vs ~3.8 MB originals); served automatically on narrow viewports (≤768px) or slow connections via `src/hooks/useMobileImages.ts`
 - `npx tsx scripts/generate-pdf.ts <story-id>` — generate downloadable PDF for a story
