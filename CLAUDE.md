@@ -148,6 +148,7 @@ Every Firlefanz story follows a consistent arc:
   - goldi-im-labyrinth → `nova` (warm female)
   - das-tal-der-sanften-riesen → `shimmer` (warm female)
   - das-rockfestival → `fable` (warm British male)
+  - skifahren-in-andermatt → `fable` (warm British male)
   - der-zauber-zoo → `fable` (warm British male)
 
 ## Adding a New Language
