@@ -49,7 +49,7 @@ Every Firlefanz story follows a consistent arc:
 - **Mobile**: Stacked layout — illustration on top, text below, with a horizontal divider
 - Paper-textured text page with page numbers, corner fold detail (desktop)
 - Page turn animation (3D flip with shadows) when navigating
-- Adjacent page images preloaded for smooth page turns
+- **Flicker-free page turns** — the base `PageContent` is always mounted (never conditionally unmounted during flip); the flip overlay is layered on top; the target page starts at `opacity: 0` with a delayed `flipReveal` CSS animation so its opaque background doesn't flash before the image decodes; all `<img>` elements use `decoding="sync"`; adjacent images are pre-decoded (not just prefetched) via `img.decode()`. **Never use conditional rendering (`flip ? ... : ...`) that unmounts the current page's `<img>` elements** — mount overlay layers alongside the stable base instead.
 - Navigation: click left/right thirds, arrow keys, swipe left/right on touch, or nav buttons
 - Overscroll bounce disabled to prevent accidental navigation
 - **No scrollbars** — the reader must never show scrollbars, neither on the page itself nor on the text panel; the reader uses `fixed inset-0` positioning to lock to the viewport; text uses dynamic font scaling (`useLayoutEffect` overflow detection with progressive `FONT_STEPS`) to shrink until it fits

@@ -56,6 +56,7 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages }: { 
         <img
           src={imageSrc}
           alt={`Seite ${pageIndex + 1}`}
+          decoding="sync"
           className={`w-full h-full object-cover ${nightMode ? 'brightness-75' : ''}`}
         />
       </div>
@@ -153,7 +154,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
   const isFirst = pageIndex === 0
   const isLast = pageIndex === story.pages.length - 1
 
-  // Preload adjacent page images for smooth page turns
+  // Preload and pre-decode adjacent page images for flicker-free page turns
   useEffect(() => {
     const toPreload = [pageIndex - 1, pageIndex + 1].filter(
       (i) => i >= 0 && i < story.pages.length
@@ -161,6 +162,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
     for (const i of toPreload) {
       const img = new Image()
       img.src = `${base}${getMobileSrc(story.pages[i].image, mobileImages).replace(/^\//, '')}`
+      img.decode().catch(() => {})
     }
   }, [pageIndex, story, mobileImages])
 
@@ -377,11 +379,20 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
             WebkitTransform: 'translateZ(0)',
           }}
         >
-          {flip ? (
+          {/* Base layer — always mounted so images are never unmounted/remounted */}
+          <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} mobileImages={mobileImages} />
+
+          {/* Flip overlay — layered on top during page turn animation */}
+          {flip && (
             <>
-              {/* Bottom page — target page revealed during flip */}
-              <PageContent story={story} pageIndex={flip.toPage} nightMode={nightMode} language={language} mobileImages={mobileImages} />
-              {/* Shadow cast by turning page onto bottom page */}
+              {/* Target page revealed as the flip progresses.
+                  Starts invisible to prevent flash from opaque background mounting
+                  before the image decodes — the flipping page at z30 covers it anyway
+                  for the first ~350ms of the 700ms animation. */}
+              <div className="absolute inset-0" style={{ zIndex: 20, opacity: 0, animation: 'flipReveal 1ms 100ms forwards' }}>
+                <PageContent story={story} pageIndex={flip.toPage} nightMode={nightMode} language={language} mobileImages={mobileImages} />
+              </div>
+              {/* Shadow cast by turning page onto target page */}
               <div
                 className="absolute inset-0 bg-black pointer-events-none"
                 style={{
@@ -449,8 +460,6 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
                 </div>
               </div>
             </>
-          ) : (
-            <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} mobileImages={mobileImages} />
           )}
         </div>
       </div>
