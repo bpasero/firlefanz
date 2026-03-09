@@ -31,11 +31,6 @@ Every Firlefanz story follows a consistent arc:
 
 ## App Layout
 
-### Authentication
-- **PIN gate** — 6-digit PIN entry screen before accessing the app
-- PIN stored in `sessionStorage` (persists for the browser session)
-- PIN code is in `src/components/PinGate.tsx`
-
 ### Home / Story Library
 - Styled as a **wooden bookshelf** with 3D standing book covers on a warm golden background
 - 2-column grid on mobile, flexible wrap on larger screens

@@ -1,13 +1,5 @@
 import { test, expect } from '@playwright/test'
 
-const PIN = '040522'
-
-async function enterPin(page: import('@playwright/test').Page) {
-  for (let i = 0; i < PIN.length; i++) {
-    await page.locator('input[inputmode="numeric"]').nth(i).fill(PIN[i])
-  }
-}
-
 // Books are <button> elements containing a cover <img>
 const bookButton = (page: import('@playwright/test').Page) =>
   page.getByRole('button').filter({ has: page.locator('img') }).first()
@@ -16,35 +8,9 @@ const bookButton = (page: import('@playwright/test').Page) =>
 const backButton = (page: import('@playwright/test').Page) =>
   page.getByRole('button', { name: /Bibliothek|Library/i }).first()
 
-test.describe('PIN gate', () => {
-  test('shows PIN entry on first load', async ({ page }) => {
-    await page.goto('/')
-    await expect(page.getByText('Bitte gib den Geheimcode ein')).toBeVisible()
-    await expect(page.locator('input[inputmode="numeric"]')).toHaveCount(6)
-  })
-
-  test('shows error on wrong PIN', async ({ page }) => {
-    await page.goto('/')
-    const inputs = page.locator('input[inputmode="numeric"]')
-    for (let i = 0; i < 6; i++) {
-      await inputs.nth(i).fill(String(i))
-    }
-    await expect(page.getByText('Das war leider falsch!')).toBeVisible()
-  })
-
-  test('grants access with correct PIN', async ({ page }) => {
-    await page.goto('/')
-    await enterPin(page)
-    // Story library heading should appear
-    await expect(page.getByText('Geschichten zum Einschlafen')).toBeVisible({ timeout: 5000 })
-    await expect(page.getByText('Bitte gib den Geheimcode ein')).not.toBeVisible()
-  })
-})
-
 test.describe('Story library', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
-    await enterPin(page)
     // Wait for stories to load (at least one book button with img appears)
     await bookButton(page).waitFor({ timeout: 10000 })
   })
@@ -64,7 +30,6 @@ test.describe('Story library', () => {
 test.describe('Story reader', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
-    await enterPin(page)
     await bookButton(page).waitFor({ timeout: 10000 })
     await bookButton(page).click()
     await backButton(page).waitFor({ timeout: 5000 })

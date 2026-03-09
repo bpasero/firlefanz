@@ -31,7 +31,6 @@ The app presents pre-generated illustrated stories in a kids' book format, compl
 - **Bilingual** — German (base) and English, with easy extensibility to more languages
 - **Downloadable PDFs** — each story available as a printable book
 - **PWA** — installable on iOS, Android, and desktop; works offline after first visit
-- **PIN-protected** — keeps little fingers from wandering outside the app
 
 ## Story Pipeline
 

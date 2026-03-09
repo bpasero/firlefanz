@@ -1,20 +1,11 @@
 import { test, expect } from '@playwright/test'
 
-const PIN = '040522'
-
-async function enterPin(page: import('@playwright/test').Page) {
-  for (let i = 0; i < PIN.length; i++) {
-    await page.locator('input[inputmode="numeric"]').nth(i).fill(PIN[i])
-  }
-}
-
 const bookButton = (page: import('@playwright/test').Page) =>
   page.getByRole('button').filter({ has: page.locator('img') }).first()
 
 test.describe('Story reader mobile', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
-    await enterPin(page)
     await bookButton(page).waitFor({ timeout: 10000 })
     await bookButton(page).click()
     // Wait for story page text to appear (back button text is hidden on mobile)
