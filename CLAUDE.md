@@ -93,9 +93,9 @@ Every Firlefanz story follows a consistent arc:
 
 ## Deployment
 
-- Hosted on **GitHub Pages** at `https://bpasero.github.io/firlefanz/`
+- Hosted on **GitHub Pages** at `https://firlefanz.li` (custom domain via `public/CNAME`)
 - GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and deploys on push to `main`
-- Vite `base` is set to `/firlefanz/` for correct asset paths
+- Vite `base` is set to `/` (root) — hosted at a custom top-level domain
 - Node 22 required in CI
 
 ## Tech Stack
@@ -114,7 +114,7 @@ Every Firlefanz story follows a consistent arc:
 ## PWA
 
 - Installable as a PWA on iOS ("Add to Home Screen"), Android (install prompt), and desktop
-- Web app manifest at `public/manifest.json` — `start_url` and `scope` set to `/firlefanz/`
+- Web app manifest at `public/manifest.json` — `start_url` and `scope` set to `/`
 - Service worker at `public/sw.js` — stale-while-revalidate caching strategy; offline-capable after first visit
 - App icons at `public/icons/icon-192.png` and `public/icons/icon-512.png` (generated via `npx tsx scripts/generate-icons.ts`)
 - Registered in `src/main.tsx` via `navigator.serviceWorker.register`

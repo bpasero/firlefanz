@@ -34,7 +34,7 @@ function copyrightBannerPlugin(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/firlefanz/',
+  base: '/',
   plugins: [react(), tailwindcss(), copyrightBannerPlugin()],
   test: {
     environment: 'happy-dom',
