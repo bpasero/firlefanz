@@ -26,7 +26,7 @@ function App() {
   const pageRef = useRef(0)
 
   useEffect(() => {
-    const storyIds = ['skifahren-in-andermatt', 'der-zauber-zoo', 'das-rockfestival', 'das-tal-der-sanften-riesen', 'goldi-im-labyrinth', 'am-ende-der-welt', 'die-stadt-der-vergessenen-spielzeuge', 'der-wolkenfluester']
+    const storyIds = ['der-mond', 'skifahren-in-andermatt', 'der-zauber-zoo', 'das-rockfestival', 'das-tal-der-sanften-riesen', 'goldi-im-labyrinth', 'am-ende-der-welt', 'die-stadt-der-vergessenen-spielzeuge', 'der-wolkenfluester']
     Promise.all(
       storyIds.map((id) =>
         fetch(`${import.meta.env.BASE_URL}stories/${id}/story.json`).then((res) => res.json())

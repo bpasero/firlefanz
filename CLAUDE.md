@@ -156,6 +156,7 @@ Playwright projects:
   - das-rockfestival → `fable` (warm British male)
   - skifahren-in-andermatt → `fable` (warm British male)
   - der-zauber-zoo → `fable` (warm British male)
+  - der-mond → `fable` (warm British male)
 
 ## Adding a New Language
 
