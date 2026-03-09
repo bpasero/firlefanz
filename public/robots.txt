@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://firlefanz.li/sitemap.xml
