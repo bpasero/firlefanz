@@ -53,12 +53,7 @@ Then open the browser:
 playwright-cli open http://localhost:5173/
 ```
 
-The app shows a PIN gate. Enter the 6-digit PIN `040522` by typing it digit by digit (the PIN input auto-advances on each digit). Use:
-```bash
-playwright-cli screenshot --filename=/tmp/firlefanz-proof/pin.png
-playwright-cli snapshot
-```
-Then click or type each digit into the PIN input fields. After the last digit is entered the gate unlocks automatically.
+The app is publicly accessible — no PIN gate.
 
 ### 4. Review the cover
 
