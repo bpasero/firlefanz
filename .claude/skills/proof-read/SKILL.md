@@ -22,6 +22,8 @@ For each page, examine **three things in parallel**:
 
 Also check the **cover image** against the story title and overall mood.
 
+**Always check for duplicate characters**: If any image shows more than one Firlefanz or more than one Papalapapp, flag it as a **DUPLICATE CHARACTER** critical error. There is always exactly one of each.
+
 ## Step-by-Step Workflow
 
 ### 1. Read story data
@@ -133,8 +135,9 @@ A short paragraph summarising the overall quality and listing the most critical 
 
 When evaluating character consistency and drawing accuracy, use these canonical descriptions:
 
-- **Firlefanz**: Small dragon/dinosaur-like creature (not human, no specific gender). Friendly, expressive face. Small body, tail, little wings or fins. Wears a hat, walking stick, boots, and jacket when travelling.
-- **Papalapapp**: Same species as Firlefanz but larger and fatherly in demeanour. Often seen at home with a coffee cup in the morning scenes.
+- **Firlefanz**: Small dragon/dinosaur-like creature (not human, no specific gender). Friendly, expressive face. Small body, tail, little wings or fins. Wears a hat, walking stick, boots, and jacket when travelling. **There is exactly ONE Firlefanz character — never two or more Firlefanz in any single image.**
+- **Papalapapp**: Same species as Firlefanz but larger and fatherly in demeanour. Often seen at home with a coffee cup in the morning scenes. **There is exactly ONE Papalapapp character — never two or more Papalapapp in any single image.**
+- **Character count rule**: Any image showing 2 or more Firlefanz figures, or 2 or more Papalapapp figures, is a critical error and must be flagged as **DUPLICATE CHARACTER** regardless of any other quality.
 - **Setting**: Fantasy world with cosy village, rolling hills, forests, mountains, rivers. Warm watercolor or soft digital painting aesthetic.
 - **Tone**: Calming, warm, bedtime-appropriate. No dark or scary imagery. Even "mysterious" scenes should look cosy.
 

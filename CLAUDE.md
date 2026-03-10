@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Firlefanz is an interactive kids' storybook generator. It creates illustrated stories set in the universe of **Firlefanz**, a dragon/dinosaur-like character (not human, no specific gender) who lives adventures in a fictional fantasy world. Firlefanz lives in a small house in a small village, next to his father **Papalapapp**. The target audience is young children aged 3–6 who can identify with Firlefanz as the main character.
 
+**Character uniqueness rule**: There is exactly **one** Firlefanz and exactly **one** Papalapapp in the entire universe. Any image showing two or more Firlefanz figures, or two or more Papalapapp figures, is a critical error. Every generated image prompt must make this explicit.
+
 The app generates new stories with both text and images, presented in a kids' book format suitable for reading aloud.
 
 ## Story Structure
