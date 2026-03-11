@@ -8,6 +8,8 @@ Firlefanz is an interactive kids' storybook generator. It creates illustrated st
 
 **Character uniqueness rule**: There is exactly **one** Firlefanz and exactly **one** Papalapapp in the entire universe. Any image showing two or more Firlefanz figures, or two or more Papalapapp figures, is a critical error. Every generated image prompt must make this explicit.
 
+**No text in images rule**: Images must never contain text, words, letters, labels, signs, or writing of any kind, unless explicitly required by the scene (e.g. a street sign that is central to the story). Every image generation script must include a strong no-text instruction such as: `"No text, words, letters, labels, signs, or writing of any kind anywhere in the image."`
+
 The app generates new stories with both text and images, presented in a kids' book format suitable for reading aloud.
 
 ## Story Structure

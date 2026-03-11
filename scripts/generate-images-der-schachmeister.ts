@@ -16,7 +16,7 @@ const storyDir = path.join(rootDir, 'public/stories/der-schachmeister')
 fs.mkdirSync(storyDir, { recursive: true })
 
 const S = "Children's book illustration, soft watercolor style, warm calming colors."
-const E = 'Gentle, cozy atmosphere suitable for a bedtime story. No text in the image.'
+const E = 'Gentle, cozy atmosphere suitable for a bedtime story. No text, words, letters, labels, signs, or writing of any kind anywhere in the image.'
 const F = 'Firlefanz is a small friendly green dragon/dinosaur creature'
 const P = 'Papalapapp is the same species as Firlefanz but larger and fatherly'
 const Z = 'Grandmaster Zeno is a kind old human man with a long white beard and warm wise eyes, wearing a long robe'
