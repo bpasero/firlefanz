@@ -158,6 +158,7 @@ Playwright projects:
   - der-mond → `fable` (warm British male)
   - der-schachmeister → `fable` (warm British male)
   - der-flughafen → `fable` (warm British male)
+  - das-kloster-in-den-wolken → `fable` (warm British male)
 
 ## Adding a New Language
 
