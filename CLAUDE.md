@@ -160,6 +160,7 @@ Playwright projects:
   - der-flughafen → `fable` (warm British male)
   - das-kloster-in-den-wolken → `fable` (warm British male)
   - bobo-der-siebenschlafer → `fable` (warm British male)
+  - der-kindergarten → `fable` (warm British male)
 
 ## Adding a New Language
 
