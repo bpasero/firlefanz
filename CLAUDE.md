@@ -20,7 +20,7 @@ Every Firlefanz story follows a consistent arc:
 2. **Breakfast & wonder**: Firlefanz has a light breakfast, wondering what the journey might bring.
 3. **Visiting Papalapapp**: Firlefanz heads over to Papalapapp, who is usually at home enjoying a morning coffee (but not always). Firlefanz asks how to get to the destination and often asks Papalapapp to join.
 4. **Dressing up**: Firlefanz puts on travel gear — hat, walking stick, boots, jacket — preparing for a long journey.
-5. **The great journey**: The journey is always epic in scale. Firlefanz (and often Papalapapp) travel over 7 seas, 7 deserts, 7 mountains, 7 rivers, 7 forests, and more before reaching the destination. This is a signature element of every story.
+5. **The great journey**: The journey is always epic in scale. Firlefanz (and often Papalapapp) travel over 7 seas, 7 deserts, 7 mountains, 7 rivers, 7 forests, and more before reaching the destination. This is a signature element of every story. For stories where the destination is nearby (e.g. in the village), adapt the journey to a village scale — over seven lanes, seven bridges, seven hills, etc. — so it still feels grand through a child's eyes.
 6. **The adventure**: The destination is a fantastical, fictional place. It may seem dangerous or mysterious at first, but quickly turns out to be welcoming. New friends are made and adventures unfold.
 7. **Homeward**: At the end, Firlefanz has made new friends and heads home again.
 
@@ -74,6 +74,7 @@ Every Firlefanz story follows a consistent arc:
 - Each story directory contains: `story.json`, page images (`page-N.png`), cover image (`cover.png`), and a downloadable `book.pdf`
 - Story JSON schema (see `src/types/story.ts`): id, title, teaser, coverImage, prompt, pages (each with `text: string[]` and image path), and optional `translations` object
 - **Translations** are stored inline in `story.json` under `translations.<lang>` (e.g. `translations.en`). German is always the base language. Use `localizeStory(story, lang)` helper to get localized title/teaser/pages.
+- **Dialog quotes in story.json**: Always use escaped ASCII double quotes (`\"...\""`) for dialog inside JSON string values. Unicode curly quotes (`"..."`) look similar but the closing `"` (U+201C) can be confused with a straight `"` (U+0022) and break JSON parsing. Use `\"` consistently.
 - Story drafts/ideas saved in `public/stories/drafts.json`
 - All image/asset paths must use `import.meta.env.BASE_URL` prefix (for GitHub Pages deployment)
 
