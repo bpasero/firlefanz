@@ -163,6 +163,7 @@ Playwright projects:
   - bobo-der-siebenschlafer → `fable` (warm British male)
   - der-kindergarten → `fable` (warm British male)
   - der-osterhase → `fable` (warm British male)
+  - das-museum-der-lebendigen-statuen → `fable` (warm British male)
 
 ## Adding a New Language
 
