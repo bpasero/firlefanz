@@ -164,6 +164,7 @@ Playwright projects:
   - der-kindergarten → `fable` (warm British male)
   - der-osterhase → `fable` (warm British male)
   - das-museum-der-lebendigen-statuen → `fable` (warm British male)
+  - das-urzeittal → `fable` (warm British male)
 
 ## Adding a New Language
 
