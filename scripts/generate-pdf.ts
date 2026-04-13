@@ -28,97 +28,218 @@ if (!fs.existsSync(storyPath)) {
 const story: Story = JSON.parse(fs.readFileSync(storyPath, 'utf-8'))
 const outPath = path.join(storyDir, 'book.pdf')
 
-// A4 landscape for a kids' book feel
-const PAGE_WIDTH = 841.89
-const PAGE_HEIGHT = 595.28
-const MARGIN = 40
+// A4 portrait — image fills top half at exact 3:2 ratio, text sits below
+// A4 portrait: 595.28 × 841.89 pt
+// Image area: 595.28 wide × 396.85 tall = exact 3:2 (1536×1024 source images)
+const PAGE_W = 595.28
+const PAGE_H = 841.89
+const IMG_H = PAGE_W / 1.5          // 396.85 pt — exact 3:2 fit, no cropping
+const TEXT_Y = IMG_H                 // text panel starts right below image
+const TEXT_H = PAGE_H - IMG_H       // 445.04 pt
+const TEXT_PAD_X = 48
+const TEXT_PAD_TOP = 28
+
+// Font paths — woff files supported by PDFKit
+const fontsDir = path.join(rootDir, 'node_modules/@fontsource')
+const FONT_LORA = path.join(fontsDir, 'lora/files/lora-latin-400-normal.woff')
+const FONT_LORA_ITALIC = path.join(fontsDir, 'lora/files/lora-latin-400-italic.woff')
+const FONT_PLAYFAIR = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-700-normal.woff')
+const FONT_PLAYFAIR_ITALIC = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-400-italic.woff')
+
+// Design tokens
+const WARM_PAPER = '#fdf6e8'
+const INK = '#2e1a0e'
+const GOLD = '#c9a97a'
+const BODY_SIZE = 18
+const BODY_LINE_GAP = 9
 
 const doc = new PDFDocument({
-  size: [PAGE_WIDTH, PAGE_HEIGHT],
-  margins: { top: MARGIN, bottom: MARGIN, left: MARGIN, right: MARGIN },
+  size: [PAGE_W, PAGE_H],
+  margins: { top: 0, bottom: 0, left: 0, right: 0 },
   info: {
     Title: story.title,
-    Author: 'Benjamin Pasero',
     Creator: 'Firlefanz — Geschichten zum Einschlafen',
     Subject: `Firlefanz: ${story.title}`,
-    Keywords: 'Firlefanz, Kinderbuch, Benjamin Pasero',
+    Keywords: 'Firlefanz, Kinderbuch',
   },
 })
+
+doc.registerFont('Lora', FONT_LORA)
+doc.registerFont('Lora-Italic', FONT_LORA_ITALIC)
+doc.registerFont('Playfair', FONT_PLAYFAIR)
+doc.registerFont('Playfair-Italic', FONT_PLAYFAIR_ITALIC)
 
 const stream = fs.createWriteStream(outPath)
 doc.pipe(stream)
 
-// --- Cover page ---
+// ── Cover page ──────────────────────────────────────────────────────────────
+// Same structure as story pages: image at top (3:2, no cropping), warm panel below with title
+
+// Warm paper background for entire page
+doc.save().rect(0, 0, PAGE_W, PAGE_H).fill(WARM_PAPER).restore()
+
 const coverPath = path.join(storyDir, path.basename(story.coverImage))
 if (fs.existsSync(coverPath)) {
-  doc.image(coverPath, 0, 0, { width: PAGE_WIDTH, height: PAGE_HEIGHT })
+  doc.image(coverPath, 0, 0, { width: PAGE_W, height: IMG_H })
 }
+
+// Gold rule between image and title area (same as story pages)
+doc.save().rect(0, IMG_H, PAGE_W, 1.5).fill(GOLD).restore()
+
+// "Firlefanz" series label
 doc
-  .fill('white')
-  .fontSize(48)
-  .font('Helvetica-Bold')
-  .text(story.title, MARGIN, PAGE_HEIGHT - 120, {
-    width: PAGE_WIDTH - MARGIN * 2,
+  .fill(GOLD)
+  .font('Lora-Italic')
+  .fontSize(11)
+  .text('Firlefanz — Geschichten zum Einschlafen', 50, IMG_H + 36, {
+    width: PAGE_W - 100,
     align: 'center',
   })
 
+// Decorative rule under series label
+const coverRuleY = IMG_H + 58
 doc
-  .fill('rgba(255,255,255,0.7)')
-  .fontSize(10)
-  .font('Helvetica')
-  .text('\u00A9 2026 Benjamin Pasero. Alle Rechte vorbehalten.', MARGIN, PAGE_HEIGHT - 50, {
-    width: PAGE_WIDTH - MARGIN * 2,
+  .save()
+  .moveTo(TEXT_PAD_X, coverRuleY)
+  .lineTo(PAGE_W - TEXT_PAD_X, coverRuleY)
+  .strokeColor(GOLD)
+  .lineWidth(0.5)
+  .stroke()
+  .restore()
+
+// Story title — large Playfair, centred in the remaining space
+const titleY = coverRuleY + 28
+doc
+  .fill(INK)
+  .font('Playfair')
+  .fontSize(42)
+  .text(story.title, 50, titleY, {
+    width: PAGE_W - 100,
     align: 'center',
+    lineGap: 8,
   })
 
-// --- Story pages ---
+
+
+
+// ── Dedication page ──────────────────────────────────────────────────────────
+doc.addPage()
+doc.save().rect(0, 0, PAGE_W, PAGE_H).fill(WARM_PAPER).restore()
+
+doc
+  .fill(INK)
+  .font('Playfair-Italic')
+  .fontSize(22)
+  .text('Für Madsi von deinem Papi', 0, PAGE_H / 2 - 22, {
+    width: PAGE_W,
+    align: 'center',
+    lineGap: 6,
+  })
+
+doc
+  .fill(GOLD)
+  .font('Lora-Italic')
+  .fontSize(11)
+  .text('Zürich, 2026', 0, PAGE_H / 2 + 18, { width: PAGE_W, align: 'center' })
+
+// ── Story pages ──────────────────────────────────────────────────────────────
 for (let i = 0; i < story.pages.length; i++) {
   const page = story.pages[i]
   doc.addPage()
 
+  // Top: full-width illustration at exact 3:2 — no cropping
   const imgPath = path.join(storyDir, path.basename(page.image))
-  const halfWidth = PAGE_WIDTH / 2 - 10
-
   if (fs.existsSync(imgPath)) {
-    doc.image(imgPath, MARGIN, MARGIN, {
-      width: halfWidth - MARGIN,
-      height: PAGE_HEIGHT - MARGIN * 2,
-      fit: [halfWidth - MARGIN, PAGE_HEIGHT - MARGIN * 2],
-      align: 'center',
-      valign: 'center',
-    })
+    doc.image(imgPath, 0, 0, { width: PAGE_W, height: IMG_H })
   }
 
-  const textX = PAGE_WIDTH / 2 + 10
-  const textWidth = halfWidth - MARGIN
+  // Thin gold rule between image and text panel
+  doc.save().rect(0, IMG_H, PAGE_W, 1.5).fill(GOLD).restore()
 
+  // Warm paper background for text area
+  doc.save().rect(0, TEXT_Y, PAGE_W, TEXT_H).fill(WARM_PAPER).restore()
+
+  // Running title (small, gold, centred)
+  doc
+    .fill(GOLD)
+    .font('Playfair-Italic')
+    .fontSize(9)
+    .text(story.title, TEXT_PAD_X, TEXT_Y + TEXT_PAD_TOP - 2, {
+      width: PAGE_W - TEXT_PAD_X * 2,
+      align: 'center',
+    })
+
+  // Gold rule under title
+  const ruleY = TEXT_Y + TEXT_PAD_TOP + 14
   doc
     .save()
-    .roundedRect(textX, MARGIN, textWidth + MARGIN - 10, PAGE_HEIGHT - MARGIN * 2, 4)
-    .fill('#fdf8ed')
+    .moveTo(TEXT_PAD_X, ruleY)
+    .lineTo(PAGE_W - TEXT_PAD_X, ruleY)
+    .strokeColor(GOLD)
+    .lineWidth(0.5)
+    .stroke()
     .restore()
 
-  doc.fill('#3e2723').fontSize(16).font('Helvetica')
-  let textY = MARGIN + 30
+  // Body text
+  const bodyTop = ruleY + 14
+  const bodyBottom = PAGE_H - 44   // reserve space for page number
+  const maxH = bodyBottom - bodyTop
 
+  doc.fill(INK).font('Lora').fontSize(BODY_SIZE)
+
+  let textY = bodyTop
   for (const paragraph of page.text) {
-    doc.text(paragraph, textX + 20, textY, {
-      width: textWidth - 40,
+    if (textY >= bodyBottom) break
+    doc.text(paragraph, TEXT_PAD_X, textY, {
+      width: PAGE_W - TEXT_PAD_X * 2,
       align: 'left',
-      lineGap: 6,
+      lineGap: BODY_LINE_GAP,
+      height: maxH - (textY - bodyTop),
+      ellipsis: false,
     })
     textY = doc.y + 12
   }
 
+  // Gold rule above page number
+  const numRuleY = PAGE_H - 36
   doc
-    .fill('#b0896e')
+    .save()
+    .moveTo(TEXT_PAD_X * 2, numRuleY)
+    .lineTo(PAGE_W - TEXT_PAD_X * 2, numRuleY)
+    .strokeColor(GOLD)
+    .lineWidth(0.5)
+    .stroke()
+    .restore()
+
+  // Page number
+  doc
+    .fill(GOLD)
+    .font('Lora-Italic')
     .fontSize(11)
-    .font('Helvetica-Oblique')
-    .text(`— ${i + 1} —`, textX, PAGE_HEIGHT - MARGIN - 10, {
-      width: textWidth,
+    .text(`\u2014 ${i + 1} \u2014`, TEXT_PAD_X, PAGE_H - 28, {
+      width: PAGE_W - TEXT_PAD_X * 2,
       align: 'center',
     })
 }
+
+// ── End page ─────────────────────────────────────────────────────────────────
+doc.addPage()
+doc.save().rect(0, 0, PAGE_W, PAGE_H).fill(WARM_PAPER).restore()
+
+doc
+  .fill(INK)
+  .font('Playfair')
+  .fontSize(48)
+  .text('Ende', 0, PAGE_H / 2 - 30, { width: PAGE_W, align: 'center' })
+
+doc
+  .save()
+  .moveTo(PAGE_W / 2 - 40, PAGE_H / 2 + 28)
+  .lineTo(PAGE_W / 2 + 40, PAGE_H / 2 + 28)
+  .strokeColor(GOLD)
+  .lineWidth(0.5)
+  .stroke()
+  .restore()
 
 doc.end()
 
