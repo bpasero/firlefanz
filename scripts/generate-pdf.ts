@@ -5,6 +5,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import PDFDocument from 'pdfkit'
+import sharp from 'sharp'
 import type { Story } from '../src/types/story.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -46,12 +47,26 @@ const FONT_LORA_ITALIC = path.join(fontsDir, 'lora/files/lora-latin-400-italic.w
 const FONT_PLAYFAIR = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-700-normal.woff')
 const FONT_PLAYFAIR_ITALIC = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-400-italic.woff')
 
+// Upscale an image to 300 DPI at A4 width (2480×1653) using Lanczos resampling
+// Source images are 1536×1024 (~185 DPI); this brings them to true 300 DPI print quality
+const PRINT_W = 2480  // 8.268 in × 300 DPI
+const PRINT_H = 1653  // exact 3:2 ratio
+
+async function upscaleImage(imgPath: string): Promise<Buffer> {
+  return sharp(imgPath)
+    .resize(PRINT_W, PRINT_H, { kernel: 'lanczos3', fit: 'fill' })
+    .jpeg({ quality: 90 })
+    .toBuffer()
+}
+
 // Design tokens
 const WARM_PAPER = '#fdf6e8'
 const INK = '#2e1a0e'
 const GOLD = '#c9a97a'
 const BODY_SIZE = 18
 const BODY_LINE_GAP = 9
+
+;(async () => {
 
 const doc = new PDFDocument({
   size: [PAGE_W, PAGE_H],
@@ -80,7 +95,9 @@ doc.save().rect(0, 0, PAGE_W, PAGE_H).fill(WARM_PAPER).restore()
 
 const coverPath = path.join(storyDir, path.basename(story.coverImage))
 if (fs.existsSync(coverPath)) {
-  doc.image(coverPath, 0, 0, { width: PAGE_W, height: IMG_H })
+  console.log('Upscaling cover image to 300 DPI…')
+  const coverBuf = await upscaleImage(coverPath)
+  doc.image(coverBuf, 0, 0, { width: PAGE_W, height: IMG_H })
 }
 
 // Gold rule between image and title area (same as story pages)
@@ -150,7 +167,9 @@ for (let i = 0; i < story.pages.length; i++) {
   // Top: full-width illustration at exact 3:2 — no cropping
   const imgPath = path.join(storyDir, path.basename(page.image))
   if (fs.existsSync(imgPath)) {
-    doc.image(imgPath, 0, 0, { width: PAGE_W, height: IMG_H })
+    console.log(`Upscaling page ${i + 1} image to 300 DPI…`)
+    const imgBuf = await upscaleImage(imgPath)
+    doc.image(imgBuf, 0, 0, { width: PAGE_W, height: IMG_H })
   }
 
   // Thin gold rule between image and text panel
@@ -243,7 +262,13 @@ doc
 
 doc.end()
 
-stream.on('finish', () => {
-  const size = (fs.statSync(outPath).size / 1024).toFixed(0)
-  console.log(`PDF saved: ${outPath} (${size} KB)`)
+await new Promise<void>((resolve, reject) => {
+  stream.on('finish', () => {
+    const size = (fs.statSync(outPath).size / 1024).toFixed(0)
+    console.log(`PDF saved: ${outPath} (${size} KB)`)
+    resolve()
+  })
+  stream.on('error', reject)
 })
+
+})().catch(err => { console.error(err); process.exit(1) })
