@@ -41,9 +41,14 @@ const BLEED  = 3 * (72 / 25.4)      // 8.504 pt = 3mm
 const CANVAS_W = PAGE_W + 2 * BLEED  // 612.29 pt
 const CANVAS_H = PAGE_H + 2 * BLEED  // 858.90 pt
 
-const IMG_H = PAGE_W / 1.5          // 396.85 pt — exact 3:2 fit, no cropping
-const TEXT_Y = IMG_H                 // text panel starts right below image
-const TEXT_H = PAGE_H - IMG_H       // 445.04 pt
+// 3mm safe-area margin inside the trim edges (left, top, right of image)
+// Content within 3mm of the trim edge may be lost to cutting variation — keep images inset
+const SAFE = BLEED                         // 8.504 pt = 3mm safe margin from each trim edge
+
+const IMG_W = PAGE_W - 2 * SAFE           // 578.27 pt — image width within safe area
+const IMG_H = IMG_W / 1.5                 // 385.51 pt — exact 3:2 fit, no cropping
+const TEXT_Y = SAFE + IMG_H               // text panel starts below safe margin + image
+const TEXT_H = PAGE_H - TEXT_Y           // slightly more space vs. old layout
 const TEXT_PAD_X = 48
 const TEXT_PAD_TOP = 28
 
@@ -58,11 +63,11 @@ const FONT_LORA_ITALIC = path.join(fontsDir, 'lora/files/lora-latin-400-italic.w
 const FONT_PLAYFAIR = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-700-normal.woff')
 const FONT_PLAYFAIR_ITALIC = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-400-italic.woff')
 
-// Upscale an image to 300 DPI at canvas width (A4 + bleed) using Lanczos resampling
+// Upscale an image to 300 DPI at safe-area image width using Lanczos resampling
 // Source images are 1536×1024 (~185 DPI); this brings them to true 300 DPI print quality
-// Width covers full canvas including bleed: (595.28 + 2×8.504) / 72 * 300 = 2551 px
-const PRINT_W = Math.round(CANVAS_W / 72 * 300)  // 2551 px
-const PRINT_H = Math.round(PRINT_W / 1.5)         // 1701 px — exact 3:2 ratio
+// Width covers safe-area image width: (595.28 - 2×8.504) / 72 * 300 ≈ 2410 px
+const PRINT_W = Math.round(IMG_W / 72 * 300)  // ~2410 px
+const PRINT_H = Math.round(PRINT_W / 1.5)      // ~1607 px — exact 3:2 ratio
 
 async function upscaleImage(imgPath: string): Promise<Buffer> {
   return sharp(imgPath)
@@ -109,12 +114,12 @@ const coverPath = path.join(storyDir, path.basename(story.coverImage))
 if (fs.existsSync(coverPath)) {
   console.log('Upscaling cover image to 300 DPI…')
   const coverBuf = await upscaleImage(coverPath)
-  // Image fills from top-left bleed corner, extends into bleed on top + sides
-  doc.image(coverBuf, 0, 0, { width: CANVAS_W, height: IMG_H + BLEED })
+  // Image inset 3mm from trim edges on left, top, right (safe area)
+  doc.image(coverBuf, cx(SAFE), cy(SAFE), { width: IMG_W, height: IMG_H })
 }
 
 // Gold rule at image/text boundary (full canvas width)
-doc.save().rect(0, cy(IMG_H), CANVAS_W, 1.5).fill(GOLD).restore()
+doc.save().rect(0, cy(TEXT_Y), CANVAS_W, 1.5).fill(GOLD).restore()
 
 // Warm paper background for text area — extends into bleed on left + right + bottom
 doc.save().rect(0, cy(TEXT_Y), CANVAS_W, TEXT_H + BLEED).fill(WARM_PAPER).restore()
@@ -124,13 +129,13 @@ doc
   .fill(GOLD)
   .font('Lora-Italic')
   .fontSize(11)
-  .text('Firlefanz — Geschichten zum Einschlafen', cx(50), cy(IMG_H + 36), {
+  .text('Firlefanz — Geschichten zum Einschlafen', cx(50), cy(TEXT_Y + 36), {
     width: PAGE_W - 100,
     align: 'center',
   })
 
 // Decorative rule under series label
-const coverRuleY = cy(IMG_H + 58)
+const coverRuleY = cy(TEXT_Y + 58)
 doc
   .save()
   .moveTo(cx(TEXT_PAD_X), coverRuleY)
@@ -180,16 +185,16 @@ for (let i = 0; i < story.pages.length; i++) {
   const page = story.pages[i]
   doc.addPage()
 
-  // Top: full-width illustration — extends into bleed on top + left + right
+  // Top: illustration inset 3mm from trim edges on left, top, right (safe area)
   const imgPath = path.join(storyDir, path.basename(page.image))
   if (fs.existsSync(imgPath)) {
     console.log(`Upscaling page ${i + 1} image to 300 DPI…`)
     const imgBuf = await upscaleImage(imgPath)
-    doc.image(imgBuf, 0, 0, { width: CANVAS_W, height: IMG_H + BLEED })
+    doc.image(imgBuf, cx(SAFE), cy(SAFE), { width: IMG_W, height: IMG_H })
   }
 
   // Thin gold rule between image and text panel (full canvas width)
-  doc.save().rect(0, cy(IMG_H), CANVAS_W, 1.5).fill(GOLD).restore()
+  doc.save().rect(0, cy(TEXT_Y), CANVAS_W, 1.5).fill(GOLD).restore()
 
   // Warm paper background for text area — extends into bleed on left + right + bottom
   doc.save().rect(0, cy(TEXT_Y), CANVAS_W, TEXT_H + BLEED).fill(WARM_PAPER).restore()
