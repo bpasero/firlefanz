@@ -30,15 +30,26 @@ const story: Story = JSON.parse(fs.readFileSync(storyPath, 'utf-8'))
 const outPath = path.join(storyDir, 'book.pdf')
 
 // A4 portrait — image fills top half at exact 3:2 ratio, text sits below
-// A4 portrait: 595.28 × 841.89 pt
-// Image area: 595.28 wide × 396.85 tall = exact 3:2 (1536×1024 source images)
-const PAGE_W = 595.28
-const PAGE_H = 841.89
+// Trim size (final printed page): A4 portrait 210×297mm = 595.28×841.89 pt
+// 3mm bleed on all sides: PDF canvas is 6mm wider and 6mm taller than trim size
+// Bleed ensures artwork reaches the cut edge even with ±1–2mm cutting variation
+const PAGE_W = 595.28   // pt — A4 trim width
+const PAGE_H = 841.89   // pt — A4 trim height
+const BLEED  = 3 * (72 / 25.4)      // 8.504 pt = 3mm
+
+// PDF canvas dimensions (trim + bleed on all sides)
+const CANVAS_W = PAGE_W + 2 * BLEED  // 612.29 pt
+const CANVAS_H = PAGE_H + 2 * BLEED  // 858.90 pt
+
 const IMG_H = PAGE_W / 1.5          // 396.85 pt — exact 3:2 fit, no cropping
 const TEXT_Y = IMG_H                 // text panel starts right below image
 const TEXT_H = PAGE_H - IMG_H       // 445.04 pt
 const TEXT_PAD_X = 48
 const TEXT_PAD_TOP = 28
+
+// Convert trim-space coordinates to canvas-space (offset by bleed)
+const cx = (x: number) => x + BLEED
+const cy = (y: number) => y + BLEED
 
 // Font paths — woff files supported by PDFKit
 const fontsDir = path.join(rootDir, 'node_modules/@fontsource')
@@ -47,10 +58,11 @@ const FONT_LORA_ITALIC = path.join(fontsDir, 'lora/files/lora-latin-400-italic.w
 const FONT_PLAYFAIR = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-700-normal.woff')
 const FONT_PLAYFAIR_ITALIC = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-400-italic.woff')
 
-// Upscale an image to 300 DPI at A4 width (2480×1653) using Lanczos resampling
+// Upscale an image to 300 DPI at canvas width (A4 + bleed) using Lanczos resampling
 // Source images are 1536×1024 (~185 DPI); this brings them to true 300 DPI print quality
-const PRINT_W = 2480  // 8.268 in × 300 DPI
-const PRINT_H = 1653  // exact 3:2 ratio
+// Width covers full canvas including bleed: (595.28 + 2×8.504) / 72 * 300 = 2551 px
+const PRINT_W = Math.round(CANVAS_W / 72 * 300)  // 2551 px
+const PRINT_H = Math.round(PRINT_W / 1.5)         // 1701 px — exact 3:2 ratio
 
 async function upscaleImage(imgPath: string): Promise<Buffer> {
   return sharp(imgPath)
@@ -69,7 +81,7 @@ const BODY_LINE_GAP = 9
 ;(async () => {
 
 const doc = new PDFDocument({
-  size: [PAGE_W, PAGE_H],
+  size: [CANVAS_W, CANVAS_H],   // canvas includes 3mm bleed on all sides
   margins: { top: 0, bottom: 0, left: 0, right: 0 },
   info: {
     Title: story.title,
@@ -90,35 +102,39 @@ doc.pipe(stream)
 // ── Cover page ──────────────────────────────────────────────────────────────
 // Same structure as story pages: image at top (3:2, no cropping), warm panel below with title
 
-// Warm paper background for entire page
-doc.save().rect(0, 0, PAGE_W, PAGE_H).fill(WARM_PAPER).restore()
+// Warm paper background for entire canvas (including bleed zone)
+doc.save().rect(0, 0, CANVAS_W, CANVAS_H).fill(WARM_PAPER).restore()
 
 const coverPath = path.join(storyDir, path.basename(story.coverImage))
 if (fs.existsSync(coverPath)) {
   console.log('Upscaling cover image to 300 DPI…')
   const coverBuf = await upscaleImage(coverPath)
-  doc.image(coverBuf, 0, 0, { width: PAGE_W, height: IMG_H })
+  // Image fills from top-left bleed corner, extends into bleed on top + sides
+  doc.image(coverBuf, 0, 0, { width: CANVAS_W, height: IMG_H + BLEED })
 }
 
-// Gold rule between image and title area (same as story pages)
-doc.save().rect(0, IMG_H, PAGE_W, 1.5).fill(GOLD).restore()
+// Gold rule at image/text boundary (full canvas width)
+doc.save().rect(0, cy(IMG_H), CANVAS_W, 1.5).fill(GOLD).restore()
+
+// Warm paper background for text area — extends into bleed on left + right + bottom
+doc.save().rect(0, cy(TEXT_Y), CANVAS_W, TEXT_H + BLEED).fill(WARM_PAPER).restore()
 
 // "Firlefanz" series label
 doc
   .fill(GOLD)
   .font('Lora-Italic')
   .fontSize(11)
-  .text('Firlefanz — Geschichten zum Einschlafen', 50, IMG_H + 36, {
+  .text('Firlefanz — Geschichten zum Einschlafen', cx(50), cy(IMG_H + 36), {
     width: PAGE_W - 100,
     align: 'center',
   })
 
 // Decorative rule under series label
-const coverRuleY = IMG_H + 58
+const coverRuleY = cy(IMG_H + 58)
 doc
   .save()
-  .moveTo(TEXT_PAD_X, coverRuleY)
-  .lineTo(PAGE_W - TEXT_PAD_X, coverRuleY)
+  .moveTo(cx(TEXT_PAD_X), coverRuleY)
+  .lineTo(cx(PAGE_W - TEXT_PAD_X), coverRuleY)
   .strokeColor(GOLD)
   .lineWidth(0.5)
   .stroke()
@@ -130,7 +146,7 @@ doc
   .fill(INK)
   .font('Playfair')
   .fontSize(42)
-  .text(story.title, 50, titleY, {
+  .text(story.title, cx(50), titleY, {
     width: PAGE_W - 100,
     align: 'center',
     lineGap: 8,
@@ -141,14 +157,14 @@ doc
 
 // ── Dedication page ──────────────────────────────────────────────────────────
 doc.addPage()
-doc.save().rect(0, 0, PAGE_W, PAGE_H).fill(WARM_PAPER).restore()
+doc.save().rect(0, 0, CANVAS_W, CANVAS_H).fill(WARM_PAPER).restore()
 
 doc
   .fill(INK)
   .font('Playfair-Italic')
   .fontSize(22)
-  .text('Für Madsi von deinem Papi', 0, PAGE_H / 2 - 22, {
-    width: PAGE_W,
+  .text('Für Madsi von deinem Papi', 0, cy(PAGE_H / 2 - 22), {
+    width: CANVAS_W,
     align: 'center',
     lineGap: 6,
   })
@@ -157,43 +173,43 @@ doc
   .fill(GOLD)
   .font('Lora-Italic')
   .fontSize(11)
-  .text('Zürich, 2026', 0, PAGE_H / 2 + 18, { width: PAGE_W, align: 'center' })
+  .text('Zürich, 2026', 0, cy(PAGE_H / 2 + 18), { width: CANVAS_W, align: 'center' })
 
 // ── Story pages ──────────────────────────────────────────────────────────────
 for (let i = 0; i < story.pages.length; i++) {
   const page = story.pages[i]
   doc.addPage()
 
-  // Top: full-width illustration at exact 3:2 — no cropping
+  // Top: full-width illustration — extends into bleed on top + left + right
   const imgPath = path.join(storyDir, path.basename(page.image))
   if (fs.existsSync(imgPath)) {
     console.log(`Upscaling page ${i + 1} image to 300 DPI…`)
     const imgBuf = await upscaleImage(imgPath)
-    doc.image(imgBuf, 0, 0, { width: PAGE_W, height: IMG_H })
+    doc.image(imgBuf, 0, 0, { width: CANVAS_W, height: IMG_H + BLEED })
   }
 
-  // Thin gold rule between image and text panel
-  doc.save().rect(0, IMG_H, PAGE_W, 1.5).fill(GOLD).restore()
+  // Thin gold rule between image and text panel (full canvas width)
+  doc.save().rect(0, cy(IMG_H), CANVAS_W, 1.5).fill(GOLD).restore()
 
-  // Warm paper background for text area
-  doc.save().rect(0, TEXT_Y, PAGE_W, TEXT_H).fill(WARM_PAPER).restore()
+  // Warm paper background for text area — extends into bleed on left + right + bottom
+  doc.save().rect(0, cy(TEXT_Y), CANVAS_W, TEXT_H + BLEED).fill(WARM_PAPER).restore()
 
   // Running title (small, gold, centred)
   doc
     .fill(GOLD)
     .font('Playfair-Italic')
     .fontSize(9)
-    .text(story.title, TEXT_PAD_X, TEXT_Y + TEXT_PAD_TOP - 2, {
+    .text(story.title, cx(TEXT_PAD_X), cy(TEXT_Y + TEXT_PAD_TOP - 2), {
       width: PAGE_W - TEXT_PAD_X * 2,
       align: 'center',
     })
 
   // Gold rule under title
-  const ruleY = TEXT_Y + TEXT_PAD_TOP + 14
+  const ruleY = cy(TEXT_Y + TEXT_PAD_TOP + 14)
   doc
     .save()
-    .moveTo(TEXT_PAD_X, ruleY)
-    .lineTo(PAGE_W - TEXT_PAD_X, ruleY)
+    .moveTo(cx(TEXT_PAD_X), ruleY)
+    .lineTo(cx(PAGE_W - TEXT_PAD_X), ruleY)
     .strokeColor(GOLD)
     .lineWidth(0.5)
     .stroke()
@@ -201,7 +217,7 @@ for (let i = 0; i < story.pages.length; i++) {
 
   // Body text
   const bodyTop = ruleY + 14
-  const bodyBottom = PAGE_H - 44   // reserve space for page number
+  const bodyBottom = cy(PAGE_H - 44)   // reserve space for page number
   const maxH = bodyBottom - bodyTop
 
   doc.fill(INK).font('Lora').fontSize(BODY_SIZE)
@@ -209,7 +225,7 @@ for (let i = 0; i < story.pages.length; i++) {
   let textY = bodyTop
   for (const paragraph of page.text) {
     if (textY >= bodyBottom) break
-    doc.text(paragraph, TEXT_PAD_X, textY, {
+    doc.text(paragraph, cx(TEXT_PAD_X), textY, {
       width: PAGE_W - TEXT_PAD_X * 2,
       align: 'left',
       lineGap: BODY_LINE_GAP,
@@ -220,11 +236,11 @@ for (let i = 0; i < story.pages.length; i++) {
   }
 
   // Gold rule above page number
-  const numRuleY = PAGE_H - 36
+  const numRuleY = cy(PAGE_H - 36)
   doc
     .save()
-    .moveTo(TEXT_PAD_X * 2, numRuleY)
-    .lineTo(PAGE_W - TEXT_PAD_X * 2, numRuleY)
+    .moveTo(cx(TEXT_PAD_X * 2), numRuleY)
+    .lineTo(cx(PAGE_W - TEXT_PAD_X * 2), numRuleY)
     .strokeColor(GOLD)
     .lineWidth(0.5)
     .stroke()
@@ -235,7 +251,7 @@ for (let i = 0; i < story.pages.length; i++) {
     .fill(GOLD)
     .font('Lora-Italic')
     .fontSize(11)
-    .text(`\u2014 ${i + 1} \u2014`, TEXT_PAD_X, PAGE_H - 28, {
+    .text(`\u2014 ${i + 1} \u2014`, cx(TEXT_PAD_X), cy(PAGE_H - 28), {
       width: PAGE_W - TEXT_PAD_X * 2,
       align: 'center',
     })
@@ -243,18 +259,18 @@ for (let i = 0; i < story.pages.length; i++) {
 
 // ── End page ─────────────────────────────────────────────────────────────────
 doc.addPage()
-doc.save().rect(0, 0, PAGE_W, PAGE_H).fill(WARM_PAPER).restore()
+doc.save().rect(0, 0, CANVAS_W, CANVAS_H).fill(WARM_PAPER).restore()
 
 doc
   .fill(INK)
   .font('Playfair')
   .fontSize(48)
-  .text('Ende', 0, PAGE_H / 2 - 30, { width: PAGE_W, align: 'center' })
+  .text('Ende', 0, cy(PAGE_H / 2 - 30), { width: CANVAS_W, align: 'center' })
 
 doc
   .save()
-  .moveTo(PAGE_W / 2 - 40, PAGE_H / 2 + 28)
-  .lineTo(PAGE_W / 2 + 40, PAGE_H / 2 + 28)
+  .moveTo(CANVAS_W / 2 - 40, cy(PAGE_H / 2 + 28))
+  .lineTo(CANVAS_W / 2 + 40, cy(PAGE_H / 2 + 28))
   .strokeColor(GOLD)
   .lineWidth(0.5)
   .stroke()
