@@ -255,6 +255,7 @@ for (let i = 0; i < story.pages.length; i++) {
       width: PAGE_W - TEXT_PAD_X * 2,
       align: 'center',
     })
+
 }
 
 // ── End page ─────────────────────────────────────────────────────────────────

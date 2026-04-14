@@ -22,7 +22,6 @@ const P = 'Papalapapp is the same species as Firlefanz but larger and fatherly, 
 const GRAF = 'Graf Ritterhold is a tall kindly older human knight with a neat silver beard, a broad warm smile, and a shining silver breastplate'
 const SILBERSTERN = 'Silberstern is a graceful white unicorn with a flowing silver mane and a softly glowing silver horn'
 const OUTFIT = 'Firlefanz wears a green hat, brown boots, and a warm jacket, holding a wooden walking stick. Papalapapp wears a scarf and carries a backpack.'
-const KNIGHT_OUTFIT = 'Firlefanz now wears a small shining silver shield strapped to his arm and carries a lance with a blue pennant. He rides Silberstern the white unicorn.'
 const STYLE_REF = 'style-ref.png'
 
 interface ImageSpec {
