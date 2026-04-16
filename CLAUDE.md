@@ -149,6 +149,7 @@ Playwright projects:
 - `npx tsx scripts/generate-cover-png.ts <story-id>` — generate a print-ready cover PNG (`cover_148x210.png`) at 148×210mm (A5) / 300 DPI; cover image fills the top in 3:2 ratio, warm paper text panel below with story title in **Fredoka** (playful rounded font) and series label in Lora italic; uses `@napi-rs/canvas` for font rendering (both `latin` and `latin-ext` Fredoka variants must be registered for German umlaut support)
 - `npx tsx scripts/generate-icons.ts` — generate PWA icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`) from a cover image using Sharp
 - `npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`gpt-4o-mini-tts`, speed 1.0); the entire story is narrated in a single TTS call for consistent tone, then split into per-page files using Whisper word-level timestamps + ffmpeg; saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer); requires `ffmpeg` installed locally; **skips pages that already exist** — delete existing MP3s first if regenerating after a text change
+  - der-glaeserne-strand → `fable` (warm British male)
   - der-wolkenfluester → `fable` (warm British male)
   - am-ende-der-welt → `nova` (warm female)
   - die-stadt-der-vergessenen-spielzeuge → `fable` (warm British male)
