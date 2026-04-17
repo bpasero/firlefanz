@@ -5,6 +5,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createCanvas, GlobalFonts } from '@napi-rs/canvas'
+import type { SKRSContext2D } from '@napi-rs/canvas'
 import type { Story } from '../src/types/story.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -51,7 +52,7 @@ const SERIES_SIZE = 44
 const TITLE_SIZE  = 60
 
 // Word-wrap using canvas text measurement
-function wrapText(ctx: ReturnType<typeof createCanvas>['getContext'], text: string, maxWidth: number): string[] {
+function wrapText(ctx: SKRSContext2D, text: string, maxWidth: number): string[] {
   const words = text.split(' ')
   const lines: string[] = []
   let cur = ''

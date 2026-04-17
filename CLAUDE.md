@@ -132,6 +132,8 @@ Every Firlefanz story follows a consistent arc:
 
 ## Testing Policy
 
+**Always run `npm run build` after any code change** to verify there are no TypeScript compile errors. Fix any failures before considering the task done.
+
 **Always run `npm run test:e2e` after making changes to the UI** to verify nothing is broken. Fix any failures before considering the task done.
 
 Playwright projects:
