@@ -170,6 +170,7 @@ Playwright projects:
   - das-museum-der-lebendigen-statuen → `fable` (warm British male)
   - das-urzeittal → `fable` (warm British male)
   - die-dracheninsel → `fable` (warm British male)
+  - die-bunte-rakete → `fable` (warm British male)
 
 ## Adding a New Language
 
