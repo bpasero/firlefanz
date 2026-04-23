@@ -1,6 +1,7 @@
 // © 2026 Benjamin Pasero. All rights reserved.
 // https://github.com/bpasero/firlefanz
 
+import { useState } from 'react'
 import type { Story } from '../types/story'
 import { localizeStory } from '../types/story'
 import { useNightMode } from '../context/NightModeContext'
@@ -20,6 +21,15 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
   const { nightMode } = useNightMode()
   const { language } = useLanguage()
   const mobileImages = useMobileImages()
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const query = searchQuery.trim().toLowerCase()
+  const filteredStories = query
+    ? stories.filter((story) => {
+        const loc = localizeStory(story, language)
+        return loc.title.toLowerCase().includes(query) || loc.teaser.toLowerCase().includes(query)
+      })
+    : stories
 
   return (
     <div
@@ -90,11 +100,69 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
         </p>
       </div>
 
+      {/* Search */}
+      <div className="max-w-md mx-auto mb-8 sm:mb-12 relative z-10 px-2">
+        <div
+          className="flex items-center gap-2 rounded-full px-4 py-2.5"
+          style={{
+            background: nightMode ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.55)',
+            boxShadow: nightMode
+              ? '0 2px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)'
+              : '0 2px 12px rgba(120,70,20,0.18), inset 0 1px 0 rgba(255,255,255,0.7)',
+            border: nightMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(180,120,60,0.25)',
+          }}
+        >
+          <svg
+            className="shrink-0 w-4 h-4"
+            style={{ color: nightMode ? '#9a7a50' : '#a07840' }}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clipRule="evenodd" />
+          </svg>
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={language === 'en' ? 'Search stories…' : 'Geschichten suchen…'}
+            className="flex-1 bg-transparent outline-none text-sm min-w-0"
+            style={{
+              fontFamily: "'Lora', serif",
+              color: nightMode ? '#e8d5b7' : '#5a3010',
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full opacity-60 hover:opacity-100 transition-opacity"
+              style={{ color: nightMode ? '#9a7a50' : '#a07840' }}
+              aria-label="Clear search"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Bookshelf */}
       <div className="max-w-5xl mx-auto relative z-10">
         {/* Shelf row */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-4 sm:gap-10 px-2 sm:px-4 pb-4 sm:pb-6">
-          {stories.map((story) => {
+          {filteredStories.length === 0 && (
+            <p
+              className="col-span-2 py-12 text-center text-base italic"
+              style={{
+                fontFamily: "'Lora', serif",
+                color: nightMode ? '#7a6040' : '#a07848',
+              }}
+            >
+              {language === 'en' ? 'No stories found.' : 'Keine Geschichten gefunden.'}
+            </p>
+          )}
+          {filteredStories.map((story) => {
             const localized = localizeStory(story, language)
             return (
               <button
