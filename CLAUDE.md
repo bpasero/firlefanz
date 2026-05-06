@@ -171,6 +171,7 @@ Playwright projects:
   - das-urzeittal → `fable` (warm British male)
   - die-dracheninsel → `fable` (warm British male)
   - die-bunte-rakete → `fable` (warm British male)
+  - der-funkelring → `fable` (warm British male)
 
 ## Adding a New Language
 
