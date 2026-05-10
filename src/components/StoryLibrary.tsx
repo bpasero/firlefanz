@@ -1,10 +1,12 @@
 // © 2026 Benjamin Pasero. All rights reserved.
 // https://github.com/bpasero/firlefanz
 
+import { useMemo } from 'react'
 import type { Story } from '../types/story'
 import { localizeStory } from '../types/story'
 import { useNightMode } from '../context/NightModeContext'
 import { useLanguage } from '../context/LanguageContext'
+import { useFavorites } from '../context/FavoritesContext'
 import { useMobileImages, getMobileSrc } from '../hooks/useMobileImages'
 import NightModeToggle from './NightModeToggle'
 import LanguageToggle from './LanguageToggle'
@@ -19,7 +21,16 @@ interface StoryLibraryProps {
 export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryProps) {
   const { nightMode } = useNightMode()
   const { language } = useLanguage()
+  const { isFavorite, toggleFavorite } = useFavorites()
   const mobileImages = useMobileImages()
+
+  // Stable favorites-first ordering: favorited stories come first, others keep their original order.
+  const sortedStories = useMemo(() => {
+    const favs: Story[] = []
+    const rest: Story[] = []
+    for (const s of stories) (isFavorite(s.id) ? favs : rest).push(s)
+    return [...favs, ...rest]
+  }, [stories, isFavorite])
 
   return (
     <div
@@ -94,49 +105,75 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
       <div className="max-w-5xl mx-auto relative z-10">
         {/* Shelf row */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-4 sm:gap-10 px-2 sm:px-4 pb-4 sm:pb-6">
-          {stories.map((story) => {
+          {sortedStories.map((story) => {
             const localized = localizeStory(story, language)
+            const favorited = isFavorite(story.id)
             return (
-              <button
+              <div
                 key={story.id}
-                onClick={() => onSelectStory(story)}
-                className="group cursor-pointer w-full sm:w-52 transition-all duration-300 active:scale-95 sm:hover:-translate-y-3 sm:hover:scale-105"
+                className="relative w-full sm:w-52 transition-all duration-300 active:scale-95 sm:hover:-translate-y-3 sm:hover:scale-105"
                 style={{ perspective: '800px' }}
               >
-                {/* Book cover */}
-                <div
-                  className="relative rounded-xl sm:rounded-2xl overflow-hidden transition-shadow duration-300"
-                  style={{
-                    transformStyle: 'preserve-3d',
-                    transform: 'rotateY(-4deg)',
-                    boxShadow: nightMode
-                      ? '-4px 8px 24px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)'
-                      : '-4px 8px 24px rgba(120,70,20,0.35), 0 2px 8px rgba(0,0,0,0.15)',
-                  }}
+                <button
+                  onClick={() => onSelectStory(story)}
+                  className="group cursor-pointer block w-full"
+                  aria-label={localized.title}
                 >
-                  {/* Spine edge */}
-                  <div className={`absolute left-0 top-0 bottom-0 w-2 sm:w-3 z-10 rounded-l-xl sm:rounded-l-2xl ${nightMode ? 'bg-gradient-to-r from-black/50 to-transparent' : 'bg-gradient-to-r from-amber-800/40 to-transparent'}`} />
-                  <img
-                    src={`${base}${getMobileSrc(story.coverImage, mobileImages).replace(/^\//, '')}`}
-                    alt={localized.title}
-                    className={`w-full aspect-[2/3] object-cover ${nightMode ? 'brightness-75' : ''}`}
-                  />
-                  {/* Title overlay at bottom */}
+                  {/* Book cover */}
                   <div
-                    className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 pt-8 sm:pt-10"
+                    className="relative rounded-xl sm:rounded-2xl overflow-hidden transition-shadow duration-300"
                     style={{
-                      background: 'linear-gradient(to top, rgba(60,30,10,0.85) 0%, rgba(60,30,10,0.5) 50%, transparent 100%)',
+                      transformStyle: 'preserve-3d',
+                      transform: 'rotateY(-4deg)',
+                      boxShadow: nightMode
+                        ? '-4px 8px 24px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)'
+                        : '-4px 8px 24px rgba(120,70,20,0.35), 0 2px 8px rgba(0,0,0,0.15)',
                     }}
                   >
-                    <h2
-                      className="text-amber-50 font-semibold text-sm sm:text-base leading-snug drop-shadow"
-                      style={{ fontFamily: "'Playfair Display', serif" }}
+                    {/* Spine edge */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-2 sm:w-3 z-10 rounded-l-xl sm:rounded-l-2xl ${nightMode ? 'bg-gradient-to-r from-black/50 to-transparent' : 'bg-gradient-to-r from-amber-800/40 to-transparent'}`} />
+                    <img
+                      src={`${base}${getMobileSrc(story.coverImage, mobileImages).replace(/^\//, '')}`}
+                      alt={localized.title}
+                      className={`w-full aspect-[2/3] object-cover ${nightMode ? 'brightness-75' : ''}`}
+                    />
+                    {/* Title overlay at bottom */}
+                    <div
+                      className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 pt-8 sm:pt-10"
+                      style={{
+                        background: 'linear-gradient(to top, rgba(60,30,10,0.85) 0%, rgba(60,30,10,0.5) 50%, transparent 100%)',
+                      }}
                     >
-                      {localized.title}
-                    </h2>
+                      <h2
+                        className="text-amber-50 font-semibold text-sm sm:text-base leading-snug drop-shadow"
+                        style={{ fontFamily: "'Playfair Display', serif" }}
+                      >
+                        {localized.title}
+                      </h2>
+                    </div>
                   </div>
-                </div>
-              </button>
+                </button>
+                {/* Favorite heart — sibling of the book button to avoid nested <button>s */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); toggleFavorite(story.id) }}
+                  aria-label={
+                    favorited
+                      ? (language === 'en' ? 'Remove from favorites' : 'Aus Favoriten entfernen')
+                      : (language === 'en' ? 'Add to favorites' : 'Zu Favoriten hinzufügen')
+                  }
+                  aria-pressed={favorited}
+                  className="absolute top-2 right-2 sm:top-3 sm:right-3 z-30 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xl sm:text-2xl transition-transform duration-200 hover:scale-110 active:scale-90"
+                  style={{
+                    backgroundColor: favorited ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.35)',
+                    color: favorited ? '#e11d48' : 'rgba(255,255,255,0.95)',
+                    textShadow: favorited ? 'none' : '0 1px 2px rgba(0,0,0,0.5)',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  {favorited ? '♥' : '♡'}
+                </button>
+              </div>
             )
           })}
         </div>

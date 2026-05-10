@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import type { Story } from './types/story'
 import { NightModeProvider } from './context/NightModeContext'
 import { LanguageProvider } from './context/LanguageContext'
+import { FavoritesProvider } from './context/FavoritesContext'
 import StoryLibrary from './components/StoryLibrary'
 import StoryReader from './components/StoryReader'
 
@@ -97,6 +98,7 @@ function App() {
   return (
     <NightModeProvider>
       <LanguageProvider>
+        <FavoritesProvider>
         {activeStory ? (
           <StoryReader
             key={`${activeStory.id}-${initialPage}`}
@@ -108,6 +110,7 @@ function App() {
         ) : (
           <StoryLibrary stories={stories} onSelectStory={openStory} />
         )}
+        </FavoritesProvider>
       </LanguageProvider>
     </NightModeProvider>
   )
