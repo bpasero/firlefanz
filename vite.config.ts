@@ -38,5 +38,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), copyrightBannerPlugin()],
   test: {
     environment: 'happy-dom',
+    exclude: ['node_modules', 'dist', 'tests/e2e/**'],
   },
 })

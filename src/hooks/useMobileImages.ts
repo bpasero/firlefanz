@@ -10,7 +10,7 @@ type NetworkInfo = {
   removeEventListener?: (event: string, handler: () => void) => void
 }
 
-function shouldUseMobileImages(): boolean {
+export function shouldUseMobileImages(): boolean {
   if (window.innerWidth <= 768) return true
   const conn: NetworkInfo | undefined =
     (navigator as unknown as { connection?: NetworkInfo; mozConnection?: NetworkInfo; webkitConnection?: NetworkInfo })
