@@ -8,7 +8,7 @@ import { LanguageProvider } from './context/LanguageContext'
 import StoryLibrary from './components/StoryLibrary'
 import StoryReader from './components/StoryReader'
 
-function parseHash(): { storyId: string; page: number } | null {
+export function parseHash(): { storyId: string; page: number } | null {
   const hash = window.location.hash.replace(/^#\/?/, '')
   if (!hash) return null
   const parts = hash.split('/')
