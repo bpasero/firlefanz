@@ -331,74 +331,84 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
     }
   }, [turnPage])
 
-  const btnBg = nightMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)'
   const btnHoverBg = nightMode ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.7)'
-  const btnColor = nightMode ? '#e8d5b7' : '#7c4a1e'
+  const btnColor = nightMode ? '#f1e0c2' : '#7c4a1e'
+
+  const glassPill: React.CSSProperties = {
+    backgroundColor: nightMode ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.45)',
+    backdropFilter: 'blur(14px)',
+    WebkitBackdropFilter: 'blur(14px)',
+    border: nightMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(255,255,255,0.6)',
+    boxShadow: nightMode ? '0 6px 18px rgba(0,0,0,0.35)' : '0 6px 18px rgba(180,110,60,0.15)',
+  }
 
   return (
     <div
       className={`fixed inset-0 flex flex-col items-center overflow-hidden ${isLandscapeMobile ? 'px-2 py-0.5' : 'px-1.5 py-1 sm:p-4'}`}
       style={{
         background: nightMode
-          ? 'linear-gradient(170deg, #1e1810 0%, #1a1410 40%, #14100c 100%)'
-          : 'linear-gradient(170deg, #f5e1be 0%, #edd3a4 40%, #dfc08a 100%)',
+          ? 'radial-gradient(ellipse at 20% 0%, #2a1f4a 0%, transparent 55%), radial-gradient(ellipse at 80% 30%, #3a2255 0%, transparent 50%), radial-gradient(ellipse at 50% 100%, #1a1228 0%, transparent 60%), linear-gradient(180deg, #100a1c 0%, #0a0612 100%)'
+          : 'radial-gradient(ellipse at 15% 0%, #ffe7c2 0%, transparent 50%), radial-gradient(ellipse at 85% 25%, #ffd6c2 0%, transparent 55%), radial-gradient(ellipse at 50% 100%, #fbe0a8 0%, transparent 60%), linear-gradient(180deg, #fff5e4 0%, #fde2c4 100%)',
       }}
     >
-      {/* Soft floating shapes */}
+      {/* Drifting aurora blobs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
-          className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-25"
-          style={{ background: nightMode
-            ? 'radial-gradient(circle, #2d1f5e, transparent 70%)'
-            : 'radial-gradient(circle, #fde68a, transparent 70%)'
+          className="absolute -top-32 -right-32 w-[28rem] h-[28rem] rounded-full opacity-40 blur-3xl"
+          style={{
+            background: nightMode
+              ? 'radial-gradient(circle, #7c3aed 0%, transparent 65%)'
+              : 'radial-gradient(circle, #ffc59a 0%, transparent 65%)',
+            animation: 'auroraDrift 26s ease-in-out infinite',
           }}
         />
         <div
-          className="absolute bottom-0 -left-20 w-72 h-72 rounded-full opacity-20"
-          style={{ background: nightMode
-            ? 'radial-gradient(circle, #3b2d6b, transparent 70%)'
-            : 'radial-gradient(circle, #fbbf24, transparent 70%)'
+          className="absolute bottom-0 -left-20 w-[22rem] h-[22rem] rounded-full opacity-35 blur-3xl"
+          style={{
+            background: nightMode
+              ? 'radial-gradient(circle, #5b3aa8 0%, transparent 65%)'
+              : 'radial-gradient(circle, #fcd34d 0%, transparent 65%)',
+            animation: 'auroraDrift 30s ease-in-out infinite reverse',
           }}
         />
-        <div className={`absolute top-12 left-1/4 text-xl hidden sm:block ${nightMode ? 'text-yellow-200/40' : 'text-amber-400/30'}`}>&#10022;</div>
-        <div className={`absolute bottom-20 right-1/4 text-lg hidden sm:block ${nightMode ? 'text-yellow-100/35' : 'text-amber-300/25'}`}>&#10022;</div>
+        <div className={`absolute top-12 left-1/4 text-base hidden sm:block ${nightMode ? 'text-yellow-100/45' : 'text-amber-500/25'}`}>&#10022;</div>
+        <div className={`absolute bottom-20 right-1/4 text-sm hidden sm:block ${nightMode ? 'text-yellow-100/35' : 'text-amber-500/20'}`}>&#10022;</div>
       </div>
 
       {/* Header */}
       <div className={`w-full max-w-5xl md:max-w-[90vw] flex items-center justify-between relative z-20 gap-2 ${isLandscapeMobile ? 'mb-0.5' : 'mb-1 sm:mb-5'}`}>
         <button
           onClick={() => { window.speechSynthesis.cancel(); audioRef.current?.pause(); onBack() }}
-          className="text-xs sm:text-sm font-medium transition-colors px-2.5 py-1.5 sm:px-3 rounded-full shrink-0"
+          className="text-xs sm:text-sm font-medium transition-colors px-3 py-1.5 sm:px-4 rounded-full shrink-0"
           style={{
-            fontFamily: "'Lora', serif",
+            fontFamily: "'Fredoka', 'Lora', sans-serif",
             color: btnColor,
-            backgroundColor: btnBg,
+            ...glassPill,
           }}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = btnHoverBg}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = btnBg}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = (glassPill.backgroundColor as string)}
         >
-          &larr; <span className="hidden sm:inline">{language === 'en' ? 'Library' : 'Zur Bibliothek'}</span>
+          &larr; <span className="hidden sm:inline">{language === 'en' ? 'Library' : 'Bibliothek'}</span>
         </button>
         <h2
-          className="text-sm sm:text-lg font-semibold truncate min-w-0"
+          className="text-sm sm:text-lg font-semibold truncate min-w-0 tracking-tight"
           style={{
-            fontFamily: "'Playfair Display', serif",
-            color: nightMode ? '#e8d5b7' : '#7c4a1e',
+            fontFamily: "'Fredoka', 'Playfair Display', sans-serif",
+            color: nightMode ? '#f1e0c2' : '#7c4a1e',
           }}
         >
           {localized.title}
         </h2>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <NarrationToggle narrating={narrating} onToggle={() => setNarrating((n) => !n)} />
-          <LanguageToggle />
-          <NightModeToggle />
-          <FullscreenToggle />
+        <div className="flex items-center gap-1 shrink-0 p-1 rounded-full" style={glassPill}>
+          <NarrationToggle narrating={narrating} onToggle={() => setNarrating((n) => !n)} bare />
+          <LanguageToggle bare />
+          <NightModeToggle bare />
+          <FullscreenToggle bare />
           <span
-            className="text-xs sm:text-sm px-2.5 py-1.5 sm:px-3 rounded-full whitespace-nowrap"
+            className="text-xs sm:text-sm px-2 py-1 whitespace-nowrap tabular-nums"
             style={{
-              fontFamily: "'Lora', serif",
-              color: nightMode ? '#b8956a' : '#9a6b3a',
-              backgroundColor: nightMode ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.3)',
+              fontFamily: "'Fredoka', 'Lora', sans-serif",
+              color: nightMode ? '#c5b6e8' : '#9a6b3a',
             }}
           >
             {pageIndex + 1}/{story.pages.length}
@@ -515,26 +525,26 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
         <button
           onClick={() => turnPage('back')}
           disabled={isFirst}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-lg sm:text-lg"
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-all text-lg hover:scale-105"
           style={{
-            backgroundColor: btnBg,
+            ...glassPill,
             color: btnColor,
           }}
           onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = btnHoverBg }}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = btnBg}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = (glassPill.backgroundColor as string)}
         >
           &lsaquo;
         </button>
         <button
           onClick={() => turnPage('forward')}
           disabled={isLast}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-lg sm:text-lg"
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-all text-lg hover:scale-105"
           style={{
-            backgroundColor: btnBg,
+            ...glassPill,
             color: btnColor,
           }}
           onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = btnHoverBg }}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = btnBg}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = (glassPill.backgroundColor as string)}
         >
           &rsaquo;
         </button>

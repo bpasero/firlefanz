@@ -52,7 +52,7 @@ test.describe('Story reader', () => {
 
   test('back button returns to library', async ({ page }) => {
     await backButton(page).click()
-    await expect(page.getByText('Geschichten zum Einschlafen')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText(/Geschichten für kleine Träumer|Bedtime stories for little dreamers/)).toBeVisible({ timeout: 5000 })
     await expect(backButton(page)).not.toBeVisible()
   })
 })

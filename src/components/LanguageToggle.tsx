@@ -7,24 +7,30 @@ import Tooltip from './Tooltip'
 
 const LABELS: Record<string, string> = { de: 'DE', en: 'EN' }
 
-export default function LanguageToggle({ className = '' }: { className?: string }) {
+interface Props {
+  className?: string
+  /** When true, the button has no background of its own — meant to sit inside a glass pill container. */
+  bare?: boolean
+}
+
+export default function LanguageToggle({ className = '', bare = false }: Props) {
   const { language, setLanguage, supportedLanguages } = useLanguage()
   const { nightMode } = useNightMode()
 
   const next = supportedLanguages[(supportedLanguages.indexOf(language) + 1) % supportedLanguages.length]
 
-  const bg = nightMode ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.4)'
-  const hoverBg = nightMode ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.6)'
+  const bg = bare ? 'transparent' : nightMode ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.4)'
+  const hoverBg = nightMode ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.55)'
 
   return (
     <Tooltip label={language === 'en' ? 'Switch language' : 'Sprache wechseln'}>
     <button
       onClick={() => setLanguage(next)}
-      className={`h-9 sm:h-8 px-2.5 rounded-full flex items-center justify-center transition-colors text-xs font-semibold tracking-wide ${className}`}
+      className={`h-9 sm:h-8 px-3 rounded-full flex items-center justify-center transition-colors text-xs font-semibold tracking-wider ${className}`}
       style={{
         backgroundColor: bg,
-        color: nightMode ? '#e8d5b7' : '#7c4a1e',
-        fontFamily: "'Lora', serif",
+        color: nightMode ? '#f1e0c2' : '#7c4a1e',
+        fontFamily: "'Fredoka', 'Lora', sans-serif",
       }}
       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hoverBg}
       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bg}
