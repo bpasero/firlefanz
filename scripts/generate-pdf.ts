@@ -3,13 +3,70 @@
 
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 import PDFDocument from 'pdfkit'
 import sharp from 'sharp'
 import type { Story } from '../src/types/story.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
+
+// A4 portrait — image fills top half at exact 3:2 ratio, text sits below
+// Trim size (final printed page): A4 portrait 210×297mm = 595.28×841.89 pt
+// 3mm bleed on all sides: PDF canvas is 6mm wider and 6mm taller than trim size
+// Bleed ensures artwork reaches the cut edge even with ±1–2mm cutting variation
+export const PAGE_W = 595.28   // pt — A4 trim width
+export const PAGE_H = 841.89   // pt — A4 trim height
+export const BLEED  = 3 * (72 / 25.4)      // 8.504 pt = 3mm
+
+// PDF canvas dimensions (trim + bleed on all sides)
+export const CANVAS_W = PAGE_W + 2 * BLEED  // 612.29 pt
+export const CANVAS_H = PAGE_H + 2 * BLEED  // 858.90 pt
+
+// 3mm safe-area margin inside the trim edges (left, top, right of image)
+// Content within 3mm of the trim edge may be lost to cutting variation — keep images inset
+export const SAFE = BLEED                         // 8.504 pt = 3mm safe margin from each trim edge
+
+export const IMG_W = PAGE_W - 2 * SAFE           // 578.27 pt — image width within safe area
+export const IMG_H = IMG_W / 1.5                 // 385.51 pt — exact 3:2 fit, no cropping
+export const TEXT_Y = SAFE + IMG_H               // text panel starts below safe margin + image
+export const TEXT_H = PAGE_H - TEXT_Y           // slightly more space vs. old layout
+const TEXT_PAD_X = 48
+const TEXT_PAD_TOP = 28
+
+// Convert trim-space coordinates to canvas-space (offset by bleed)
+const cx = (x: number) => x + BLEED
+const cy = (y: number) => y + BLEED
+
+// Font paths — woff files supported by PDFKit
+const fontsDir = path.join(rootDir, 'node_modules/@fontsource')
+const FONT_LORA = path.join(fontsDir, 'lora/files/lora-latin-400-normal.woff')
+const FONT_LORA_ITALIC = path.join(fontsDir, 'lora/files/lora-latin-400-italic.woff')
+const FONT_PLAYFAIR = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-700-normal.woff')
+const FONT_PLAYFAIR_ITALIC = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-400-italic.woff')
+
+// Upscale an image to 300 DPI at safe-area image width using Lanczos resampling
+// Source images are 1536×1024 (~185 DPI); this brings them to true 300 DPI print quality
+// Width covers safe-area image width: (595.28 - 2×8.504) / 72 * 300 ≈ 2410 px
+export const PRINT_W = Math.round(IMG_W / 72 * 300)  // ~2410 px
+export const PRINT_H = Math.round(PRINT_W / 1.5)      // ~1607 px — exact 3:2 ratio
+
+async function upscaleImage(imgPath: string): Promise<Buffer> {
+  return sharp(imgPath)
+    .resize(PRINT_W, PRINT_H, { kernel: 'lanczos3', fit: 'fill' })
+    .jpeg({ quality: 90 })
+    .toBuffer()
+}
+
+// Design tokens
+const WARM_PAPER = '#fdf6e8'
+const INK = '#2e1a0e'
+const GOLD = '#c9a97a'
+const BODY_SIZE = 18
+const BODY_LINE_GAP = 9
+
+// Run the CLI only when this file is invoked directly (not when imported by tests).
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
 
 const storyId = process.argv[2]
 if (!storyId) {
@@ -28,60 +85,6 @@ if (!fs.existsSync(storyPath)) {
 
 const story: Story = JSON.parse(fs.readFileSync(storyPath, 'utf-8'))
 const outPath = path.join(storyDir, 'book.pdf')
-
-// A4 portrait — image fills top half at exact 3:2 ratio, text sits below
-// Trim size (final printed page): A4 portrait 210×297mm = 595.28×841.89 pt
-// 3mm bleed on all sides: PDF canvas is 6mm wider and 6mm taller than trim size
-// Bleed ensures artwork reaches the cut edge even with ±1–2mm cutting variation
-const PAGE_W = 595.28   // pt — A4 trim width
-const PAGE_H = 841.89   // pt — A4 trim height
-const BLEED  = 3 * (72 / 25.4)      // 8.504 pt = 3mm
-
-// PDF canvas dimensions (trim + bleed on all sides)
-const CANVAS_W = PAGE_W + 2 * BLEED  // 612.29 pt
-const CANVAS_H = PAGE_H + 2 * BLEED  // 858.90 pt
-
-// 3mm safe-area margin inside the trim edges (left, top, right of image)
-// Content within 3mm of the trim edge may be lost to cutting variation — keep images inset
-const SAFE = BLEED                         // 8.504 pt = 3mm safe margin from each trim edge
-
-const IMG_W = PAGE_W - 2 * SAFE           // 578.27 pt — image width within safe area
-const IMG_H = IMG_W / 1.5                 // 385.51 pt — exact 3:2 fit, no cropping
-const TEXT_Y = SAFE + IMG_H               // text panel starts below safe margin + image
-const TEXT_H = PAGE_H - TEXT_Y           // slightly more space vs. old layout
-const TEXT_PAD_X = 48
-const TEXT_PAD_TOP = 28
-
-// Convert trim-space coordinates to canvas-space (offset by bleed)
-const cx = (x: number) => x + BLEED
-const cy = (y: number) => y + BLEED
-
-// Font paths — woff files supported by PDFKit
-const fontsDir = path.join(rootDir, 'node_modules/@fontsource')
-const FONT_LORA = path.join(fontsDir, 'lora/files/lora-latin-400-normal.woff')
-const FONT_LORA_ITALIC = path.join(fontsDir, 'lora/files/lora-latin-400-italic.woff')
-const FONT_PLAYFAIR = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-700-normal.woff')
-const FONT_PLAYFAIR_ITALIC = path.join(fontsDir, 'playfair-display/files/playfair-display-latin-400-italic.woff')
-
-// Upscale an image to 300 DPI at safe-area image width using Lanczos resampling
-// Source images are 1536×1024 (~185 DPI); this brings them to true 300 DPI print quality
-// Width covers safe-area image width: (595.28 - 2×8.504) / 72 * 300 ≈ 2410 px
-const PRINT_W = Math.round(IMG_W / 72 * 300)  // ~2410 px
-const PRINT_H = Math.round(PRINT_W / 1.5)      // ~1607 px — exact 3:2 ratio
-
-async function upscaleImage(imgPath: string): Promise<Buffer> {
-  return sharp(imgPath)
-    .resize(PRINT_W, PRINT_H, { kernel: 'lanczos3', fit: 'fill' })
-    .jpeg({ quality: 90 })
-    .toBuffer()
-}
-
-// Design tokens
-const WARM_PAPER = '#fdf6e8'
-const INK = '#2e1a0e'
-const GOLD = '#c9a97a'
-const BODY_SIZE = 18
-const BODY_LINE_GAP = 9
 
 ;(async () => {
 
@@ -294,3 +297,5 @@ await new Promise<void>((resolve, reject) => {
 })
 
 })().catch(err => { console.error(err); process.exit(1) })
+
+}

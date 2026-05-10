@@ -9,7 +9,48 @@
 
 import { readFileSync, writeFileSync, readdirSync } from 'fs'
 import { join } from 'path'
+import { pathToFileURL } from 'url'
 import type { Story } from '../src/types/story.ts'
+
+export interface TranslationPayload {
+  title: string
+  teaser: string
+  pages: { text: string[] }[]
+}
+
+/**
+ * Pulls the translation source out of a Story: title, teaser, and page text only.
+ * Image paths and metadata are excluded — the translator should not see them.
+ */
+export function extractTranslationSource(story: Story): TranslationPayload {
+  return {
+    title: story.title,
+    teaser: story.teaser,
+    pages: story.pages.map((p) => ({ text: p.text })),
+  }
+}
+
+/**
+ * Returns a new Story with the translated payload merged into translations[lang].
+ * Existing translations for other languages are preserved. Original story is
+ * not mutated.
+ */
+export function mergeTranslation(story: Story, lang: string, translated: TranslationPayload): Story {
+  return {
+    ...story,
+    translations: {
+      ...(story.translations ?? {}),
+      [lang]: {
+        title: translated.title,
+        teaser: translated.teaser,
+        pages: translated.pages,
+      },
+    },
+  }
+}
+
+// Run the CLI only when this file is invoked directly (not when imported by tests).
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
 
 const targetLang = process.argv[2] ?? 'en'
 const langName: Record<string, string> = { en: 'English', fr: 'French', es: 'Spanish' }
@@ -24,13 +65,7 @@ if (!apiKey) {
   process.env.OPENAI_API_KEY = apiKey
 }
 
-interface TranslationPayload {
-  title: string
-  teaser: string
-  pages: { text: string[] }[]
-}
-
-async function translate(text: string): Promise<string> {
+const translate = async (text: string): Promise<string> => {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -78,12 +113,7 @@ for (const dir of storyDirs) {
 
   console.log(`${dir}: translating to ${targetLang}...`)
 
-  const toTranslate: TranslationPayload = {
-    title: story.title,
-    teaser: story.teaser,
-    pages: story.pages.map((p) => ({ text: p.text })),
-  }
-
+  const toTranslate = extractTranslationSource(story)
   const raw = await translate(JSON.stringify(toTranslate, null, 2))
 
   let translated: TranslationPayload
@@ -94,15 +124,11 @@ for (const dir of storyDirs) {
     continue
   }
 
-  story.translations = story.translations ?? {}
-  story.translations[targetLang] = {
-    title: translated.title,
-    teaser: translated.teaser,
-    pages: translated.pages,
-  }
-
-  writeFileSync(storyPath, JSON.stringify(story, null, 2) + '\n')
+  const merged = mergeTranslation(story, targetLang, translated)
+  writeFileSync(storyPath, JSON.stringify(merged, null, 2) + '\n')
   console.log(`  Done: "${translated.title}"`)
 }
 
 console.log('\nAll stories translated.')
+
+}

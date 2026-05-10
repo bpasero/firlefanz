@@ -193,3 +193,82 @@ describe('App routing — hashchange handler', () => {
     await screen.findByText('Geschichten zum Einschlafen')
   })
 })
+
+describe('App routing — remount-skip invariant (audio-state preservation)', () => {
+  // The hashchange handler in App.tsx only updates initialPage (which is part of
+  // the StoryReader's React `key` and thus forces a remount) when the new page
+  // differs from pageRef.current. In-app page turns set pageRef.current first
+  // and then update the hash, so the resulting hashchange must be a no-op for
+  // the remount logic — otherwise StoryReader is recreated on every page turn
+  // and audio / narration state is lost.
+  //
+  // We use the narration toggle as a witness: clicking it sets internal
+  // narrating=true (the tooltip switches from "Vorlesen" to "Vorlesen stoppen").
+  // After remount, the new instance starts with narrating=false again.
+
+  function narrationButton(): HTMLButtonElement {
+    // The tooltip wraps both the button and the label span as siblings;
+    // grab the button next to whichever narration tooltip text is present.
+    const label = screen.queryByText('Vorlesen') ?? screen.getByText('Vorlesen stoppen')
+    return label.parentElement!.querySelector('button') as HTMLButtonElement
+  }
+
+  it('preserves narration state when hashchange targets the same page (in-app turn)', async () => {
+    window.location.hash = '#/der-mond/2'
+    render(<App />)
+    await screen.findByText('P2 der-mond')
+
+    // Toggle narration ON.
+    fireEvent.click(narrationButton())
+    expect(screen.getByText('Vorlesen stoppen')).toBeTruthy()
+
+    // Simulate the hashchange that fires after an in-app page turn — the hash
+    // value matches what App.handlePageChange would have already set, so
+    // pageRef.current === parsed.page and the skip branch should hit.
+    act(() => {
+      window.location.hash = '#/der-mond/2'
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+    })
+
+    // Narration tooltip is still in the "stop" state — StoryReader did not remount.
+    expect(screen.getByText('Vorlesen stoppen')).toBeTruthy()
+  })
+
+  it('resets narration state when hashchange targets a different page (browser back)', async () => {
+    window.location.hash = '#/der-mond/2'
+    render(<App />)
+    await screen.findByText('P2 der-mond')
+
+    fireEvent.click(narrationButton())
+    expect(screen.getByText('Vorlesen stoppen')).toBeTruthy()
+
+    // Simulate browser back/forward: hash changes to a page that pageRef.current
+    // does NOT match → setInitialPage runs → key changes → StoryReader remounts.
+    act(() => {
+      window.location.hash = '#/der-mond/3'
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+    })
+
+    await screen.findByText('P3 der-mond')
+    // Fresh StoryReader instance: narrating defaults to false again.
+    expect(screen.getByText('Vorlesen')).toBeTruthy()
+    expect(screen.queryByText('Vorlesen stoppen')).toBeNull()
+  })
+
+  it('resets narration state when hashchange targets a different story', async () => {
+    window.location.hash = '#/der-mond/1'
+    render(<App />)
+    await screen.findByText('P1 der-mond')
+
+    fireEvent.click(narrationButton())
+    expect(screen.getByText('Vorlesen stoppen')).toBeTruthy()
+
+    act(() => {
+      window.location.hash = '#/das-urzeittal/1'
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+    })
+
+    await screen.findByText('P1 das-urzeittal')
+    expect(screen.getByText('Vorlesen')).toBeTruthy()
+  })
+})
