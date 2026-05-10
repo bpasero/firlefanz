@@ -65,18 +65,6 @@ function completeFlipAnimation(container: HTMLElement) {
 beforeEach(() => {
   localStorage.setItem('firlefanz-language', 'de')
   localStorage.setItem('firlefanz-night-mode', 'false')
-  // happy-dom's speechSynthesis stub may be missing — provide a no-op shim.
-  if (!('speechSynthesis' in window)) {
-    Object.defineProperty(window, 'speechSynthesis', {
-      configurable: true,
-      value: {
-        cancel: () => {},
-        speak: () => {},
-        getVoices: () => [],
-        addEventListener: () => {},
-      },
-    })
-  }
 })
 
 afterEach(() => {

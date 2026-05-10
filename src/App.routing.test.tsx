@@ -46,15 +46,6 @@ beforeEach(() => {
   localStorage.setItem('firlefanz-night-mode', 'false')
   clearHash()
 
-  // happy-dom does not provide window.speechSynthesis; StoryReader's audio
-  // effect calls .cancel() on it and would throw without this shim.
-  if (!('speechSynthesis' in window)) {
-    Object.defineProperty(window, 'speechSynthesis', {
-      configurable: true,
-      value: { cancel: () => {}, speak: () => {}, getVoices: () => [], addEventListener: () => {} },
-    })
-  }
-
   // Mock fetch to return a fake story keyed by URL.
   vi.stubGlobal(
     'fetch',

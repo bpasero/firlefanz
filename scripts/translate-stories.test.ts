@@ -4,6 +4,7 @@
 import { describe, it, expect } from 'vitest'
 import { extractTranslationSource, mergeTranslation, type TranslationPayload } from './translate-stories.ts'
 import type { Story } from '../src/types/story.ts'
+import { localizeStory } from '../src/types/story.ts'
 
 const baseStory: Story = {
   id: 'demo',
@@ -115,13 +116,37 @@ describe('mergeTranslation', () => {
     expect(merged.id).toBe(baseStory.id)
   })
 
-  it('round-trips: extract → merge yields a translation block matching the source structure', () => {
+  it('extract + merge produces a translations block with one entry per source page', () => {
     const src = extractTranslationSource(baseStory)
-    const merged = mergeTranslation(baseStory, 'de-CH', src)
-    // Page count and per-page paragraph counts match.
-    expect(merged.translations?.['de-CH']?.pages).toHaveLength(baseStory.pages.length)
-    expect(merged.translations?.['de-CH']?.pages[0].text).toHaveLength(
+    const merged = mergeTranslation(baseStory, 'fr', src)
+    expect(merged.translations?.fr?.pages).toHaveLength(baseStory.pages.length)
+    expect(merged.translations?.fr?.pages[0].text).toHaveLength(
       baseStory.pages[0].text.length,
+    )
+  })
+
+  it('extract → translate → merge → localizeStory round-trips story content', () => {
+    // Simulate a complete pipeline: extract source from German story, "translate"
+    // by uppercasing each string (deterministic stand-in for OpenAI), merge the
+    // translated payload back, then read it out via localizeStory and verify
+    // the full title/teaser/page text survived intact.
+    const src = extractTranslationSource(baseStory)
+    const translated: TranslationPayload = {
+      title: src.title.toUpperCase(),
+      teaser: src.teaser.toUpperCase(),
+      pages: src.pages.map((p) => ({ text: p.text.map((t) => t.toUpperCase()) })),
+    }
+    const merged = mergeTranslation(baseStory, 'en', translated)
+    const localized = localizeStory(merged, 'en')
+
+    expect(localized.title).toBe(baseStory.title.toUpperCase())
+    expect(localized.teaser).toBe(baseStory.teaser.toUpperCase())
+    expect(localized.pages.map((p) => p.text)).toEqual(
+      baseStory.pages.map((p) => p.text.map((t) => t.toUpperCase())),
+    )
+    // Image paths must come from the German base, not the translation.
+    expect(localized.pages.map((p) => p.image)).toEqual(
+      baseStory.pages.map((p) => p.image),
     )
   })
 })
