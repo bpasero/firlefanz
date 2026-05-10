@@ -2,7 +2,7 @@
 // https://github.com/bpasero/firlefanz
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook, act, cleanup } from '@testing-library/react'
 import { LanguageProvider, useLanguage } from './LanguageContext'
 
 const STORAGE_KEY = 'firlefanz-language'
@@ -15,6 +15,7 @@ describe('LanguageProvider', () => {
   })
 
   afterEach(() => {
+    cleanup()
     navLangSpy?.mockRestore()
     navLangSpy = null
     localStorage.clear()

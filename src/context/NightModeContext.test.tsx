@@ -2,7 +2,7 @@
 // https://github.com/bpasero/firlefanz
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook, act, cleanup } from '@testing-library/react'
 import { NightModeProvider, useNightMode } from './NightModeContext'
 
 const STORAGE_KEY = 'firlefanz-night-mode'
@@ -29,6 +29,7 @@ describe('NightModeProvider', () => {
   })
 
   afterEach(() => {
+    cleanup()
     mqlSpy?.mockRestore()
     mqlSpy = null
     localStorage.clear()
