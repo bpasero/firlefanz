@@ -2,7 +2,8 @@
 // https://github.com/bpasero/firlefanz
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { getMobileSrc, shouldUseMobileImages } from './useMobileImages'
+import { renderHook, act, cleanup } from '@testing-library/react'
+import { getMobileSrc, shouldUseMobileImages, useMobileImages } from './useMobileImages'
 
 describe('getMobileSrc', () => {
   it('returns the original src untouched when useMobile is false', () => {
@@ -110,5 +111,94 @@ describe('shouldUseMobileImages', () => {
     setInnerWidth(1280)
     setConnection({ effectiveType: '4g', saveData: false })
     expect(shouldUseMobileImages()).toBe(false)
+  })
+})
+
+// useMobileImages is a React hook that wires shouldUseMobileImages() to a state
+// that is re-evaluated on connection-change events.
+type ChangeHandler = () => void
+
+function setConnectionWithListener(initial: { saveData?: boolean; effectiveType?: string }) {
+  const listeners = new Set<ChangeHandler>()
+  const conn = {
+    ...initial,
+    addEventListener: (_event: string, h: ChangeHandler) => { listeners.add(h) },
+    removeEventListener: (_event: string, h: ChangeHandler) => { listeners.delete(h) },
+  }
+  Object.defineProperty(navigator, 'connection', {
+    configurable: true,
+    writable: true,
+    value: conn,
+  })
+  return {
+    listenerCount: () => listeners.size,
+    fireChange: (next: { saveData?: boolean; effectiveType?: string }) => {
+      Object.assign(conn, next)
+      for (const h of listeners) h()
+    },
+  }
+}
+
+describe('useMobileImages hook', () => {
+  beforeEach(() => {
+    setInnerWidth(originalInnerWidth)
+  })
+
+  afterEach(() => {
+    cleanup()
+    setInnerWidth(originalInnerWidth)
+    connectionRestore?.()
+    connectionRestore = null
+  })
+
+  it('returns false initially (state default before the effect runs)', () => {
+    setInnerWidth(1280)
+    setConnection(undefined)
+    const { result } = renderHook(() => useMobileImages())
+    // After render the effect has run and resolved to false (wide viewport, no slow connection).
+    expect(result.current).toBe(false)
+  })
+
+  it('returns true after mount when the viewport is narrow', () => {
+    setInnerWidth(412)
+    setConnection(undefined)
+    const { result } = renderHook(() => useMobileImages())
+    expect(result.current).toBe(true)
+  })
+
+  it('re-evaluates when the connection emits a change event', () => {
+    setInnerWidth(1280)
+    const ctrl = setConnectionWithListener({ effectiveType: '4g' })
+    connectionRestore = () => {
+      delete (navigator as unknown as { connection?: unknown }).connection
+    }
+
+    const { result } = renderHook(() => useMobileImages())
+    expect(result.current).toBe(false)
+
+    act(() => ctrl.fireChange({ effectiveType: '2g' }))
+    expect(result.current).toBe(true)
+
+    act(() => ctrl.fireChange({ effectiveType: '4g' }))
+    expect(result.current).toBe(false)
+  })
+
+  it('removes the connection change listener on unmount (no leak)', () => {
+    setInnerWidth(1280)
+    const ctrl = setConnectionWithListener({ effectiveType: '4g' })
+    connectionRestore = () => {
+      delete (navigator as unknown as { connection?: unknown }).connection
+    }
+
+    const { unmount } = renderHook(() => useMobileImages())
+    expect(ctrl.listenerCount()).toBe(1)
+    unmount()
+    expect(ctrl.listenerCount()).toBe(0)
+  })
+
+  it('does not crash when the connection API is missing', () => {
+    setInnerWidth(1280)
+    setConnection(undefined)
+    expect(() => renderHook(() => useMobileImages())).not.toThrow()
   })
 })
