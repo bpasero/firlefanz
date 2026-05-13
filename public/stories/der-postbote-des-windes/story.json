@@ -1,0 +1,195 @@
+{
+  "id": "der-postbote-des-windes",
+  "title": "Firlefanz und der Postbote des Windes",
+  "teaser": "Mitten in der Nacht flattert ein alter Brief durch Firlefanz' Fenster. Wem mag er wohl gehören?",
+  "coverImage": "/stories/der-postbote-des-windes/cover.png",
+  "prompt": "One morning Firlefanz finds an old yellowed letter that has fluttered through his bedroom window in the night, sealed with a faded wax seal. Papalapapp recognizes it as a forgotten letter and says they must find Flüster, the postman of the wind, who alone knows where lost letters belong. After a grand journey they reach the Windhaus on a small round hill — a tiny house covered in colorful mailboxes — where Flüster the wind sprite, a small fluffy creature with a slanted postman's cap and many letter pouches, greets them. Flüster identifies the letter: it is for Knurr, an old turtle lighthouse keeper at the still sea. A friendly wind lifts them up and carries them through the sky to a small lighthouse on a rocky islet, where Knurr the gentle old turtle in a knitted cap reads the letter — a birthday greeting from his childhood friend that had been lost for many, many years. Knurr cries a small, happy tear. They share honey cake and tea on the lighthouse balcony as the stars come out. Then the wind carries them home, where Firlefanz falls asleep, smiling.",
+  "pages": [
+    {
+      "text": [
+        "Als Firlefanz an diesem Morgen die Augen öffnete, flatterte etwas leise durch sein offenes Fenster.",
+        "Es war ein altes, gelbliches Blatt Papier, das sanft auf seiner Decke landete.",
+        "Vorsichtig nahm er es in die Pfoten. Es war ein Brief — fein beschrieben, mit einem kleinen Wachssiegel. \"Wer hat dich denn verloren?\", flüsterte Firlefanz."
+      ],
+      "image": "/stories/der-postbote-des-windes/page-1.png"
+    },
+    {
+      "text": [
+        "Beim Frühstück knabberte Firlefanz an einer warmen Hagebuttenschnitte und trank einen Becher Kamillentee.",
+        "Der alte Brief lag neben seinem Teller und raschelte ganz leise, als spräche er mit dem Wind.",
+        "Firlefanz musste immerzu daran denken: Wer mag wohl so lange auf diesen Brief gewartet haben?"
+      ],
+      "image": "/stories/der-postbote-des-windes/page-2.png"
+    },
+    {
+      "text": [
+        "Firlefanz lief schnell zu Papalapapp hinüber. Der saß auf der Veranda und trank seinen Morgenkaffee.",
+        "\"Schau mal, Papalapapp — dieser Brief ist heute Nacht zu mir geflogen!\"",
+        "Papalapapp betrachtete das Siegel und nickte langsam. \"Das ist ein vergessener Brief. Nur Flüster, der Postbote des Windes, kann uns sagen, wem er gehört. Komm, wir suchen ihn.\""
+      ],
+      "image": "/stories/der-postbote-des-windes/page-3.png"
+    },
+    {
+      "text": [
+        "Firlefanz holte seinen weichen Reisemantel, festen Stiefel, Wanderstock und kleinen Rucksack.",
+        "Papalapapp setzte seinen breiten Hut auf und steckte einen Beutel mit Apfelkuchen für unterwegs ein.",
+        "Den alten Brief wickelte Firlefanz in ein Tuch und legte ihn in seinen Rucksack. Dann winkten sie ihrem Häuschen zum Abschied."
+      ],
+      "image": "/stories/der-postbote-des-windes/page-4.png"
+    },
+    {
+      "text": [
+        "Gemeinsam wanderten sie über sieben Meere, durch sieben Wüsten, über sieben Berge, an sieben Flüssen entlang, durch sieben Wälder, über sieben Brücken und durch sieben windige Täler.",
+        "Überall, wo sie hinkamen, kitzelte ihnen ein leiser Wind an den Ohren — als würde er ihnen den Weg zeigen."
+      ],
+      "image": "/stories/der-postbote-des-windes/page-5.png"
+    },
+    {
+      "text": [
+        "Endlich erreichten sie einen kleinen, runden Hügel. Oben darauf stand ein winziges Häuschen, an dem überall bunte Briefkästen hingen.",
+        "Aus der Tür kam ein flauschiges kleines Wesen mit einer schief sitzenden Postbotenmütze und vielen Brieftaschen am Gürtel.",
+        "\"Willkommen!\", rief es mit einer hellen, freundlichen Stimme. \"Ich bin Flüster, der Postbote des Windes.\""
+      ],
+      "image": "/stories/der-postbote-des-windes/page-6.png"
+    },
+    {
+      "text": [
+        "Flüster führte sie hinein. Überall stapelten sich vergessene Briefe — manche staubig, manche vergilbt, manche noch fest verschlossen.",
+        "\"Hier sammle ich alles, was der Wind unterwegs verliert\", sagte Flüster leise.",
+        "Firlefanz zog seinen alten Brief hervor. Flüster betrachtete ihn lange. \"Oh — der wartet schon sehr, sehr lange. Er ist für Knurr, den alten Leuchtturmwärter am stillen Meer.\""
+      ],
+      "image": "/stories/der-postbote-des-windes/page-7.png"
+    },
+    {
+      "text": [
+        "Flüster pfiff einen leisen, lustigen Pfiff. Sogleich kam ein freundlicher Wind angeschwebt und hielt vor der Tür an.",
+        "\"Steigt auf!\", lachte Flüster.",
+        "Der Wind hob sie ganz sanft empor, leicht wie Federn. Sie schwebten über Wolken und Hügel, und unter ihnen glitzerte alles im warmen Abendlicht. Firlefanz hielt den Brief ganz fest."
+      ],
+      "image": "/stories/der-postbote-des-windes/page-8.png"
+    },
+    {
+      "text": [
+        "Bald sahen sie einen kleinen, alten Leuchtturm auf einem felsigen Inselchen mitten im stillen Meer.",
+        "Der Wind setzte sie behutsam vor der Tür ab. Klopf, klopf, machte Firlefanz ganz leise.",
+        "Heraus kam eine alte, gemütliche Schildkröte mit einer warmen, gestrickten Mütze. \"Oh!\", rief sie verwundert. \"Besuch! Das hatte ich schon ewig nicht mehr.\""
+      ],
+      "image": "/stories/der-postbote-des-windes/page-9.png"
+    },
+    {
+      "text": [
+        "Firlefanz reichte Knurr den Brief. Der setzte seine kleine Lesebrille auf und las ihn ganz langsam und leise.",
+        "Dann lächelte er ganz weich. \"Das ist von meinem allerbesten Freund, vor langer, langer Zeit. Er wünscht mir alles Gute zum Geburtstag.\"",
+        "Eine kleine, glückliche Träne kullerte ihm über die Wange. \"Endlich ist er angekommen. Habt vielen, vielen Dank.\""
+      ],
+      "image": "/stories/der-postbote-des-windes/page-10.png"
+    },
+    {
+      "text": [
+        "Knurr setzte einen Kessel auf und schenkte jedem ein warmes Stück Honigkuchen ein.",
+        "Sie saßen zusammen auf dem kleinen Balkon des Leuchtturms und sahen den Sternen beim Aufgehen zu. Das Meer lag still wie ein Spiegel.",
+        "Dann sagte Flüster sanft: \"Es ist Zeit, nach Hause zu reisen.\" Knurr umarmte Firlefanz. \"Kommt mich bald wieder besuchen.\""
+      ],
+      "image": "/stories/der-postbote-des-windes/page-11.png"
+    },
+    {
+      "text": [
+        "Als Firlefanz und Papalapapp wieder in ihrem Garten standen, ging gerade die Sonne unter.",
+        "Über ihnen leuchteten die ersten Sterne, und ein ganz leiser Wind strich Firlefanz durch die Schuppen — als würde er Danke sagen.",
+        "Firlefanz gähnte, lehnte sich an Papalapapp und flüsterte: \"Was für ein wunderschönes Abenteuer.\" Dann schlummerte er tief und glücklich ein."
+      ],
+      "image": "/stories/der-postbote-des-windes/page-12.png"
+    }
+  ],
+  "translations": {
+    "en": {
+      "title": "Firlefanz and the Postman of the Wind",
+      "teaser": "In the middle of the night, an old letter flutters through Firlefanz's window. Who could it belong to?",
+      "pages": [
+        {
+          "text": [
+            "When Firlefanz opened his eyes that morning, something fluttered softly through his open window.",
+            "It was an old, yellowish piece of paper that gently landed on his blanket.",
+            "Carefully, he took it in his paws. It was a letter — beautifully written, with a small wax seal. \"Who could have lost you?\" whispered Firlefanz."
+          ]
+        },
+        {
+          "text": [
+            "At breakfast, Firlefanz nibbled on a warm rose hip slice and drank a cup of chamomile tea.",
+            "The old letter lay next to his plate and rustled softly, as if it were talking to the wind.",
+            "Firlefanz couldn't stop thinking: Who might have waited so long for this letter?"
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz quickly ran over to Papalapapp. He was sitting on the porch, drinking his morning coffee.",
+            "\"Look, Papalapapp — this letter flew to me last night!\"",
+            "Papalapapp examined the seal and nodded slowly. \"This is a forgotten letter. Only Flüster, the postman of the wind, can tell us who it belongs to. Come, let's find him.\""
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz got his soft travel coat, sturdy boots, walking stick, and small backpack.",
+            "Papalapapp put on his wide hat and packed a bag of apple pie for the journey.",
+            "Firlefanz wrapped the old letter in a cloth and placed it in his backpack. Then they waved goodbye to their little house."
+          ]
+        },
+        {
+          "text": [
+            "Together, they wandered over seven seas, through seven deserts, over seven mountains, along seven rivers, through seven forests, over seven bridges, and through seven windy valleys.",
+            "Everywhere they went, a gentle wind tickled their ears — as if it were showing them the way."
+          ]
+        },
+        {
+          "text": [
+            "Finally, they reached a small, round hill. At the top stood a tiny house with colorful mailboxes hanging everywhere.",
+            "Out of the door came a fluffy little creature wearing a crooked postman's hat and many pouches on its belt.",
+            "\"Welcome!\" it called with a bright, friendly voice. \"I am Flüster, the postman of the wind.\""
+          ]
+        },
+        {
+          "text": [
+            "Flüster led them inside. Forgotten letters were piled everywhere — some dusty, some yellowed, some still tightly sealed.",
+            "\"Here I collect everything the wind loses on its way,\" Flüster said softly.",
+            "Firlefanz pulled out his old letter. Flüster looked at it for a long time. \"Oh — it has been waiting for a very, very long time. It is for Knurr, the old lighthouse keeper by the calm sea.\""
+          ]
+        },
+        {
+          "text": [
+            "Flüster whistled a soft, cheerful whistle. Immediately, a friendly wind floated in and stopped at the door.",
+            "\"Climb on!\" laughed Flüster.",
+            "The wind gently lifted them up, light as feathers. They floated over clouds and hills, and below them, everything sparkled in the warm evening light. Firlefanz held the letter tightly."
+          ]
+        },
+        {
+          "text": [
+            "Soon they saw a small, old lighthouse on a rocky little island in the middle of the calm sea.",
+            "The wind carefully set them down in front of the door. Knock, knock, Firlefanz made softly.",
+            "Out came an old, cozy turtle wearing a warm knitted hat. \"Oh!\" she exclaimed in surprise. \"Visitors! I haven't had those in ages.\""
+          ]
+        },
+        {
+          "text": [
+            "Firlefanz handed the letter to Knurr. He put on his little reading glasses and read it very slowly and quietly.",
+            "Then he smiled gently. \"This is from my very best friend, a long, long time ago. He wishes me all the best for my birthday.\"",
+            "A small, happy tear rolled down his cheek. \"Finally, it has arrived. Thank you so very much.\""
+          ]
+        },
+        {
+          "text": [
+            "Knurr put a kettle on and served everyone a warm piece of honey cake.",
+            "They sat together on the small balcony of the lighthouse and watched the stars rise. The sea lay still like a mirror.",
+            "Then Flüster said softly: \"It's time to travel home.\" Knurr hugged Firlefanz. \"Come visit me again soon.\""
+          ]
+        },
+        {
+          "text": [
+            "When Firlefanz and Papalapapp stood back in their garden, the sun was just setting.",
+            "Above them, the first stars were shining, and a very gentle wind brushed against Firlefanz — as if it were saying thank you.",
+            "Firlefanz yawned, leaned against Papalapapp, and whispered: \"What a beautiful adventure.\" Then he fell into a deep and happy sleep."
+          ]
+        }
+      ]
+    }
+  }
+}

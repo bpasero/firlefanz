@@ -172,6 +172,7 @@ Playwright projects:
   - die-dracheninsel → `fable` (warm British male)
   - die-bunte-rakete → `fable` (warm British male)
   - der-funkelring → `fable` (warm British male)
+  - der-postbote-des-windes → `fable` (warm British male)
 
 ## Adding a New Language
 
