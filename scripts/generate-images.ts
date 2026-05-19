@@ -30,7 +30,7 @@ async function generateWithOpenAI(prompt: string, outPath: string): Promise<numb
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-image-1',
+      model: 'gpt-image-2',
       prompt,
       size: '1536x1024',
       quality: 'high',

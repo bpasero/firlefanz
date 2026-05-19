@@ -57,7 +57,7 @@ async function generate(spec: ImageSpec, referenceImages: string[]): Promise<voi
   let res: Response
   if (existingRefs.length > 0) {
     const formData = new FormData()
-    formData.append('model', 'gpt-image-1')
+    formData.append('model', 'gpt-image-2')
     formData.append('prompt', spec.prompt)
     formData.append('size', '1536x1024')
     formData.append('quality', 'high')
@@ -75,7 +75,7 @@ async function generate(spec: ImageSpec, referenceImages: string[]): Promise<voi
     res = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'gpt-image-1', prompt: spec.prompt, size: '1536x1024', quality: 'high' }),
+      body: JSON.stringify({ model: 'gpt-image-2', prompt: spec.prompt, size: '1536x1024', quality: 'high' }),
     })
   }
 

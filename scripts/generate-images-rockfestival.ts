@@ -52,7 +52,7 @@ async function generate(spec: ImageSpec, referenceImagePath: string | null = nul
   let res: Response
   if (referenceImagePath && fs.existsSync(referenceImagePath)) {
     const formData = new FormData()
-    formData.append('model', 'gpt-image-1')
+    formData.append('model', 'gpt-image-2')
     formData.append('prompt', spec.prompt)
     formData.append('size', '1536x1024')
     formData.append('quality', 'high')
@@ -67,7 +67,7 @@ async function generate(spec: ImageSpec, referenceImagePath: string | null = nul
     res = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'gpt-image-1', prompt: spec.prompt, size: '1536x1024', quality: 'high' }),
+      body: JSON.stringify({ model: 'gpt-image-2', prompt: spec.prompt, size: '1536x1024', quality: 'high' }),
     })
   }
   if (!res.ok) throw new Error(`API error: ${res.status} ${await res.text()}`)

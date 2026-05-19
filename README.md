@@ -52,7 +52,7 @@ Every story goes through a multi-stage pipeline from idea to finished interactiv
                                        │
                         ┌──────────────▼──────────────────────┐
                         │      3. GENERATE IMAGES             │
-                        │   OpenAI gpt-image-1                │
+                        │   OpenAI gpt-image-2                │
                         │   1536×1024, high quality            │
                         │   → cover.png + page-N.png          │
                         └──────────────┬──────────────────────┘
@@ -103,7 +103,7 @@ Every story goes through a multi-stage pipeline from idea to finished interactiv
 |------|------|-------------|
 | **Write** | Manual | Author story text in German as `story.json` |
 | **Translate** | GPT-4o-mini | Machine-translate to English (or other languages) |
-| **Images** | OpenAI `gpt-image-1` | Generate cover + per-page illustrations at 1536x1024 |
+| **Images** | OpenAI `gpt-image-2` | Generate cover + per-page illustrations at 1536x1024 |
 | **Watermark** | Sharp | Embed EXIF metadata + LSB steganography for copyright |
 | **Compress** | Sharp | Create mobile WebP variants (800px, quality 82) |
 | **PDF** | PDFKit | Assemble a downloadable/printable story book |
