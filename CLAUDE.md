@@ -174,6 +174,7 @@ Playwright projects:
   - der-funkelring → `fable` (warm British male)
   - der-postbote-des-windes → `fable` (warm British male)
   - die-traumfabrik → `fable` (warm British male)
+  - das-nordlicht → `fable` (warm British male)
 
 ## Adding a New Language
 
