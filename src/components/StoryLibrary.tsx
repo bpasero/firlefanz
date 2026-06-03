@@ -1,6 +1,7 @@
 // © 2026 Benjamin Pasero. All rights reserved.
 // https://github.com/bpasero/firlefanz
 
+import { useState } from 'react'
 import type { Story } from '../types/story'
 import { localizeStory } from '../types/story'
 import { useNightMode } from '../context/NightModeContext'
@@ -8,6 +9,7 @@ import { useLanguage } from '../context/LanguageContext'
 import { useMobileImages, getMobileSrc } from '../hooks/useMobileImages'
 import NightModeToggle from './NightModeToggle'
 import LanguageToggle from './LanguageToggle'
+import StoryContextMenu, { type ContextMenuState } from './StoryContextMenu'
 
 const base = import.meta.env.BASE_URL
 
@@ -20,6 +22,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
   const { nightMode } = useNightMode()
   const { language } = useLanguage()
   const mobileImages = useMobileImages()
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
 
   return (
     <div
@@ -100,6 +103,10 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
               <button
                 key={story.id}
                 onClick={() => onSelectStory(story)}
+                onContextMenu={(e) => {
+                  e.preventDefault()
+                  setContextMenu({ x: e.clientX, y: e.clientY, storyId: story.id })
+                }}
                 className="group cursor-pointer w-full sm:w-52 transition-all duration-300 active:scale-95 sm:hover:-translate-y-3 sm:hover:scale-105"
                 style={{ perspective: '800px' }}
               >
@@ -165,6 +172,10 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
       >
         &copy; 2026 Benjamin Pasero. Alle Rechte vorbehalten.
       </p>
+
+      {contextMenu && (
+        <StoryContextMenu menu={contextMenu} onClose={() => setContextMenu(null)} />
+      )}
     </div>
   )
 }
