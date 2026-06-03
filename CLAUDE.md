@@ -31,7 +31,7 @@ Every Firlefanz story follows a consistent arc:
 - **Warm & safe**: Even uncertain or mysterious moments resolve into happy, friendly encounters.
 - **In German**: All story text must be written in German. Simple, clear German suitable for young children.
 - **Age-appropriate**: Language and themes for children aged 3–6. Simple sentences, gentle pacing, read-aloud friendly.
-- **Length limit**: Total story text per language must not exceed **4096 characters** (OpenAI TTS input limit). The entire story is narrated in a single TTS call for consistent tone.
+- **Length limit**: Keep total story text per language to roughly **4096 characters** for gentle bedtime pacing. (Narration is generated per page via Gemini TTS, so the old single-call hard limit no longer applies — but concise stories still read best.)
 
 ## App Layout
 
@@ -66,7 +66,7 @@ Every Firlefanz story follows a consistent arc:
 ### Global UI Features
 - **Night mode** — warm dark colour palette for bedtime reading; defaults to OS `prefers-color-scheme`, persisted in `localStorage`
 - **Language toggle** — DE/EN (cycles through `SUPPORTED` in `src/context/LanguageContext.tsx`); defaults to browser language, persisted in `localStorage`
-- **Audio narration** — pre-generated OpenAI TTS audio files (per-page MP3s) with `playbackRate = 1.2`; falls back to Web Speech API if audio file not found; toggle in story reader header
+- **Audio narration** — pre-generated Gemini 3.1 Flash TTS audio files (per-page MP3s, default voice **Algieba**) with `playbackRate = 1.2`; falls back to Web Speech API if audio file not found; toggle in story reader header
 - All three toggles share the same visual style (small rounded pill buttons)
 
 ### Story Data
@@ -107,7 +107,7 @@ Every Firlefanz story follows a consistent arc:
 - **Sharp** for image watermarking (EXIF metadata + LSB steganography), icon generation, and mobile WebP compression
 - **tsx** for running TypeScript scripts directly (`npx tsx scripts/*.ts`)
 - **Playfair Display** and **Lora** fonts (self-hosted via `@fontsource`, Latin subset only)
-- **Web Speech API** (browser built-in) for audio narration
+- **Google Gemini 3.1 Flash TTS** (via OpenRouter) for pre-generated narration; **Web Speech API** (browser built-in) as the runtime fallback
 - **Umami** for privacy-friendly analytics (script tag in `index.html`)
 - **Copyright banner** injected into all bundled JS and CSS via a custom Vite plugin (`copyrightBannerPlugin` in `vite.config.ts`); uses `writeBundle` hook to reliably run after Vite's modulepreload polyfill injection
 
@@ -150,31 +150,8 @@ Playwright projects:
 - `npx tsx scripts/translate-stories.ts [lang]` — translate all stories to target language (default: `en`) using GPT-4o-mini; adds `translations.<lang>` to each `story.json`; skips stories that already have that translation; to force a retranslation, remove the existing `translations.<lang>` block from `story.json` first
 - `npx tsx scripts/generate-cover-png.ts <story-id>` — generate a print-ready cover PNG (`cover_148x210.png`) at 148×210mm (A5) / 300 DPI; cover image fills the top in 3:2 ratio, warm paper text panel below with story title in **Fredoka** (playful rounded font) and series label in Lora italic; uses `@napi-rs/canvas` for font rendering (both `latin` and `latin-ext` Fredoka variants must be registered for German umlaut support)
 - `npx tsx scripts/generate-icons.ts` — generate PWA icons (`public/icons/icon-192.png`, `public/icons/icon-512.png`) from a cover image using Sharp
-- `npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]` — generate per-page audio MP3 files via OpenAI TTS (`gpt-4o-mini-tts`, speed 1.0); the entire story is narrated in a single TTS call for consistent tone, then split into per-page files using Whisper word-level timestamps + ffmpeg; saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `de`, pass `all` for every available language; voice defaults to `fable` (available: alloy, echo, fable, onyx, nova, shimmer); requires `ffmpeg` installed locally; **skips pages that already exist** — delete existing MP3s first if regenerating after a text change
-  - der-glaeserne-strand → `fable` (warm British male)
-  - der-wolkenfluester → `fable` (warm British male)
-  - am-ende-der-welt → `nova` (warm female)
-  - die-stadt-der-vergessenen-spielzeuge → `fable` (warm British male)
-  - goldi-im-labyrinth → `nova` (warm female)
-  - das-tal-der-sanften-riesen → `shimmer` (warm female)
-  - das-rockfestival → `fable` (warm British male)
-  - skifahren-in-andermatt → `fable` (warm British male)
-  - der-zauber-zoo → `fable` (warm British male)
-  - der-mond → `fable` (warm British male)
-  - der-schachmeister → `fable` (warm British male)
-  - der-flughafen → `fable` (warm British male)
-  - das-kloster-in-den-wolken → `fable` (warm British male)
-  - bobo-der-siebenschlafer → `fable` (warm British male)
-  - der-kindergarten → `fable` (warm British male)
-  - der-osterhase → `fable` (warm British male)
-  - das-museum-der-lebendigen-statuen → `fable` (warm British male)
-  - das-urzeittal → `fable` (warm British male)
-  - die-dracheninsel → `fable` (warm British male)
-  - die-bunte-rakete → `fable` (warm British male)
-  - der-funkelring → `fable` (warm British male)
-  - der-postbote-des-windes → `fable` (warm British male)
-  - die-traumfabrik → `fable` (warm British male)
-  - das-nordlicht → `fable` (warm British male)
+- `npx tsx scripts/generate-audio.ts <story-id|all> [lang|all] [voice]` — generate per-page narration MP3s via **Google Gemini 3.1 Flash TTS** (`google/gemini-3.1-flash-tts-preview`) through OpenRouter; **default voice `Algieba`** (smooth male) for all stories. Each page is synthesized in its own call, so per-page files match each page exactly and the reader auto-advances on the audio `ended` event — **no timestamps needed**. Saved as `public/stories/<id>/audio-<lang>-page-N.mp3`; lang defaults to `all` (de + en). Pass `all` as the story id to (re)generate every story (a resume log at `.audio-regen-progress` lets a failed run continue; `FORCE=1` ignores it). Gemini returns PCM → transcoded to MP3 with `ffmpeg` (required locally). Requires `OPENROUTER_API_KEY` in `.env`. **Gemini occasionally truncates a whole-page clip** — the script validates each clip's length and, if short, re-synthesizes it sentence-by-sentence and concatenates (`CHUNK_CHARS` to shrink chunks, `PAGES=1,2` to target specific pages, `CONCURRENCY` default 4). Always check the per-story duration summary it prints for any `⚠ SHORT` pages.
+  - Default narration voice for every story: **`Algieba`** (Gemini, smooth male). Alternatives — male: `Umbriel`, `Charon`, `Iapetus`, `Enceladus`, `Schedar`; female: `Sulafat` (warm), `Vindemiatrix` (gentle), `Achernar` (soft).
 
 ## Adding a New Language
 
@@ -185,13 +162,13 @@ Playwright projects:
 ## Workflow for Adding a New Story
 
 1. Write `story.json` in `public/stories/<id>/` (German base text)
-2. Verify character count stays under 4096: `node -e "const s=require('./public/stories/<id>/story.json');console.log(s.pages.map(p=>p.text.join(' ')).join(' ').length)"`
+2. Check total character count (aim for ~4096 for pacing): `node -e "const s=require('./public/stories/<id>/story.json');console.log(s.pages.map(p=>p.text.join(' ')).join(' ').length)"`
 3. Translate to English: `npx tsx scripts/translate-stories.ts en` (adds `translations.en` to `story.json`)
 4. Create and run image generation script: `npx tsx scripts/generate-images-<slug>.ts`
 5. Watermark images: `npx tsx scripts/watermark-images.ts <id>`
 6. Generate mobile WebP variants: `npx tsx scripts/compress-images.ts <id>`
 7. Generate PDF: `npx tsx scripts/generate-pdf.ts <id>`
-8. Generate audio for both languages: `npx tsx scripts/generate-audio.ts <id> all`
+8. Generate audio for both languages: `npx tsx scripts/generate-audio.ts <id> all` (Gemini TTS, default voice `Algieba`)
 9. Add story id to the `storyIds` array in `src/App.tsx`
 10. Remove from `drafts.json` if applicable
 11. Commit and push

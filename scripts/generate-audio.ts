@@ -2,264 +2,176 @@
 // https://github.com/bpasero/firlefanz
 
 /**
- * Generates per-page audio files for a story using OpenAI TTS.
- * Usage: npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]
+ * Generate per-page narration MP3s with Google Gemini 3.1 Flash TTS via OpenRouter.
  *
- * The entire story is narrated in a single TTS call for consistent tone,
- * then split into per-page files using Whisper word-level timestamps + ffmpeg.
+ * Default voice: Algieba (smooth male). The reader (StoryReader.tsx) plays one MP3 per page and
+ * auto-advances on the audio 'ended' event, so per-page files ARE the page-turn sync — no
+ * timestamps needed. Output: public/stories/<id>/audio-<lang>-page-<N>.mp3 (git-tracked).
  *
- * IMPORTANT: Story text must not exceed 4096 characters per language.
+ * Gemini TTS over OpenRouter returns raw PCM (24 kHz / 16-bit / mono) → transcoded to MP3 via
+ * ffmpeg. Gemini occasionally truncates a whole-page request (HTTP 200 but cut short), so every
+ * page is length-validated; if short it is re-synthesized sentence-by-sentence and concatenated.
  *
- * lang defaults to 'de'. Pass 'all' to generate for all available languages.
- * Audio files are saved as: public/stories/<id>/audio-<lang>-page-<N>.mp3
+ * Usage:
+ *   npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]   # one story (default lang=all)
+ *   npx tsx scripts/generate-audio.ts all [lang|all] [voice]          # every story
+ *
+ * Env: CONCURRENCY (default 4) · PAGES=1,2 (only these pages) · CHUNK_CHARS (chunk size) ·
+ *      FORCE=1 (ignore the resume log for `all`)
+ *
+ * Requires OPENROUTER_API_KEY in .env and ffmpeg on PATH.
  */
 
-import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
-import { join } from 'path'
+import fs from 'fs'
+import path from 'path'
 import { execSync } from 'child_process'
+import { fileURLToPath } from 'url'
 import type { Story } from '../src/types/story.ts'
 
-const MAX_INPUT_CHARS = 4096
-const PAGE_SEPARATOR = '\n\n'
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const rootDir = path.resolve(__dirname, '..')
+const storiesDir = path.join(rootDir, 'public/stories')
 
-const storyId = process.argv[2]
-const langArg = process.argv[3] ?? 'de'
-const voiceArg = process.argv[4] ?? null
+const apiKey = fs.readFileSync(path.join(rootDir, '.env'), 'utf-8').match(/OPENROUTER_API_KEY=(.+)/)?.[1]?.trim()
+if (!apiKey) { console.error('Missing OPENROUTER_API_KEY in .env'); process.exit(1) }
 
-if (!storyId) {
-  console.error('Usage: npx tsx scripts/generate-audio.ts <story-id> [lang|all] [voice]')
-  console.error('Voices: alloy, echo, fable, onyx, nova, shimmer')
-  process.exit(1)
-}
+const MODEL = 'google/gemini-3.1-flash-tts-preview'
+const DEFAULT_VOICE = 'Algieba'
 
-// Load API key
-let apiKey = process.env.OPENAI_API_KEY
-if (!apiKey) {
-  try {
-    const env = readFileSync('.env', 'utf-8')
-    const match = env.match(/OPENAI_API_KEY=(.+)/)
-    if (match) apiKey = match[1].trim()
-  } catch { /* ignore */ }
-}
-if (!apiKey) { console.error('No OPENAI_API_KEY found'); process.exit(1) }
+const storyArg = process.argv[2]
+const langArg = process.argv[3] ?? 'all'
+const voice = process.argv[4] ?? DEFAULT_VOICE
+if (!storyArg) { console.error('Usage: generate-audio.ts <story-id|all> [lang|all] [voice]'); process.exit(1) }
 
-const storyPath = join('public', 'stories', storyId, 'story.json')
-if (!existsSync(storyPath)) {
-  console.error(`Story not found: ${storyPath}`)
-  process.exit(1)
-}
+const CONCURRENCY = process.env.CONCURRENCY ? parseInt(process.env.CONCURRENCY, 10) : 4
+const pagesFilter = process.env.PAGES ? new Set(process.env.PAGES.split(',').map((s) => parseInt(s.trim(), 10))) : null
+const progressFile = path.join(rootDir, '.audio-regen-progress')
 
-const story: Story = JSON.parse(readFileSync(storyPath, 'utf-8'))
+// PCM is s16le / 24 kHz / mono → bytes/sec = 24000 * 2. A clip faster than ~20 chars/sec is truncated.
+const SEC_PER_BYTE = 1 / (24000 * 2)
+const MIN_SEC_PER_CHAR = 0.05
 
-function getPageTexts(lang: string): string[] {
-  if (lang === 'de') {
-    return story.pages.map((p) => p.text.join(' '))
+async function synthValidated(text: string, maxAttempts = 3): Promise<{ buf: Buffer; sec: number } | null> {
+  const minSec = text.length * MIN_SEC_PER_CHAR
+  let best: Buffer | null = null
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const res = await fetch('https://openrouter.ai/api/v1/audio/speech', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: MODEL, voice, input: text, response_format: 'pcm' }),
+    })
+    if (!res.ok) {
+      await new Promise((r) => setTimeout(r, 3000)); continue
+    }
+    const buf = Buffer.from(await res.arrayBuffer())
+    const sec = buf.length * SEC_PER_BYTE
+    if (!best || buf.length > best.length) best = buf
+    if (sec >= minSec) return { buf, sec }
+    await new Promise((r) => setTimeout(r, 2000))
   }
+  return best ? { buf: best, sec: best.length * SEC_PER_BYTE } : null
+}
+
+// Split into sentence groups (Gemini reliably renders short sentences even when it truncates pages).
+function splitChunks(text: string): string[] {
+  const max = process.env.CHUNK_CHARS ? parseInt(process.env.CHUNK_CHARS, 10) : 180
+  const parts = text.match(/[^.!?]+[.!?]+"?\s*/g) ?? [text]
+  const chunks: string[] = []
+  let cur = ''
+  for (const p of parts) {
+    if (cur && (cur + p).length > max) { chunks.push(cur.trim()); cur = '' }
+    cur += p
+  }
+  if (cur.trim()) chunks.push(cur.trim())
+  return chunks.length ? chunks : [text]
+}
+
+async function synthPage(text: string): Promise<{ buf: Buffer; sec: number } | null> {
+  const minSec = text.length * MIN_SEC_PER_CHAR
+  const whole = await synthValidated(text, 2)
+  if (whole && whole.sec >= minSec) return whole
+  // Fallback: synthesize sentence chunks and concatenate PCM with 0.2s gaps.
+  const chunks = splitChunks(text)
+  const silence = Buffer.alloc(Math.round(24000 * 2 * 0.2))
+  const out: Buffer[] = []
+  for (let c = 0; c < chunks.length; c++) {
+    const r = await synthValidated(chunks[c], 3)
+    if (!r) return whole
+    if (c > 0) out.push(silence)
+    out.push(r.buf)
+  }
+  const buf = Buffer.concat(out)
+  return { buf, sec: buf.length * SEC_PER_BYTE }
+}
+
+async function pool<T>(items: T[], n: number, fn: (item: T) => Promise<void>): Promise<void> {
+  let i = 0
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => {
+    while (i < items.length) { const idx = i++; await fn(items[idx]) }
+  }))
+}
+
+function pageTextsFor(story: Story, lang: string): string[] {
+  if (lang === 'de') return story.pages.map((p) => p.text.join(' '))
   const t = story.translations?.[lang]
-  if (!t) throw new Error(`No translation for language: ${lang}`)
-  return t.pages.map((p) => p.text.join(' '))
+  return t ? t.pages.map((p) => p.text.join(' ')) : []
 }
 
-const langs = langArg === 'all'
-  ? ['de', ...Object.keys(story.translations ?? {})]
-  : [langArg]
-
-const VOICE = voiceArg ?? 'fable'
-const MODEL = 'gpt-4o-mini-tts'
-const SPEED = 1.0
-
-const LANG_INSTRUCTIONS: Record<string, string> = {
-  de: 'Speak in German with a native German accent. You are a warm, calm storyteller reading a kids\' fantasy bedtime storybook to young children aged 3–6. The stories follow Firlefanz, a whimsical dragon-like creature, on magical adventures through fantastical lands. Read with gentle wonder, bringing the imaginative world to life while keeping the tone soothing and sleep-inducing. Use slightly different voices for dialogue to make characters distinguishable, but stay soft and calming throughout.',
-  en: 'Speak in English with a native English accent. You are a warm, calm storyteller reading a kids\' fantasy bedtime storybook to young children aged 3–6. The stories follow Firlefanz, a whimsical dragon-like creature, on magical adventures through fantastical lands. Read with gentle wonder, bringing the imaginative world to life while keeping the tone soothing and sleep-inducing. Use slightly different voices for dialogue to make characters distinguishable, but stay soft and calming throughout.',
+function listStories(): string[] {
+  return fs.readdirSync(storiesDir).filter((d) => fs.existsSync(path.join(storiesDir, d, 'story.json'))).sort()
 }
 
-function getInstructions(lang: string): string {
-  return LANG_INSTRUCTIONS[lang] ?? `Speak in the language of the provided text with a native accent. You are a warm, calm storyteller reading a kids' fantasy bedtime storybook to young children aged 3–6. The stories follow Firlefanz, a whimsical dragon-like creature, on magical adventures through fantastical lands. Read with gentle wonder, bringing the imaginative world to life while keeping the tone soothing and sleep-inducing. Use slightly different voices for dialogue to make characters distinguishable, but stay soft and calming throughout.`
-}
-
-async function generateFullAudio(text: string, lang: string): Promise<Buffer> {
-  const res = await fetch('https://api.openai.com/v1/audio/speech', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ model: MODEL, voice: VOICE, input: text, speed: SPEED, instructions: getInstructions(lang) }),
-  })
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`TTS API error: ${res.status} ${err}`)
+async function doStory(id: string): Promise<string[]> {
+  const dir = path.join(storiesDir, id)
+  const story: Story = JSON.parse(fs.readFileSync(path.join(dir, 'story.json'), 'utf-8'))
+  const langs = langArg === 'all' ? ['de', ...Object.keys(story.translations ?? {})] : [langArg]
+  const short: string[] = []
+  for (const lang of langs) {
+    const texts = pageTextsFor(story, lang)
+    if (!texts.length) continue
+    const idxs = texts.map((_, i) => i).filter((i) => !pagesFilter || pagesFilter.has(i + 1))
+    await pool(idxs, CONCURRENCY, async (i) => {
+      const r = await synthPage(texts[i])
+      if (!r) { console.log(`    ${lang} p${i + 1}: FAILED`); short.push(`${lang}p${i + 1}`); return }
+      const pcmPath = path.join(dir, `.tmp-${lang}-${i + 1}.pcm`)
+      const out = path.join(dir, `audio-${lang}-page-${i + 1}.mp3`)
+      fs.writeFileSync(pcmPath, r.buf)
+      execSync(`ffmpeg -y -f s16le -ar 24000 -ac 1 -i "${pcmPath}" -b:a 160k "${out}"`, { stdio: 'ignore' })
+      fs.unlinkSync(pcmPath)
+      const tooShort = r.sec < texts[i].length * MIN_SEC_PER_CHAR
+      if (tooShort) short.push(`${lang}p${i + 1}`)
+      console.log(`    ${lang} p${i + 1}: ${r.sec.toFixed(1)}s${tooShort ? ' ⚠ SHORT' : ''}`)
+    })
   }
-  return Buffer.from(await res.arrayBuffer())
+  return short
 }
 
-interface WhisperWord {
-  word: string
-  start: number
-  end: number
-}
+// ---- main ----
+const all = storyArg === 'all'
+const targets = all ? listStories() : [storyArg]
+const done = (all && !process.env.FORCE && fs.existsSync(progressFile))
+  ? new Set(fs.readFileSync(progressFile, 'utf-8').split('\n').map((s) => s.trim()).filter(Boolean))
+  : new Set<string>()
+const queue = targets.filter((id) => !done.has(id))
 
-async function getWordTimestamps(audioPath: string): Promise<WhisperWord[]> {
-  const form = new FormData()
-  form.append('file', new Blob([readFileSync(audioPath)]), 'audio.mp3')
-  form.append('model', 'whisper-1')
-  form.append('response_format', 'verbose_json')
-  form.append('timestamp_granularities[]', 'word')
+console.log(`Model=${MODEL} voice=${voice} concurrency=${CONCURRENCY}`)
+console.log(`Stories: ${queue.length}${done.size ? ` (resuming, ${done.size} already done)` : ''}\n`)
 
-  const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}` },
-    body: form,
-  })
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`Whisper API error: ${res.status} ${err}`)
-  }
-  const data = await res.json() as { words: WhisperWord[] }
-  return data.words
-}
-
-function normalizeForMatching(text: string): string {
-  return text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim()
-}
-
-function findPageBoundaries(words: WhisperWord[], pageTexts: string[]): number[] {
-  // Returns start timestamps for each page
-  const boundaries: number[] = [0] // First page always starts at 0
-
-  // Build cumulative word list from whisper
-  const whisperWords = words.map(w => normalizeForMatching(w.word))
-
-  for (let pageIdx = 0; pageIdx < pageTexts.length - 1; pageIdx++) {
-    // Count words in this page's text
-    const pageWords = normalizeForMatching(pageTexts[pageIdx]).split(/\s+/)
-    const nextPageWords = normalizeForMatching(pageTexts[pageIdx + 1]).split(/\s+/)
-
-    // Find where the next page's first few words appear in the whisper transcript
-    // We search after the approximate position of where this page should end
-    const approxWordsSoFar = pageTexts.slice(0, pageIdx + 1).reduce((sum, t) => sum + normalizeForMatching(t).split(/\s+/).length, 0)
-
-    // Search window: start looking a bit before the expected position
-    const searchStart = Math.max(0, approxWordsSoFar - Math.floor(pageWords.length * 0.3))
-    const searchEnd = Math.min(whisperWords.length, approxWordsSoFar + Math.floor(pageWords.length * 0.5))
-
-    // Look for the first few words of the next page
-    const needle = nextPageWords.slice(0, Math.min(4, nextPageWords.length))
-    let bestMatch = -1
-
-    for (let i = searchStart; i < searchEnd; i++) {
-      let matched = 0
-      for (let j = 0; j < needle.length && i + j < whisperWords.length; j++) {
-        if (whisperWords[i + j].includes(needle[j]) || needle[j].includes(whisperWords[i + j])) {
-          matched++
-        }
-      }
-      if (matched >= Math.min(3, needle.length)) {
-        bestMatch = i
-        break
-      }
-    }
-
-    if (bestMatch >= 0) {
-      boundaries.push(words[bestMatch].start)
-    } else {
-      // Fallback: estimate proportionally
-      const totalChars = pageTexts.join('').length
-      const charsSoFar = pageTexts.slice(0, pageIdx + 1).join('').length
-      const ratio = charsSoFar / totalChars
-      const totalDuration = words[words.length - 1].end
-      boundaries.push(ratio * totalDuration)
-      console.warn(`    Warning: Could not find exact boundary for page ${pageIdx + 2}, using proportional estimate`)
-    }
-  }
-
-  return boundaries
-}
-
-function splitAudioWithFfmpeg(inputPath: string, boundaries: number[], totalPages: number, outDir: string, lang: string): void {
-  // Get total duration
-  const durationStr = execSync(`ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${inputPath}"`).toString().trim()
-  const totalDuration = parseFloat(durationStr)
-
-  for (let i = 0; i < totalPages; i++) {
-    const start = boundaries[i]
-    const end = i < totalPages - 1 ? boundaries[i + 1] : totalDuration
-    const outPath = join(outDir, `audio-${lang}-page-${i + 1}.mp3`)
-
-    execSync(`ffmpeg -y -i "${inputPath}" -ss ${start} -to ${end} -c copy "${outPath}" 2>/dev/null`)
-    const size = readFileSync(outPath).length
-    console.log(`    Page ${i + 1}: ${start.toFixed(1)}s – ${end.toFixed(1)}s (${(size / 1024).toFixed(0)} KB)`)
-  }
-}
-
-const outDir = join('public', 'stories', storyId)
-
-for (const lang of langs) {
-  console.log(`\nGenerating audio for language: ${lang}`)
-
-  let pageTexts: string[]
+const problems: Record<string, string[]> = {}
+for (let s = 0; s < queue.length; s++) {
+  const id = queue[s]
+  console.log(`[${s + 1}/${queue.length}] ${id}`)
   try {
-    pageTexts = getPageTexts(lang)
-  } catch (e) {
-    console.error(`  ${(e as Error).message}, skipping`)
-    continue
-  }
-
-  // Check if all pages already exist
-  const allExist = pageTexts.every((_, i) => existsSync(join(outDir, `audio-${lang}-page-${i + 1}.mp3`)))
-  if (allExist) {
-    console.log('  All pages already exist, skipping')
-    continue
-  }
-
-  // Combine all pages into one text
-  const fullText = pageTexts.join(PAGE_SEPARATOR)
-  if (fullText.length > MAX_INPUT_CHARS) {
-    console.error(`  Error: Story text is ${fullText.length} chars, exceeds ${MAX_INPUT_CHARS} limit. Shorten the story text.`)
-    continue
-  }
-  console.log(`  Full text: ${fullText.length} chars, ${pageTexts.length} pages`)
-
-  // Step 1: Generate full audio
-  process.stdout.write('  Generating full narration... ')
-  const fullAudioPath = join(outDir, `_full-${lang}.mp3`)
-  try {
-    const audio = await generateFullAudio(fullText, lang)
-    writeFileSync(fullAudioPath, audio)
-    console.log(`done (${(audio.length / 1024).toFixed(0)} KB)`)
-  } catch (e) {
-    console.error(`error - ${(e as Error).message}`)
-    continue
-  }
-
-  // Step 2: Get word-level timestamps via Whisper
-  process.stdout.write('  Transcribing for timestamps... ')
-  let words: WhisperWord[]
-  try {
-    words = await getWordTimestamps(fullAudioPath)
-    console.log(`done (${words.length} words)`)
-  } catch (e) {
-    console.error(`error - ${(e as Error).message}`)
-    unlinkSync(fullAudioPath)
-    continue
-  }
-
-  // Step 3: Find page boundaries
-  console.log('  Finding page boundaries...')
-  const boundaries = findPageBoundaries(words, pageTexts)
-
-  // Step 4: Split into per-page files
-  console.log('  Splitting into pages:')
-  try {
-    splitAudioWithFfmpeg(fullAudioPath, boundaries, pageTexts.length, outDir, lang)
-  } catch (e) {
-    console.error(`  Split error: ${(e as Error).message}`)
-    unlinkSync(fullAudioPath)
-    continue
-  }
-
-  // Clean up full audio
-  unlinkSync(fullAudioPath)
+    const short = await doStory(id)
+    if (short.length) { problems[id] = short; console.log(`  ⚠ ${id}: ${short.length} short page(s): ${short.join(', ')}`) }
+    else if (all) fs.appendFileSync(progressFile, id + '\n')
+  } catch (e) { console.error(`  ERROR ${id}: ${(e as Error).message}`); problems[id] = ['error'] }
 }
 
-console.log('\nDone!')
+console.log('\n===== SUMMARY =====')
+const clean = queue.length - Object.keys(problems).length
+console.log(`${clean}/${queue.length} stories clean${all && done.size ? ` (+${done.size} previously done)` : ''}`)
+if (Object.keys(problems).length) {
+  console.log('Needs attention:')
+  for (const [id, p] of Object.entries(problems)) console.log(`  ${id}: ${p.join(', ')}`)
+} else console.log('All requested stories OK ✓')
