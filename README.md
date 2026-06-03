@@ -80,15 +80,10 @@ Every story goes through a multi-stage pipeline from idea to finished interactiv
                                        │
                         ┌──────────────▼──────────────────────┐
                         │      7. GENERATE AUDIO              │
-                        │   Full story → OpenAI TTS           │
-                        │   (gpt-4o-mini-tts, single call     │
-                        │    for consistent narrator tone)    │
-                        │                                     │
-                        │   Full audio → Whisper STT          │
-                        │   (word-level timestamps to find    │
-                        │    page boundaries)                 │
-                        │                                     │
-                        │   Full audio → ffmpeg split         │
+                        │   Each page → Gemini 3.1 Flash TTS  │
+                        │   (voice Algieba, via OpenRouter)   │
+                        │   per-page synthesis = page-turn    │
+                        │   sync; PCM → ffmpeg → MP3          │
                         │   → audio-<lang>-page-N.mp3         │
                         └──────────────┬──────────────────────┘
                                        │
@@ -107,9 +102,8 @@ Every story goes through a multi-stage pipeline from idea to finished interactiv
 | **Watermark** | Sharp | Embed EXIF metadata + LSB steganography for copyright |
 | **Compress** | Sharp | Create mobile WebP variants (800px, quality 82) |
 | **PDF** | PDFKit | Assemble a downloadable/printable story book |
-| **TTS** | OpenAI `gpt-4o-mini-tts` | Narrate the full story in one call for consistent tone |
-| **STT** | OpenAI Whisper | Word-level timestamps to locate page boundaries |
-| **Split** | ffmpeg | Cut the full narration into per-page MP3 files |
+| **TTS** | Google Gemini 3.1 Flash TTS (via OpenRouter) | Narrate each page in its own call, voice `Algieba` |
+| **Transcode** | ffmpeg | Convert Gemini PCM output into per-page `audio-<lang>-page-N.mp3` |
 | **Deploy** | GitHub Actions | Build with Vite and deploy to GitHub Pages |
 
 ## Tech Stack
@@ -121,7 +115,7 @@ Every story goes through a multi-stage pipeline from idea to finished interactiv
 | **Fonts** | Playfair Display, Lora (self-hosted via @fontsource) |
 | **PDF** | PDFKit |
 | **Image processing** | Sharp (watermarking, compression, icon generation) |
-| **AI** | OpenAI (image generation, TTS, Whisper, translation) |
+| **AI** | OpenAI `gpt-image-2` (images) + GPT-4o-mini (translation); Google Gemini 3.1 Flash TTS / `Algieba` (narration, via OpenRouter) |
 | **Testing** | Vitest + happy-dom (unit), Playwright (e2e) |
 | **Hosting** | GitHub Pages with GitHub Actions CI/CD |
 | **Analytics** | Umami (privacy-friendly) |
