@@ -7,6 +7,7 @@ import { NightModeProvider } from './context/NightModeContext'
 import { LanguageProvider } from './context/LanguageContext'
 import StoryLibrary from './components/StoryLibrary'
 import StoryReader from './components/StoryReader'
+import { rememberLastRead } from './lib/lastRead'
 
 export function parseHash(): { storyId: string; page: number } | null {
   const hash = window.location.hash.replace(/^#\/?/, '')
@@ -52,6 +53,7 @@ function App() {
     setInitialPage(0)
     pageRef.current = 0
     window.location.hash = `#/${story.id}/1`
+    rememberLastRead(story.id, 1, story.pages.length)
   }, [])
 
   const closeStory = useCallback(() => {
@@ -65,6 +67,7 @@ function App() {
     pageRef.current = pageIndex
     if (activeStory) {
       window.location.hash = `#/${activeStory.id}/${pageIndex + 1}`
+      rememberLastRead(activeStory.id, pageIndex + 1, activeStory.pages.length)
     }
   }, [activeStory])
 
