@@ -4,19 +4,25 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import sharp from 'sharp'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
 
 const envContent = fs.readFileSync(path.join(rootDir, '.env'), 'utf-8')
-const apiKey = envContent.match(/OPENAI_API_KEY=(.+)/)?.[1]?.trim()
-if (!apiKey) { console.error('Missing OPENAI_API_KEY in .env'); process.exit(1) }
+const apiKey = envContent.match(/OPENROUTER_API_KEY=(.+)/)?.[1]?.trim()
+if (!apiKey) { console.error('Missing OPENROUTER_API_KEY in .env'); process.exit(1) }
+
+// Image generation via OpenRouter → Google Nano Banana 2 (Gemini 3.1 Flash Image Preview).
+const MODEL = 'google/gemini-3.1-flash-image-preview'
+const WIDTH = 1536
+const HEIGHT = 1024 // 3:2 landscape — the project's canonical cover/page size
 
 const storyDir = path.join(rootDir, 'public/stories/das-urzeittal')
 fs.mkdirSync(storyDir, { recursive: true })
 
-const S = "Children's book illustration, soft watercolor style with visible brushstrokes and paper texture. Lush prehistoric jungle palette: deep emerald greens, golden amber sunlight, soft turquoise mist, earthy warm browns, vivid tropical flowers in pink and violet. Gentle ink outlines, dreamy highlights."
-const E = 'Gentle, cozy, dreamy atmosphere suitable for a bedtime story. No text, words, letters, labels, signs, or writing of any kind anywhere in the image.'
+const S = "Soft, hand-painted children's picture-book illustration in a gentle colored-pencil and watercolor style — hazy, dreamy and slightly grainy, with visible soft paper texture. Soft, blurred edges and NO outlines: forms are built from soft pencil shading and gentle watercolor washes that blend into one another, with no bold ink lines and no hard black outlines anywhere. Muted, tender, slightly desaturated pastel palette: soft sage and olive greens, warm pale buttery yellows, gentle amber light, dusty soft turquoise, warm earthy browns and pale pink blossoms — gentle and faded, never bright or saturated. Diffuse, soft light. The look of a classic vintage hand-illustrated bedtime storybook: soft, matte and painterly — definitely NOT a cartoon, not glossy, not digital vector art, not bold-lined, not saturated."
+const E = 'Gentle, cozy, dreamy bedtime atmosphere. Soft matte hand-painted texture, muted and tender, never cartoonish, never glossy, never sharp-lined. No text, words, letters, labels, signs, or writing of any kind anywhere in the image.'
 const F = 'Firlefanz is a small friendly green dragon/dinosaur creature with round eyes and a cheerful snout'
 const P = 'Papalapapp is the same species as Firlefanz but larger and fatherly, with a warm gentle face and a scarf'
 const TROMMO = 'Trommo is a very large gentle long-necked dinosaur (brachiosaurus-type) with soft olive-green skin, enormous kind brown eyes, a gentle smile, and a rounded snout — clearly a single dinosaur character'
@@ -58,7 +64,7 @@ const images: ImageSpec[] = [
   },
   {
     filename: 'page-5.png',
-    prompt: `${S} Epic panoramic journey: ${F} and ${P} walking through a sweeping landscape. ${OUTFIT}. Papalapapp wears his scarf. Visible in the same scene across a wide panorama: crossing a turquoise sea on stepping stones, climbing a snow-capped mountain, wading through a rushing river, and walking through an ancient dark forest. The air grows greener and warmer in the distance. Sense of grand adventure and vast distance. ${E}`,
+    prompt: `${S} Epic journey scene. IMPORTANT: there is exactly ONE Firlefanz and exactly ONE Papalapapp in this image — a single pair of travelers, shown only once, together in the foreground. ${F} (${OUTFIT}) walks side by side with ${P}, who wears his scarf and carries a backpack, along a path in the foreground. Behind them, a sweeping panorama hints at the long journey ahead: a distant turquoise sea, a far snow-capped mountain, and a winding river, all far away in the background. Do NOT draw any duplicate, extra, or background copies of Firlefanz or Papalapapp anywhere — each appears exactly once. Sense of grand adventure and vast distance. ${E}`,
   },
   {
     filename: 'page-6.png',
@@ -70,11 +76,11 @@ const images: ImageSpec[] = [
   },
   {
     filename: 'page-8.png',
-    prompt: `${S} Joyful meeting scene in the lush prehistoric valley: the enormous gentle ${TROMMO} bends his long neck down toward ${F} and ${P}. The small colorful ${ZIPSI} hops excitedly from foot to foot nearby, tail wagging like a happy puppy. Firlefanz raises his arms in delight. Tropical ferns and giant flowers surround the group. Warm golden afternoon light. ${E}`,
+    prompt: `${S} Joyful meeting scene in the lush prehistoric valley. IMPORTANT: there is exactly ONE Firlefanz, exactly ONE Papalapapp, exactly ONE Trommo, and exactly ONE Zipsi — each character appears only once. The enormous gentle ${TROMMO} bends his long neck down toward the group. ${F}, wearing his explorer hat, raises his arms in delight. Beside him stands ${P}, who is larger and wears his scarf. The small colorful ${ZIPSI} hops excitedly from foot to foot nearby, tail wagging like a happy puppy. Do NOT draw two small green dragons — there is only ONE Firlefanz. Tropical ferns and giant flowers surround the group. Warm golden afternoon light. ${E}`,
   },
   {
     filename: 'page-9.png',
-    prompt: `${S} Two scenes blended softly: left — ${F} and ${ZIPSI} leaping playfully over enormous tree roots as thick as houses in the jungle. Right — ${F} and ${P} seated high on ${TROMMO}'s broad back, so high they are level with soft white clouds, looking out over the vast green valley below with wonder. Warm late-afternoon golden light. ${E}`,
+    prompt: `${S} ${F} and ${P} seated together high on the broad back of the enormous gentle ${TROMMO}, so high that they are level with soft white clouds, gazing out over the vast green valley far below with quiet wonder. The small colorful ${ZIPSI} perches happily on Trommo's neck just nearby. IMPORTANT: there is exactly ONE Firlefanz, ONE Papalapapp, ONE Trommo, and ONE Zipsi — each character appears only once; do NOT draw Firlefanz or Papalapapp more than once anywhere. Warm late-afternoon golden light, soft and dreamy. ${E}`,
   },
   {
     filename: 'page-10.png',
@@ -86,55 +92,104 @@ const images: ImageSpec[] = [
   },
 ]
 
+// One OpenRouter call. Reference images (style sheet + previous page) are passed as
+// data-URL image parts alongside the text prompt so Nano Banana 2 keeps the characters
+// and scene style consistent. Returns the raw PNG bytes Gemini emits.
+async function callModel(prompt: string, refPaths: string[]): Promise<Buffer> {
+  const content: Array<Record<string, unknown>> = [{ type: 'text', text: prompt }]
+  for (const refPath of refPaths) {
+    const b64 = fs.readFileSync(refPath).toString('base64')
+    content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${b64}` } })
+  }
+
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: MODEL,
+      messages: [{ role: 'user', content }],
+      modalities: ['image', 'text'],
+      image_config: { aspect_ratio: '3:2', image_size: '2K' },
+    }),
+  })
+
+  if (!res.ok) throw new Error(`API error: ${res.status} ${await res.text()}`)
+  const data = await res.json() as {
+    choices?: { message?: { images?: { image_url?: { url?: string } }[] } }[]
+  }
+  const url = data.choices?.[0]?.message?.images?.[0]?.image_url?.url
+  if (!url) throw new Error('No image in response')
+  const b64 = url.split(',')[1] ?? ''
+  return Buffer.from(b64, 'base64')
+}
+
 async function generate(spec: ImageSpec, referenceImages: string[]): Promise<void> {
   console.log(`Generating ${spec.filename}...`)
 
   const existingRefs = referenceImages.filter(p => fs.existsSync(p))
 
-  let res: Response
-  if (existingRefs.length > 0) {
-    const formData = new FormData()
-    formData.append('model', 'gpt-image-2')
-    formData.append('prompt', spec.prompt)
-    formData.append('size', '1536x1024')
-    formData.append('quality', 'high')
-    for (const refPath of existingRefs) {
-      const imageData = fs.readFileSync(refPath)
-      const refName = path.basename(refPath)
-      formData.append('image[]', new Blob([imageData], { type: 'image/png' }), refName)
+  // Retry a few times — image models occasionally return no image part.
+  let raw: Buffer | null = null
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      raw = await callModel(spec.prompt, existingRefs)
+      break
+    } catch (e) {
+      console.error(`  attempt ${attempt} failed: ${(e as Error).message}`)
+      if (attempt < 3) await new Promise((r) => setTimeout(r, 3000))
     }
-    res = await fetch('https://api.openai.com/v1/images/edits', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}` },
-      body: formData,
-    })
-  } else {
-    res = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'gpt-image-2', prompt: spec.prompt, size: '1536x1024', quality: 'high' }),
-    })
   }
+  if (!raw) throw new Error('all attempts failed')
 
-  if (!res.ok) throw new Error(`API error: ${res.status} ${await res.text()}`)
-  const data = await res.json() as { data?: { b64_json?: string }[] }
-  const b64 = data.data?.[0]?.b64_json
-  if (!b64) throw new Error('No image in response')
-  const buf = Buffer.from(b64, 'base64')
+  // Normalise to the project's canonical 1536×1024 (3:2) so every downstream
+  // script (watermark, compress, pdf) sees a consistent source size.
+  const buf = await sharp(raw).resize(WIDTH, HEIGHT, { fit: 'cover' }).png().toBuffer()
   fs.writeFileSync(path.join(storyDir, spec.filename), buf)
   console.log(`  Saved ${spec.filename} (${(buf.length / 1024).toFixed(0)} KB)`)
 }
 
 const styleRefPath = path.join(storyDir, STYLE_REF)
+const coverPath = path.join(storyDir, 'cover.png')
+
+// Optional targeted regen, e.g. PAGES=5,8 (page numbers) or PAGES=cover.png.
+// In targeted mode the style-ref sheet is not rebuilt; the existing cover (which
+// shows every character exactly once) is the style anchor instead, and the on-disk
+// previous page provides continuity. Non-requested files are left untouched.
+const requested = process.env.PAGES?.split(',').map(s => s.trim()).filter(Boolean)
+const onlyFiles = requested && requested.length
+  ? new Set(requested.map(p => /^\d+$/.test(p) ? `page-${p}.png` : p))
+  : null
+if (onlyFiles) console.log(`Targeted regen: ${[...onlyFiles].join(', ')}`)
+
+// Optional style anchors (e.g. previous-generation images) passed as extra reference
+// images when building the character/style sheet, to steer the painterly look.
+const styleAnchors = (process.env.STYLE_ANCHORS?.split(',').map(s => s.trim()).filter(Boolean) ?? [])
+  .filter(p => fs.existsSync(p))
+if (styleAnchors.length) console.log(`Style anchors: ${styleAnchors.join(', ')}`)
+
 let previousPagePath: string | null = null
 
 for (const spec of images) {
+  // In targeted mode skip the style-ref build and any page not requested, but keep
+  // the continuity chain pointing at the on-disk previous page.
+  if (onlyFiles) {
+    if (spec.isStyleRef) continue
+    if (!onlyFiles.has(spec.filename)) {
+      previousPagePath = path.join(storyDir, spec.filename)
+      continue
+    }
+  }
+
   try {
     const refs: string[] = []
 
-    // Always include the style reference sheet (except when generating it)
-    if (!spec.isStyleRef) {
-      refs.push(styleRefPath)
+    if (spec.isStyleRef) {
+      // Anchor the character/style sheet to any provided reference images (e.g. the
+      // previous-generation art) so the painterly look carries into every page.
+      refs.push(...styleAnchors)
+    } else {
+      // Style anchor: the style-ref sheet on a full run, the existing cover on a targeted regen.
+      refs.push(onlyFiles ? coverPath : styleRefPath)
     }
 
     // Include the previous page for scene-to-scene continuity
