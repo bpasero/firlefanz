@@ -10,9 +10,15 @@ import { useMobileImages, getMobileSrc } from '../hooks/useMobileImages'
 import NightModeToggle from './NightModeToggle'
 import LanguageToggle from './LanguageToggle'
 import NarrationToggle from './NarrationToggle'
+import MusicToggle from './MusicToggle'
 import FullscreenToggle from './FullscreenToggle'
 
 const base = import.meta.env.BASE_URL
+
+// Background-music volumes (HTMLAudioElement.volume, 0–1). Music sits quietly under the
+// narration; while a page is being read aloud it ducks down further so the voice leads.
+const MUSIC_BASE_VOL = 0.28
+const MUSIC_DUCK_VOL = 0.12
 
 interface StoryReaderProps {
   story: Story
@@ -163,6 +169,10 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages, isLa
 export default function StoryReader({ story, initialPage = 0, onBack, onPageChange }: StoryReaderProps) {
   const [pageIndex, setPageIndex] = useState(initialPage)
   const [narrating, setNarrating] = useState(false)
+  // Global, persisted preference: once the user turns music on it stays on across stories.
+  const [musicOn, setMusicOn] = useState(() => {
+    try { return localStorage.getItem('firlefanz-music') === 'true' } catch { return false }
+  })
   const [flip, setFlip] = useState<{
     direction: 'forward' | 'back'
     fromPage: number
@@ -172,6 +182,9 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const audioFailedRef = useRef<Set<string>>(new Set())
+  const musicRef = useRef<HTMLAudioElement | null>(null)
+  const musicFadeRef = useRef<number | null>(null)
+  const narratingRef = useRef(false)
   const turnPageRef = useRef<((dir: 'forward' | 'back') => void) | null>(null)
   const isLastRef = useRef(false)
   const { nightMode } = useNightMode()
@@ -262,11 +275,70 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
     }
   }, [pageIndex, narrating, language, story])
 
-  // Cancel narration when leaving the reader
+  // Persist the music preference so it carries across stories and reloads.
+  useEffect(() => {
+    try { localStorage.setItem('firlefanz-music', String(musicOn)) } catch { /* ignore */ }
+  }, [musicOn])
+
+  // Smoothly ramp the music volume toward a target (gentle fade in / out / duck).
+  const rampMusicVolume = useCallback((target: number, ms = 700) => {
+    const audio = musicRef.current
+    if (!audio) return
+    if (musicFadeRef.current) { clearInterval(musicFadeRef.current); musicFadeRef.current = null }
+    const start = audio.volume
+    const steps = 24
+    let i = 0
+    musicFadeRef.current = window.setInterval(() => {
+      i++
+      const t = Math.min(1, i / steps)
+      audio.volume = Math.max(0, Math.min(1, start + (target - start) * t))
+      if (t >= 1 && musicFadeRef.current) { clearInterval(musicFadeRef.current); musicFadeRef.current = null }
+    }, Math.max(16, ms / steps))
+  }, [])
+
+  // Background music: a single looping clip per story, played quietly under the narration.
+  // Only stories with a `music` track participate. Starting playback needs a user gesture —
+  // toggling the pill (or the click that opened the story) provides it; if the browser still
+  // blocks autoplay, play() rejects harmlessly and music starts on the next toggle.
+  useEffect(() => {
+    const musicSrc = story.music
+    if (!musicSrc) return
+
+    if (!musicRef.current) {
+      const a = new Audio()
+      a.loop = true
+      a.preload = 'auto'
+      musicRef.current = a
+    }
+    const audio = musicRef.current
+    const url = `${base}${musicSrc.replace(/^\//, '')}`
+    if (!audio.src.endsWith(musicSrc)) audio.src = url
+
+    if (musicOn) {
+      audio.play()
+        .then(() => rampMusicVolume(narratingRef.current ? MUSIC_DUCK_VOL : MUSIC_BASE_VOL, 1400))
+        .catch(() => { /* autoplay blocked — will start on the next user toggle */ })
+    } else {
+      rampMusicVolume(0, 500)
+      const t = setTimeout(() => audio.pause(), 520)
+      return () => clearTimeout(t)
+    }
+  }, [musicOn, story.music, story.id, rampMusicVolume])
+
+  // Duck the music down while a page is being narrated, lift it back when narration stops.
+  useEffect(() => {
+    narratingRef.current = narrating
+    if (!musicOn || !musicRef.current || !story.music) return
+    rampMusicVolume(narrating ? MUSIC_DUCK_VOL : MUSIC_BASE_VOL, 700)
+  }, [narrating, musicOn, story.music, rampMusicVolume])
+
+  // Cancel narration and music when leaving the reader
   useEffect(() => {
     return () => {
       window.speechSynthesis.cancel()
       audioRef.current?.pause()
+      musicRef.current?.pause()
+      if (musicFadeRef.current) clearInterval(musicFadeRef.current)
     }
   }, [])
 
@@ -390,6 +462,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
         </h2>
         <div className="flex items-center gap-1.5 shrink-0">
           <NarrationToggle narrating={narrating} onToggle={() => setNarrating((n) => !n)} />
+          {story.music && <MusicToggle playing={musicOn} onToggle={() => setMusicOn((m) => !m)} />}
           <LanguageToggle />
           <NightModeToggle />
           <FullscreenToggle />
