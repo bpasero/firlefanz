@@ -1,0 +1,6 @@
+# Files to copy into Claude Code worktrees (gitignore syntax).
+# Only gitignored files matching these patterns are copied; tracked files are never duplicated.
+
+# API keys for tsx scripts (image/audio/translate) and Vite dev server
+.env
+.env.*
