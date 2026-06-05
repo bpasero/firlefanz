@@ -21,6 +21,15 @@ export function rememberLastRead(id: string, page: number, total: number): void 
   }
 }
 
+/** Forget the last-read entry, so the "keep reading" nook disappears. */
+export function clearLastRead(): void {
+  try {
+    localStorage.removeItem(LAST_READ_KEY)
+  } catch {
+    // localStorage may be unavailable — nothing to clear then.
+  }
+}
+
 /** Read the last-read entry, or null if absent/invalid. Caller validates the id still exists. */
 export function readLastRead(): LastRead | null {
   try {

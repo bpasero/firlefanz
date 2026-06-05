@@ -7,7 +7,7 @@ import { localizeStory } from '../types/story'
 import { useNightMode } from '../context/NightModeContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useMobileImages, getMobileSrc } from '../hooks/useMobileImages'
-import { readLastRead, type LastRead } from '../lib/lastRead'
+import { readLastRead, clearLastRead, type LastRead } from '../lib/lastRead'
 import NightModeToggle from './NightModeToggle'
 import LanguageToggle from './LanguageToggle'
 import StoryContextMenu, { type ContextMenuState } from './StoryContextMenu'
@@ -378,12 +378,13 @@ interface KeepReadingProps {
   lang: string
   onResume: (lr: LastRead) => void
   onContext: (e: React.MouseEvent, storyId: string) => void
+  onDismiss: () => void
 }
 
-function KeepReading({ story, title, lastRead, t, mobile, lang, onResume, onContext }: KeepReadingProps) {
+function KeepReading({ story, title, lastRead, t, mobile, lang, onResume, onContext, onDismiss }: KeepReadingProps) {
   const fraction = Math.max(0.04, Math.min(1, lastRead.page / lastRead.total))
   return (
-    <section className="mt-5 sm:mt-6">
+    <section className="relative mt-5 sm:mt-6">
       <button
         type="button"
         aria-label={`${lang === 'en' ? 'Keep reading' : 'Weiterlesen'}: ${title}`}
@@ -425,6 +426,16 @@ function KeepReading({ story, title, lastRead, t, mobile, lang, onResume, onCont
           </div>
         </div>
       </button>
+      <button
+        type="button"
+        onClick={onDismiss}
+        aria-label={lang === 'en' ? 'Remove from keep reading' : 'Aus „Weiterlesen“ entfernen'}
+        title={lang === 'en' ? 'Remove from keep reading' : 'Aus „Weiterlesen“ entfernen'}
+        className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full text-lg leading-none transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f5b942] active:scale-90"
+        style={{ background: t.pillBg, color: t.pillText, border: `1px solid ${t.pillBorder}` }}
+      >
+        <span aria-hidden>×</span>
+      </button>
     </section>
   )
 }
@@ -459,10 +470,12 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
   const byId = useMemo(() => new Map(stories.map((s) => [s.id, s])), [stories])
 
   // Keep-reading: read once, validate the story still exists.
-  const lastRead = useMemo<LastRead | null>(() => {
+  const [keepDismissed, setKeepDismissed] = useState(false)
+  const storedLastRead = useMemo<LastRead | null>(() => {
     const lr = readLastRead()
     return lr && byId.has(lr.id) ? lr : null
   }, [byId])
+  const lastRead = keepDismissed ? null : storedLastRead
   const keepStory = lastRead ? byId.get(lastRead.id)! : null
 
   // Featured "tonight": deterministic per day, nudged by the "another story" link,
@@ -509,6 +522,11 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
 
   const resume = (lr: LastRead) => {
     window.location.hash = `#/${lr.id}/${lr.page}`
+  }
+
+  const dismissKeep = () => {
+    clearLastRead()
+    setKeepDismissed(true)
   }
 
   const nextFeatured = () => {
@@ -624,6 +642,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
             lang={language}
             onResume={resume}
             onContext={openContext}
+            onDismiss={dismissKeep}
           />
         )}
 
