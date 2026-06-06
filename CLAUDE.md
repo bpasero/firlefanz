@@ -58,7 +58,7 @@ The home page (`src/components/StoryLibrary.tsx`) is styled as the warm corner o
 - Overscroll bounce disabled to prevent accidental navigation
 - **No scrollbars** — the reader must never show scrollbars, neither on the page itself nor on the text panel; the reader uses `fixed inset-0` positioning to lock to the viewport; text uses dynamic font scaling (`useLayoutEffect` overflow detection with progressive `FONT_STEPS`) to shrink until it fits; three font step sets: `FONT_STEPS_DESKTOP`, `FONT_STEPS_MOBILE`, `FONT_STEPS_LANDSCAPE`
 - **Mobile portrait**: compact spacing — smaller padding (`px-1.5 py-1`), smaller nav buttons (`w-9 h-9`), tighter text padding (`p-3`); mobile e2e tests verify no scrolling
-- Header contains: back button, story title, narration toggle, language toggle, night mode toggle, page counter
+- Header contains: back button, story title, narration toggle, music toggle (shown only when the story has a `music` field), language toggle, night mode toggle, fullscreen toggle, page counter
 
 ### URL Hash Routing
 - Story and page state is persisted in the URL hash: `#/story-id/page-number` (1-based)
@@ -111,7 +111,7 @@ The home page (`src/components/StoryLibrary.tsx`) is styled as the warm corner o
 - **PDFKit** for generating downloadable story PDFs
 - **Sharp** for image watermarking (EXIF metadata + LSB steganography), icon generation, and mobile WebP compression
 - **tsx** for running TypeScript scripts directly (`npx tsx scripts/*.ts`)
-- **Playfair Display** and **Lora** fonts (self-hosted via `@fontsource`, Latin subset only)
+- **Fredoka**, **Playfair Display**, and **Lora** fonts (self-hosted via `@fontsource`, Latin subset only)
 - **Google Gemini 3.1 Flash TTS** (via OpenRouter) for pre-generated narration; **Web Speech API** (browser built-in) as the runtime fallback
 - **Umami** for privacy-friendly analytics (script tag in `index.html`)
 - **Copyright banner** injected into all bundled JS and CSS via a custom Vite plugin (`copyrightBannerPlugin` in `vite.config.ts`); uses `writeBundle` hook to reliably run after Vite's modulepreload polyfill injection
@@ -148,7 +148,7 @@ Playwright projects:
 
 ## Scripts
 
-- `npx tsx scripts/generate-images-<story-slug>.ts` — generate story illustrations via OpenAI (`gpt-image-2`, `quality: 'high'`, `1536x1024`); always generate at high quality — mobile bandwidth is handled by the compressed WebP variants; the script first generates a temporary `style-ref.png` character reference sheet (all story characters shown from multiple angles) which is passed as a reference image to every subsequent page generation for visual consistency; each page also includes the previous page as a reference for scene-to-scene continuity; uses `/v1/images/edits` when reference images are present, `/v1/images/generations` otherwise; `style-ref.png` is deleted after all pages are generated
+- `npx tsx scripts/generate-images-<story-slug>.ts` — generate story illustrations via OpenAI (`gpt-image-2`, `quality: 'high'`, `1536x1024`); always generate at high quality — mobile bandwidth is handled by the compressed WebP variants; the script first generates a temporary `style-ref.png` character reference sheet (all story characters shown from multiple angles) which is passed as a reference image to every subsequent page generation for visual consistency; each page also includes the previous page as a reference for scene-to-scene continuity; uses `/v1/images/edits` when reference images are present, `/v1/images/generations` otherwise; `style-ref.png` is deleted after all pages are generated. (Note: this is the newer majority pattern; ~11 older per-story scripts — e.g. `generate-images-der-mond.ts` — instead reuse the dressing-up page `page-4.png` as the reference for later pages, with no `style-ref.png` sheet and no previous-page chaining, and the oldest `generate-images-goldi-im-labyrinth.ts` uses no reference images at all.)
 - `npx tsx scripts/watermark-images.ts [story-id]` — watermark images (EXIF + steganography); all stories if no id given
 - `npx tsx scripts/compress-images.ts [story-id]` — generate compressed mobile WebP variants (`<name>-mobile.webp`) alongside each PNG; max 800px wide, WebP quality 82 (~30–55 KB vs ~3.8 MB originals); served automatically on narrow viewports (≤768px) or slow connections via `src/hooks/useMobileImages.ts`
 - `npx tsx scripts/generate-pdf.ts <story-id>` — generate downloadable PDF for a story; **A4 portrait** format with 3:2 illustration at top, warm paper text panel below; uses Lora serif (18pt) for body text and Playfair Display for titles; includes cover page, dedication page (*Für Madsi von deinem Papi — Zürich, 2026*), story pages, and a final *Ende* page; fonts loaded from `node_modules/@fontsource` (woff format); images are upscaled to **300 DPI** (~2410×1607 px) using Sharp Lanczos3 resampling and embedded as **JPEG quality 90** — visually lossless for print, ~8–12 MB per PDF; PDF canvas includes **3mm bleed on all sides** (612×859 pt vs A4 trim 595×842 pt); images are inset **3mm from the trim edges** on left, top, and right (safe area) so content near the cut zone is not lost to cutting variation; all text and page numbers stay within the trim safe area

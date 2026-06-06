@@ -20,10 +20,10 @@ Two layers of protection are applied to every PNG image:
 
 ```bash
 # Watermark all stories
-node scripts/watermark-images.mjs
+npx tsx scripts/watermark-images.ts
 
 # Watermark a specific story
-node scripts/watermark-images.mjs <story-id>
+npx tsx scripts/watermark-images.ts <story-id>
 ```
 
 The script:

@@ -16,7 +16,7 @@
 
 **Firlefanz** is a dragon/dinosaur-like character (no specific gender) who lives in a small house in a small village, next to **Papalapapp**. Together they embark on epic journeys — over 7 seas, 7 deserts, 7 mountains, 7 rivers, and 7 forests — to discover fantastical places, make new friends, and return home just in time for bed.
 
-The app presents pre-generated illustrated stories in a kids' book format, complete with audio narration, page-turn animations, and a cozy bookshelf library. Every story is designed to calm young listeners (ages 3–6) and guide them gently to sleep.
+The app presents pre-generated illustrated stories in a kids' book format, complete with audio narration, background music, page-turn animations, and a cozy nightlight nook library. Every story is designed to calm young listeners (ages 3–6) and guide them gently to sleep.
 
 <p align="center">
   <img src="public/stories/der-zauber-zoo/cover.png" alt="Firlefanz und Papalapapp im Zauber-Zoo" width="600" />
@@ -24,9 +24,10 @@ The app presents pre-generated illustrated stories in a kids' book format, compl
 
 ## Features
 
-- **Bookshelf library** — 3D standing book covers on a warm wooden shelf
+- **Nightlight library ("Das Nachtlicht")** — framed 3:2 cover paintings on warm wooden shelves, lit by a soft nightlight glow
 - **Open book reader** — desktop shows a two-page spread (illustration left, text right); mobile stacks them vertically
 - **Audio narration** — pre-generated TTS with automatic page turning
+- **Background music** — a quiet looping instrumental bed per story, ducking under the narration so the voice always leads
 - **Night mode** — warm dark palette for bedtime reading, defaults to OS preference
 - **Bilingual** — German (base) and English, with easy extensibility to more languages
 - **Downloadable PDFs** — each story available as a printable book
@@ -88,7 +89,14 @@ Every story goes through a multi-stage pipeline from idea to finished interactiv
                         └──────────────┬──────────────────────┘
                                        │
                         ┌──────────────▼──────────────────────┐
-                        │        8. PUBLISH                   │
+                        │      8. GENERATE MUSIC              │
+                        │   Google Lyria 3 Clip (OpenRouter)  │
+                        │   ~30s looping instrumental bed     │
+                        │   → music.mp3 (sets story.json)     │
+                        └──────────────┬──────────────────────┘
+                                       │
+                        ┌──────────────▼──────────────────────┐
+                        │        9. PUBLISH                   │
                         │   Add story ID to App.tsx           │
                         │   Push to main → GitHub Pages       │
                         └─────────────────────────────────────┘
@@ -104,6 +112,7 @@ Every story goes through a multi-stage pipeline from idea to finished interactiv
 | **PDF** | PDFKit | Assemble a downloadable/printable story book |
 | **TTS** | Google Gemini 3.1 Flash TTS (via OpenRouter) | Narrate each page in its own call, voice `Algieba` |
 | **Transcode** | ffmpeg | Convert Gemini PCM output into per-page `audio-<lang>-page-N.mp3` |
+| **Music** | Google Lyria 3 Clip (via OpenRouter) | Generate a ~30s looping instrumental `music.mp3` per story |
 | **Deploy** | GitHub Actions | Build with Vite and deploy to GitHub Pages |
 
 ## Tech Stack
@@ -112,10 +121,10 @@ Every story goes through a multi-stage pipeline from idea to finished interactiv
 |---|---|
 | **Frontend** | React 19, TypeScript, Vite 7 |
 | **Styling** | Tailwind CSS v4 |
-| **Fonts** | Playfair Display, Lora (self-hosted via @fontsource) |
+| **Fonts** | Fredoka, Playfair Display, Lora (self-hosted via @fontsource) |
 | **PDF** | PDFKit |
 | **Image processing** | Sharp (watermarking, compression, icon generation) |
-| **AI** | OpenAI `gpt-image-2` (images) + GPT-4o-mini (translation); Google Gemini 3.1 Flash TTS / `Algieba` (narration, via OpenRouter) |
+| **AI** | OpenAI `gpt-image-2` (images) + GPT-4o-mini (translation); Google Gemini 3.1 Flash TTS / `Algieba` (narration) + Google Lyria 3 Clip (background music), via OpenRouter |
 | **Testing** | Vitest + happy-dom (unit), Playwright (e2e) |
 | **Hosting** | GitHub Pages with GitHub Actions CI/CD |
 | **Analytics** | Umami (privacy-friendly) |
