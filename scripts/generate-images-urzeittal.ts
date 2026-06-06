@@ -22,6 +22,7 @@ const P = 'Papalapapp is the same species as Firlefanz but larger and fatherly, 
 const TROMMO = 'Trommo is a very large gentle long-necked dinosaur (brachiosaurus-type) with soft olive-green skin, enormous kind brown eyes, a gentle smile, and a rounded snout — clearly a single dinosaur character'
 const ZIPSI = 'Zipsi is a small quick playful dinosaur with bright multicolored scales (blue, green, yellow), a long wagging tail, and big sparkling eyes — clearly a single dinosaur character'
 const OUTFIT = 'Firlefanz wears a dark green jacket, brown hiking boots, a wide-brimmed explorer hat, and holds a wooden walking stick with a copper knob'
+const UNIQUE = 'CRITICAL: there is exactly ONE Firlefanz and exactly ONE Papalapapp in the whole image — show each of them only a single time. Do NOT duplicate, repeat, mirror, or paint multiple copies of Firlefanz or Papalapapp anywhere in the scene.'
 const STYLE_REF = 'style-ref.png'
 
 interface ImageSpec {
@@ -58,7 +59,7 @@ const images: ImageSpec[] = [
   },
   {
     filename: 'page-5.png',
-    prompt: `${S} Epic panoramic journey: ${F} and ${P} walking through a sweeping landscape. ${OUTFIT}. Papalapapp wears his scarf. Visible in the same scene across a wide panorama: crossing a turquoise sea on stepping stones, climbing a snow-capped mountain, wading through a rushing river, and walking through an ancient dark forest. The air grows greener and warmer in the distance. Sense of grand adventure and vast distance. ${E}`,
+    prompt: `${S} A single epic journey scene: exactly one ${F} and exactly one ${P} walk together, side by side, along one winding path through a vast and varied landscape. ${OUTFIT}. Papalapapp wears his scarf and carries a backpack. Behind them, far in the distance, a continuous sweeping panorama blends a turquoise sea, snow-capped mountains, a rushing river and an ancient green forest, the air growing warmer and greener ahead. The two travellers appear ONLY ONCE, together in the foreground. ${UNIQUE} Sense of grand adventure and vast distance. ${E}`,
   },
   {
     filename: 'page-6.png',
@@ -74,7 +75,7 @@ const images: ImageSpec[] = [
   },
   {
     filename: 'page-9.png',
-    prompt: `${S} Two scenes blended softly: left — ${F} and ${ZIPSI} leaping playfully over enormous tree roots as thick as houses in the jungle. Right — ${F} and ${P} seated high on ${TROMMO}'s broad back, so high they are level with soft white clouds, looking out over the vast green valley below with wonder. Warm late-afternoon golden light. ${E}`,
+    prompt: `${S} Exactly one ${F} and exactly one ${P} sit close together high on the broad back of ${TROMMO}, so high they are level with soft white clouds, looking out over a vast green prehistoric valley far below with wonder and quiet joy. The small colorful ${ZIPSI} clambers playfully up Trommo's long neck beside them. Warm late-afternoon golden light, gentle dreamy clouds drifting past. ${UNIQUE} ${E}`,
   },
   {
     filename: 'page-10.png',
