@@ -5,7 +5,7 @@
 - Firlefanz is a dragon/dinosaur creature, no specific gender
 - All stories in **German**, simple language for ages 3-6
 - User prefers **local fonts** (via @fontsource), not CDN/Google Fonts
-- User prefers **OpenAI gpt-image-2** for image generation (migrated from gpt-image-1 on 2026-05-19; Google Nano Banana had quota/reliability issues)
+- Image generation uses **OpenAI gpt-image-2** exclusively (migrated from gpt-image-1 on 2026-05-19). Do not switch image generation to any other provider.
 - Image size: `1536x1024` landscape, quality: `high`
 - User does not like complex page-turn animations — keep it simple
 - PDF download button is hidden from the UI (but PDFs and script still exist)

@@ -14,10 +14,7 @@ function envVar(name: string): string | undefined {
   return envContent.match(new RegExp(`${name}=(.+)`))?.[1]?.trim()
 }
 
-// Pick provider from CLI arg: --provider=openai or --provider=google (default: openai)
-const provider = process.argv.find((a) => a.startsWith('--provider='))?.split('=')[1] ?? 'openai'
-
-// --- Provider implementations ---
+// --- Image generation (OpenAI gpt-image-2) ---
 
 async function generateWithOpenAI(prompt: string, outPath: string): Promise<number> {
   const apiKey = envVar('OPENAI_API_KEY')
@@ -49,44 +46,6 @@ async function generateWithOpenAI(prompt: string, outPath: string): Promise<numb
   const buffer = Buffer.from(b64, 'base64')
   fs.writeFileSync(outPath, buffer)
   return buffer.length
-}
-
-async function generateWithGoogle(prompt: string, outPath: string): Promise<number> {
-  const apiKey = envVar('VITE_GOOGLE_AI_API_KEY')
-  if (!apiKey) throw new Error('Missing VITE_GOOGLE_AI_API_KEY in .env')
-
-  const model = 'gemini-3.1-flash-image-preview'
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
-
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseModalities: ['TEXT', 'IMAGE'],
-        imageConfig: { aspectRatio: '3:2', imageSize: '2K' },
-      },
-    }),
-  })
-
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`Google API error: ${res.status} ${err}`)
-  }
-
-  const data = await res.json() as { candidates?: { content: { parts: { inlineData?: { data: string } }[] } }[] }
-  const imagePart = data.candidates?.[0]?.content?.parts?.find((p) => p.inlineData)
-  if (!imagePart?.inlineData) throw new Error(`No image in response: ${JSON.stringify(data)}`)
-
-  const buffer = Buffer.from(imagePart.inlineData.data, 'base64')
-  fs.writeFileSync(outPath, buffer)
-  return buffer.length
-}
-
-const generators: Record<string, (prompt: string, outPath: string) => Promise<number>> = {
-  openai: generateWithOpenAI,
-  google: generateWithGoogle,
 }
 
 // --- Image prompts ---
@@ -158,20 +117,14 @@ const images: ImageSpec[] = [
 // --- Main ---
 
 async function main(): Promise<void> {
-  const generate = generators[provider]
-  if (!generate) {
-    console.error(`Unknown provider: ${provider}. Use --provider=openai or --provider=google`)
-    process.exit(1)
-  }
-
-  console.log(`Using provider: ${provider}\n`)
+  console.log('Using provider: OpenAI gpt-image-2\n')
   fs.mkdirSync(storyDir, { recursive: true })
 
   for (const imageSpec of images) {
     const outPath = path.join(storyDir, imageSpec.filename)
     console.log(`Generating ${imageSpec.filename}...`)
     try {
-      const size = await generate(imageSpec.prompt, outPath)
+      const size = await generateWithOpenAI(imageSpec.prompt, outPath)
       console.log(`  Saved ${outPath} (${(size / 1024).toFixed(0)} KB)`)
     } catch (err) {
       console.error(`  FAILED: ${(err as Error).message}`)
