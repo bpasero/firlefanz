@@ -48,6 +48,8 @@ curl -X POST "https://api.openai.com/v1/images/generations" \
 ## Image Guidelines for Firlefanz Stories
 
 - **Style:** Warm, soft, whimsical children's book illustration style. Think watercolor or gentle digital painting.
+- **Avoid dark/realistic drift (IMPORTANT):** with a bare "soft watercolor" style line, gpt-image-2 tends to render dull, dark, semi-photorealistic, cinematic scenes (muddy single-tone amber, deep shadows, moody contrast) — which reads as "too dark, not kid-friendly." Counter it explicitly in the style line: demand a *bright, playful, hand-drawn / hand-painted picture-book* look with a soft, gently-colourful (not neon, not muddy) palette, high-key even daylight, flat gentle shading, and **forbid** photorealism / 3D rendering / cinematic / movie-still looks and heavy dark shadows. (Worked example: `scripts/generate-images-der-kindergarten.ts`.)
+- **Body proportions are a user preference:** Firlefanz/Papalapapp can read "chubby/round" or "slim" depending on prompt wording (`small, round … chunky tail` vs `slim … NOT chubby`). The house preference is the **slightly rounder, chubbier** look — don't add explicit "skinny/slim/not-chubby" wording unless asked.
 - **Characters:** Firlefanz is a small dragon/dinosaur-like creature (not human). Papalapapp is the same species, larger, fatherly. See the **Character Uniqueness & Consistency** section below — it is the single most important thing to get right.
 - **Palette:** Calming, warm colors. Avoid harsh contrasts or dark/scary imagery.
 - **Size:** Use `1536x1024` landscape for story pages and covers (within gpt-image-2 limits: max edge ≤ 3840 px, sides multiples of 16, aspect ≤ 3:1).

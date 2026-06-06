@@ -15,11 +15,12 @@ if (!apiKey) { console.error('Missing OPENAI_API_KEY in .env'); process.exit(1) 
 const storyDir = path.join(rootDir, 'public/stories/der-kindergarten')
 fs.mkdirSync(storyDir, { recursive: true })
 
-const S = "Children's book illustration, soft watercolor style, warm calming colors."
-const E = 'Gentle, cozy atmosphere suitable for a bedtime story. No text, words, letters, labels, signs, or writing of any kind anywhere in the image.'
-const F = 'Firlefanz is a small friendly green dragon/dinosaur creature (not human, no specific gender) — there is exactly one Firlefanz in the entire image'
-const P = 'Papalapapp is the same species as Firlefanz but larger and fatherly — there is exactly one Papalapapp in the entire image'
-const FJ = 'Finja is a small friendly creature (same species as Firlefanz) with large round eyes and wearing a bright orange hat — there is exactly one Finja in the image'
+const S = "Soft, hand-painted children's picture-book illustration in a gentle watercolor style — warm and friendly classic storybook art. NOT photorealistic, NOT 3D-rendered, NOT cinematic. Naturally colourful but with a soft, muted, gently warm palette — not neon, not over-saturated, and not dull or muddy either. Soft rounded shapes, friendly faces, light hand-drawn outlines, and gentle painterly shading. Comfortable natural daylight, soft even lighting, no harsh shadows."
+const E = 'Warm, cosy and kid-friendly atmosphere — soft and welcoming, never gloomy, murky, dark, or scary, but also calm rather than loud or garish. Gentle, slightly muted colours with soft even lighting and no heavy dark shadows. No text, words, letters, labels, signs, or writing of any kind anywhere in the image.'
+const ANAT = 'with a row of soft rounded spikes down the back and tail, big friendly eyes, short rounded snout, small arms, chunky tail, and absolutely NO wings and NO horns (never draw little bat-wings or horns)'
+const F = `Firlefanz is exactly ONE small, round, friendly green dragon/dinosaur creature (not human, no specific gender) ${ANAT} — there is exactly one Firlefanz in the entire image`
+const P = `Papalapapp is the same species as Firlefanz ${ANAT}, but clearly LARGER, taller and fatherly — there is exactly one Papalapapp in the entire image`
+const FJ = `Finja is a small friendly creature (same species as Firlefanz) ${ANAT}, with large round eyes and wearing a bright orange hat — there is exactly one Finja in the image`
 const OUTFIT = 'Firlefanz wears a blue backpack, colorful boots, a warm jacket, and a striped scarf. Papalapapp wears a coat and a scarf.'
 const OUTFIT_PAGE = 'page-4.png'
 
@@ -69,7 +70,7 @@ const images: ImageSpec[] = [
   },
   {
     filename: 'page-8.png',
-    prompt: `${S} Inside a bright and cheerful kindergarten room. A friendly teacher creature with a yellow braid and a heart on her apron smiles warmly and gestures welcomingly. ${FJ} gently tugs on ${F}'s striped scarf from one side, looking up at him with a big friendly smile and her orange hat slightly askew. Firlefanz looks pleasantly surprised. Colourful room with cubbyholes, drawings on the walls, wooden toys. ${E}`,
+    prompt: `${S} Inside a bright and cheerful kindergarten room. The scene has exactly THREE characters: (1) ${F}, here wearing his yellow jacket, blue backpack and striped scarf and NO hat, looking pleasantly surprised; (2) ${FJ}, who gently tugs on Firlefanz's striped scarf from one side, looking up at him with a big friendly smile and her bright orange hat slightly askew — Finja is the only one wearing a hat; (3) a friendly grown-up teacher creature who looks clearly DIFFERENT from the children: an adult with a yellow braid, a heart on her apron, smiling warmly and gesturing welcomingly. IMPORTANT: Papalapapp is NOT in this scene — do NOT draw any large adult dragon in a blue coat, and do NOT draw Firlefanz wearing an orange hat (the orange hat belongs only to Finja). Make Firlefanz and Finja clearly distinguishable. Colourful room with cubbyholes, drawings on the walls, wooden toys. ${E}`,
     useOutfitRef: true
   },
   {
@@ -89,7 +90,7 @@ const images: ImageSpec[] = [
   },
   {
     filename: 'page-12.png',
-    prompt: `${S} ${P} carrying a fast-asleep ${F} on his back on a quiet village path at dusk. Firlefanz has a peaceful smile and holds a golden paper star clutched loosely in one small fist. The village is bathed in warm orange evening light. Trees line the path, a cozy little house glows warmly ahead in the distance. Dreamy, tender, perfect bedtime scene. ${E}`,
+    prompt: `${S} ${P} carrying a fast-asleep ${F} on his back on a quiet village path at dusk. Make the size difference very clear: Papalapapp is a big, tall, broad grown-up and Firlefanz is a small child only about half his size, curled up tiny and snug high on the big father's back and shoulders. Firlefanz has a peaceful smile and holds a small golden paper star clutched loosely in one little fist. The village is bathed in soft warm evening light. Trees line the path, a cozy little house glows warmly ahead in the distance. Dreamy, tender, perfect bedtime scene. ${E}`,
     useOutfitRef: true
   },
 ]
