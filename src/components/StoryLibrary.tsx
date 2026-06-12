@@ -473,7 +473,13 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
   const [keepDismissed, setKeepDismissed] = useState(false)
   const storedLastRead = useMemo<LastRead | null>(() => {
     const lr = readLastRead()
-    return lr && byId.has(lr.id) ? lr : null
+    if (!lr || !byId.has(lr.id)) return null
+    if (lr.page >= lr.total) {
+      // Story was read to the end — nothing left to resume.
+      clearLastRead()
+      return null
+    }
+    return lr
   }, [byId])
   const lastRead = keepDismissed ? null : storedLastRead
   const keepStory = lastRead ? byId.get(lastRead.id)! : null
