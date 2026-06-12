@@ -599,8 +599,16 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
           &lsaquo;
         </button>
         <button
-          onClick={() => turnPage('forward')}
-          disabled={isLast}
+          onClick={() => {
+            if (isLast) {
+              window.speechSynthesis.cancel()
+              audioRef.current?.pause()
+              onBack()
+            } else {
+              turnPage('forward')
+            }
+          }}
+          aria-label={isLast ? 'Zurück zur Bibliothek' : 'Nächste Seite'}
           className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-lg sm:text-lg"
           style={{
             backgroundColor: btnBg,
@@ -609,7 +617,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
           onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = btnHoverBg }}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = btnBg}
         >
-          &rsaquo;
+          {isLast ? <span className="text-base sm:text-base">⌂</span> : <>&rsaquo;</>}
         </button>
       </div>
     </div>
