@@ -176,15 +176,18 @@ describe('StoryReader — nav buttons', () => {
     expect(prev.disabled).toBe(true)
   })
 
-  it('"next" button is disabled on the last page', () => {
-    renderReader({ initialPage: 2 })
-    const next = screen.getByRole('button', { name: '›' }) as HTMLButtonElement
-    expect(next.disabled).toBe(true)
+  it('"next" button on the last page returns to the library', () => {
+    const { onBack, onPageChange } = renderReader({ initialPage: 2 })
+    const next = screen.getByRole('button', { name: 'Zurück zur Bibliothek' }) as HTMLButtonElement
+    expect(next.disabled).toBe(false)
+    fireEvent.click(next)
+    expect(onBack).toHaveBeenCalledOnce()
+    expect(onPageChange).not.toHaveBeenCalled()
   })
 
   it('"next" button advances the page', () => {
     const { container, onPageChange } = renderReader()
-    const next = screen.getByRole('button', { name: '›' })
+    const next = screen.getByRole('button', { name: 'Nächste Seite' })
     fireEvent.click(next)
     completeFlipAnimation(container)
     expect(onPageChange).toHaveBeenCalledWith(1)
