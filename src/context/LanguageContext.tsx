@@ -8,27 +8,20 @@ import { homePath, langFromPath, swapLangPath } from '../lib/routes'
 const SUPPORTED: Language[] = ['de', 'en']
 const STORAGE_KEY = 'firlefanz-language'
 
-// Pick the default language from the browser preference:
-// German only for German-speaking locales (Germany, Switzerland, Austria —
-// de-DE, de-CH, de-AT, and Swiss German "gsw"); English for everyone else.
-function detectBrowserLanguage(): Language {
-  const lang = (navigator.language ?? '').toLowerCase()
-  if (lang.startsWith('de') || lang.startsWith('gsw')) return 'de'
-  return 'en'
-}
-
-// The language is encoded in the URL (the /en/ prefix). On the *bare* home root
-// only — where no language is expressed yet — fall back to the stored preference,
-// then the browser locale, and reflect that choice in the URL. This is a JS-only
-// redirect of the home root, so crawlers indexing the static German "/" still see
-// German; per-story URLs are always explicit and never redirect.
+// The language is encoded in the URL (the /en/ prefix). The default is German:
+// "/" and every German story URL render German with no redirect, so a German
+// visitor always gets German and crawlers always see "/" as the German page.
+//
+// On the *bare* home root only, a returning visitor who previously chose English
+// is sent to /en/. This is gated on the stored preference (NOT navigator.language)
+// on purpose: a JS-rendering crawler has no localStorage, so it is never
+// redirected and "/" stays unambiguously the German canonical. A first-time
+// non-German visitor sees German at "/" and can switch via the toggle (and lands
+// on /en/ directly from English search results via hreflang).
 function resolveInitialLanguage(): Language {
-  const fromUrl = langFromPath(window.location.pathname)
-  if (fromUrl === 'en') return 'en'
+  if (langFromPath(window.location.pathname) === 'en') return 'en'
   if (window.location.pathname !== homePath('de')) return 'de' // a German story URL
-  const stored = localStorage.getItem(STORAGE_KEY)
-  const pref = stored && SUPPORTED.includes(stored) ? stored : detectBrowserLanguage()
-  if (pref === 'en') {
+  if (localStorage.getItem(STORAGE_KEY) === 'en') {
     history.replaceState(null, '', homePath('en'))
     return 'en'
   }

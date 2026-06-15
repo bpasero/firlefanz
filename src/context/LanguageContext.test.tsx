@@ -38,11 +38,13 @@ describe('LanguageProvider (URL-driven)', () => {
     expect(window.location.pathname).toBe('/')
   })
 
-  it('redirects the bare root to /en/ for a non-German browser', () => {
+  it('keeps the bare root German for a non-German browser with no stored preference', () => {
+    // The redirect is gated on the stored preference only (not navigator.language)
+    // so JS-rendering crawlers are never redirected and "/" stays German.
     mockBrowserLanguage('fr-FR')
     const { result } = renderHook(() => useLanguage(), { wrapper })
-    expect(result.current.language).toBe('en')
-    expect(window.location.pathname).toBe('/en/')
+    expect(result.current.language).toBe('de')
+    expect(window.location.pathname).toBe('/')
   })
 
   it('redirects the bare root to /en/ when the stored preference is English', () => {
