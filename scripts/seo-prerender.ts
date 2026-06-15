@@ -35,7 +35,7 @@ export const UI = {
       'Interaktive Gutenachtgeschichten für Kinder von 3 bis 6 Jahren. Firlefanz, ein liebenswertes drachenähnliches Wesen, erlebt zusammen mit seinem Papa Papalapapp fantastische Abenteuer — mit liebevollen Bildern, Vorlesefunktion und Nachtmodus. Kostenlos zum Vorlesen und sanften Einschlafen, auf Deutsch und Englisch.',
     allStories: 'Alle Geschichten',
     back: '← Alle Geschichten',
-    titleSuffix: 'Firlefanz',
+    titleSuffix: 'Gutenachtgeschichte zum Vorlesen',
   },
   en: {
     homeTitle: 'Firlefanz — Bedtime Stories',
@@ -44,7 +44,7 @@ export const UI = {
       'Interactive bedtime stories for children aged 3 to 6. Firlefanz, a lovable dragon-like creature, sets off on fantastical adventures together with his dad Papalapapp — with loving illustrations, read-aloud narration and a night mode. Free to read aloud and drift gently to sleep, in German and English.',
     allStories: 'All Stories',
     back: '← All Stories',
-    titleSuffix: 'Firlefanz',
+    titleSuffix: 'Bedtime Story to Read Aloud',
   },
 } as const
 
