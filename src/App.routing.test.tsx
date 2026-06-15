@@ -287,4 +287,18 @@ describe('App routing — English URLs', () => {
     expect(window.location.pathname).toBe('/en/geschichten/der-mond/')
     expect(screen.getByText('P1 der-mond')).toBeTruthy() // same story still open
   })
+
+  it('toggling language mid-story preserves the current page (hash)', async () => {
+    setPath('/geschichten/der-mond/#2')
+    render(<App />)
+    await screen.findByText('P2 der-mond')
+    expect(screen.getByText('2/3')).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: /^DE$/ }))
+
+    await screen.findByRole('button', { name: /Library/i })
+    expect(window.location.pathname).toBe('/en/geschichten/der-mond/')
+    expect(window.location.hash).toBe('#2')
+    expect(screen.getByText('2/3')).toBeTruthy() // still on page 2
+  })
 })
