@@ -21,11 +21,16 @@ function withProviders(ui: React.ReactNode) {
 
 beforeEach(() => {
   localStorage.clear()
+  // Language is URL-driven; pin these component tests to German (stored pref +
+  // root URL) so the German tooltip assertions are deterministic.
+  history.replaceState(null, '', '/')
+  localStorage.setItem('firlefanz-language', 'de')
 })
 
 afterEach(() => {
   cleanup()
   localStorage.clear()
+  history.replaceState(null, '', '/')
 })
 
 describe('Tooltip', () => {

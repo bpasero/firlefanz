@@ -8,6 +8,20 @@ import { defineConfig } from 'vite'
 import type { Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import {
+  LANGS,
+  UI,
+  readStories,
+  storyUrl,
+  homeUrl,
+  abs,
+  buildHomeRoot,
+  buildHomeLd,
+  buildStoryRoot,
+  buildStoryLd,
+  applyHead,
+  buildSitemap,
+} from './scripts/seo-prerender'
 
 const COPYRIGHT = '© 2026 Benjamin Pasero. All rights reserved. https://github.com/bpasero/firlefanz'
 
@@ -32,117 +46,88 @@ function copyrightBannerPlugin(): Plugin {
   }
 }
 
-const SITE_URL = 'https://firlefanz.li'
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
-type SeoStory = { id: string; title: string; teaser: string; cover: string }
-
-function readStories(): SeoStory[] {
-  const storiesDir = path.resolve(__dirname, 'public/stories')
-  let ids: string[] = []
-  try {
-    ids = fs
-      .readdirSync(storiesDir)
-      .filter((d) => {
-        try {
-          return (
-            fs.statSync(path.join(storiesDir, d)).isDirectory() &&
-            fs.existsSync(path.join(storiesDir, d, 'story.json'))
-          )
-        } catch {
-          return false
-        }
-      })
-      .sort()
-  } catch {
-    return []
-  }
-  const stories: SeoStory[] = []
-  for (const id of ids) {
-    try {
-      const s = JSON.parse(fs.readFileSync(path.join(storiesDir, id, 'story.json'), 'utf-8'))
-      stories.push({
-        id: s.id ?? id,
-        title: s.title ?? id,
-        teaser: s.teaser ?? '',
-        cover: s.coverImage ?? `/stories/${id}/cover.png`,
-      })
-    } catch {
-      /* skip unreadable story */
-    }
-  }
-  return stories
-}
-
 // Inject real, crawlable content into the otherwise-empty SPA shell so search
 // engines (and crawlers that don't run JavaScript) see the full story catalogue.
 // The markup lives inside #root, so React's createRoot() cleanly replaces it on
 // mount — it is a no-JS / pre-render fallback, not part of the live app.
+//
+// transformIndexHtml prerenders the homepage catalogue; closeBundle then emits a
+// real, deep-content HTML file per story (so each story has its own crawlable URL
+// on static GitHub Pages), plus a 404.html SPA fallback and a full sitemap.
 function seoPrerenderPlugin(): Plugin {
+  const storiesDir = path.resolve(__dirname, 'public/stories')
   return {
     name: 'seo-prerender',
     transformIndexHtml: {
       order: 'pre',
       handler(html) {
-        const stories = readStories()
+        const stories = readStories(storiesDir)
         if (!stories.length) return html
-
-        const items = stories
-          .map(
-            (s) => `
-        <li style="break-inside:avoid">
-          <a href="#/${s.id}/1" style="display:block;color:inherit;text-decoration:none">
-            <img src="${escapeHtml(s.cover)}" alt="${escapeHtml(s.title)}" width="320" height="213" loading="lazy" style="width:100%;height:auto;border-radius:.75rem;display:block" />
-            <h3 style="font-size:1.15rem;margin:.6rem 0 .25rem">${escapeHtml(s.title)}</h3>
-            <p style="margin:0;line-height:1.5;opacity:.85">${escapeHtml(s.teaser)}</p>
-          </a>
-        </li>`
-          )
-          .join('')
-
-        const prerender = `<div id="root"><div id="seo-prerender" style="max-width:64rem;margin:0 auto;padding:2rem 1.5rem;font-family:system-ui,-apple-system,sans-serif;color:#5b4636">
-      <h1 style="font-size:2rem;line-height:1.2;margin:0 0 .75rem">Firlefanz — Geschichten zum Einschlafen</h1>
-      <p style="font-size:1.1rem;line-height:1.6;max-width:42rem;margin:0 0 2rem">Interaktive Gutenachtgeschichten für Kinder von 3 bis 6 Jahren. Firlefanz, ein liebenswertes drachenähnliches Wesen, erlebt zusammen mit seinem Papa Papalapapp fantastische Abenteuer — mit liebevollen Bildern, Vorlesefunktion und Nachtmodus. Kostenlos zum Vorlesen und sanften Einschlafen, auf Deutsch und Englisch.</p>
-      <h2 style="font-size:1.4rem;margin:0 0 1rem">Alle Geschichten</h2>
-      <ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.5rem">${items}
-      </ul>
-    </div></div>`
-
-        const itemList = {
-          '@context': 'https://schema.org',
-          '@type': 'ItemList',
-          name: 'Firlefanz — Geschichten zum Einschlafen',
-          description:
-            'Alle interaktiven Gutenachtgeschichten von Firlefanz für Kinder von 3 bis 6 Jahren.',
-          numberOfItems: stories.length,
-          itemListElement: stories.map((s, i) => ({
-            '@type': 'ListItem',
-            position: i + 1,
-            item: {
-              '@type': 'CreativeWork',
-              name: s.title,
-              description: s.teaser,
-              url: `${SITE_URL}/#/${s.id}/1`,
-              image: `${SITE_URL}${s.cover}`,
-              inLanguage: ['de', 'en'],
-              genre: "Children's bedtime story",
-              audience: { '@type': 'PeopleAudience', suggestedMinAge: 3, suggestedMaxAge: 6 },
-            },
-          })),
-        }
-        const jsonLd = `    <script type="application/ld+json">\n${JSON.stringify(itemList)}\n    </script>\n`
-
+        // The served index.html is the German homepage; closeBundle derives the
+        // English homepage and all per-story pages from it.
         return html
-          .replace('<div id="root"></div>', prerender)
-          .replace('</head>', `${jsonLd}  </head>`)
+          .replace('<div id="root"></div>', buildHomeRoot(stories, 'de'))
+          .replace('</head>', `${buildHomeLd(stories, 'de')}  </head>`)
       },
+    },
+    closeBundle() {
+      const outDir = path.resolve(__dirname, 'dist')
+      const indexPath = path.join(outDir, 'index.html')
+      if (!fs.existsSync(indexPath)) return
+      const stories = readStories(storiesDir)
+      if (!stories.length) return
+
+      const shell = fs.readFileSync(indexPath, 'utf-8')
+      const homeRootDe = buildHomeRoot(stories, 'de')
+      const homeLdDe = buildHomeLd(stories, 'de')
+
+      const homeImg = abs('/stories/der-glaeserne-strand/cover.png')
+      const homeAlts = { deUrl: abs(homeUrl('de')), enUrl: abs(homeUrl('en')) }
+
+      const write = (rel: string, html: string) => {
+        const file = path.join(outDir, rel)
+        fs.mkdirSync(path.dirname(file), { recursive: true })
+        fs.writeFileSync(file, html)
+      }
+
+      // Per-story pages, both languages.
+      for (const s of stories) {
+        const alts = { deUrl: abs(storyUrl(s.id, 'de')), enUrl: abs(storyUrl(s.id, 'en')) }
+        for (const lang of LANGS) {
+          const swapped = shell.replace(homeRootDe, buildStoryRoot(s, lang))
+          if (swapped === shell) {
+            throw new Error(`seo-prerender: homepage #root block not found while building ${storyUrl(s.id, lang)}`)
+          }
+          const html = applyHead(swapped.replace(homeLdDe, buildStoryLd(s, lang)), {
+            lang,
+            title: `${s[lang].title} — ${UI[lang].titleSuffix}`,
+            desc: s[lang].teaser,
+            canonical: abs(storyUrl(s.id, lang)),
+            img: abs(s.cover),
+            ogType: 'article',
+            ...alts,
+          })
+          write(path.join(lang === 'en' ? 'en/geschichten' : 'geschichten', s.id, 'index.html'), html)
+        }
+      }
+
+      // English homepage (catalogue) at /en/.
+      const enHome = applyHead(
+        shell.replace(homeRootDe, buildHomeRoot(stories, 'en')).replace(homeLdDe, buildHomeLd(stories, 'en')),
+        { lang: 'en', title: UI.en.homeTitle, desc: UI.en.homeDesc, canonical: abs(homeUrl('en')), img: homeImg, ogType: 'website', ...homeAlts }
+      )
+      write('en/index.html', enHome)
+
+      // Fix the German homepage head in place (hreflang/locale alternates).
+      const deHome = applyHead(shell, {
+        lang: 'de', title: UI.de.homeTitle, desc: UI.de.homeDesc, canonical: abs(homeUrl('de')), img: homeImg, ogType: 'website', ...homeAlts,
+      })
+      write('index.html', deHome)
+
+      // SPA fallback so client-side navigation to any non-prerendered path boots the app.
+      write('404.html', deHome)
+      // Full sitemap listing both languages of the homepage + every story page.
+      write('sitemap.xml', buildSitemap(stories, new Date().toISOString().slice(0, 10)))
     },
   }
 }

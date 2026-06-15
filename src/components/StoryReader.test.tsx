@@ -63,6 +63,9 @@ function completeFlipAnimation(container: HTMLElement) {
 }
 
 beforeEach(() => {
+  // Language is URL-driven; reset to the German root each test (the /en/ tests
+  // below redirect the URL, which must not leak into the next test).
+  history.replaceState(null, '', '/')
   localStorage.setItem('firlefanz-language', 'de')
   localStorage.setItem('firlefanz-night-mode', 'false')
 })
@@ -70,6 +73,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   localStorage.clear()
+  history.replaceState(null, '', '/')
 })
 
 describe('StoryReader — header', () => {

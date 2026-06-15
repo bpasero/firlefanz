@@ -7,11 +7,12 @@ import { LanguageProvider, useLanguage } from './LanguageContext'
 
 const STORAGE_KEY = 'firlefanz-language'
 
-describe('LanguageProvider', () => {
+describe('LanguageProvider (URL-driven)', () => {
   let navLangSpy: ReturnType<typeof vi.spyOn> | null = null
 
   beforeEach(() => {
     localStorage.clear()
+    history.replaceState(null, '', '/')
   })
 
   afterEach(() => {
@@ -19,6 +20,7 @@ describe('LanguageProvider', () => {
     navLangSpy?.mockRestore()
     navLangSpy = null
     localStorage.clear()
+    history.replaceState(null, '', '/')
   })
 
   function mockBrowserLanguage(lang: string | undefined) {
@@ -29,64 +31,54 @@ describe('LanguageProvider', () => {
     return <LanguageProvider>{children}</LanguageProvider>
   }
 
-  it('uses the value stored in localStorage when present and supported', () => {
+  it('is German on the root with a German browser and no stored preference', () => {
+    mockBrowserLanguage('de-CH')
+    const { result } = renderHook(() => useLanguage(), { wrapper })
+    expect(result.current.language).toBe('de')
+    expect(window.location.pathname).toBe('/')
+  })
+
+  it('keeps the bare root German for a non-German browser with no stored preference', () => {
+    // The redirect is gated on the stored preference only (not navigator.language)
+    // so JS-rendering crawlers are never redirected and "/" stays German.
+    mockBrowserLanguage('fr-FR')
+    const { result } = renderHook(() => useLanguage(), { wrapper })
+    expect(result.current.language).toBe('de')
+    expect(window.location.pathname).toBe('/')
+  })
+
+  it('redirects the bare root to /en/ when the stored preference is English', () => {
     localStorage.setItem(STORAGE_KEY, 'en')
+    mockBrowserLanguage('de-DE')
+    const { result } = renderHook(() => useLanguage(), { wrapper })
+    expect(result.current.language).toBe('en')
+    expect(window.location.pathname).toBe('/en/')
+  })
+
+  it('reads English from an explicit /en/ URL', () => {
+    history.replaceState(null, '', '/en/')
     mockBrowserLanguage('de-DE')
     const { result } = renderHook(() => useLanguage(), { wrapper })
     expect(result.current.language).toBe('en')
   })
 
-  it('ignores localStorage when the stored language is not in the supported list', () => {
-    localStorage.setItem(STORAGE_KEY, 'jp')
+  it('keeps a German story URL German even with an English browser (no redirect)', () => {
+    history.replaceState(null, '', '/geschichten/der-mond/')
     mockBrowserLanguage('en-US')
     const { result } = renderHook(() => useLanguage(), { wrapper })
-    expect(result.current.language).toBe('en')
+    expect(result.current.language).toBe('de')
+    expect(window.location.pathname).toBe('/geschichten/der-mond/')
   })
 
-  it('detects German from the browser language as a fallback', () => {
-    mockBrowserLanguage('de-CH')
+  it('setLanguage navigates to the equivalent URL and persists the choice', () => {
+    mockBrowserLanguage('de-DE')
     const { result } = renderHook(() => useLanguage(), { wrapper })
     expect(result.current.language).toBe('de')
-  })
 
-  it('detects English from the browser language as a fallback', () => {
-    mockBrowserLanguage('en-GB')
-    const { result } = renderHook(() => useLanguage(), { wrapper })
+    act(() => result.current.setLanguage('en'))
     expect(result.current.language).toBe('en')
-  })
-
-  it('uses German for Swiss German (gsw) locales', () => {
-    mockBrowserLanguage('gsw')
-    const { result } = renderHook(() => useLanguage(), { wrapper })
-    expect(result.current.language).toBe('de')
-  })
-
-  it('uses English for non-German-speaking locales (e.g. French)', () => {
-    mockBrowserLanguage('fr-FR')
-    const { result } = renderHook(() => useLanguage(), { wrapper })
-    expect(result.current.language).toBe('en')
-  })
-
-  it('uses English for Swiss French / Swiss Italian locales', () => {
-    mockBrowserLanguage('fr-CH')
-    const { result } = renderHook(() => useLanguage(), { wrapper })
-    expect(result.current.language).toBe('en')
-  })
-
-  it('uses English when the browser reports no language', () => {
-    mockBrowserLanguage(undefined)
-    const { result } = renderHook(() => useLanguage(), { wrapper })
-    expect(result.current.language).toBe('en')
-  })
-
-  it('persists the language to localStorage on mount and on change', () => {
-    mockBrowserLanguage('en-US')
-    const { result } = renderHook(() => useLanguage(), { wrapper })
+    expect(window.location.pathname).toBe('/en/')
     expect(localStorage.getItem(STORAGE_KEY)).toBe('en')
-
-    act(() => result.current.setLanguage('de'))
-    expect(result.current.language).toBe('de')
-    expect(localStorage.getItem(STORAGE_KEY)).toBe('de')
   })
 
   it('exposes the supported languages list', () => {
