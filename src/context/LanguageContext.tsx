@@ -6,9 +6,13 @@ import type { Language } from '../types/story'
 
 const SUPPORTED: Language[] = ['de', 'en']
 
+// Pick the default language from the browser preference:
+// German only for German-speaking locales (Germany, Switzerland, Austria —
+// de-DE, de-CH, de-AT, and Swiss German "gsw"); English for everyone else.
 function detectBrowserLanguage(): Language {
-  const lang = navigator.language?.split('-')[0] ?? 'de'
-  return SUPPORTED.includes(lang) ? lang : 'de'
+  const lang = (navigator.language ?? '').toLowerCase()
+  if (lang.startsWith('de') || lang.startsWith('gsw')) return 'de'
+  return 'en'
 }
 
 interface LanguageContextValue {
@@ -32,6 +36,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem('firlefanz-language', language)
+    // Keep the document language in sync so screen readers and search engines
+    // see the language the visitor is actually reading in.
+    document.documentElement.lang = language
   }, [language])
 
   return (

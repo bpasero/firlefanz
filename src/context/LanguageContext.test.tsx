@@ -55,10 +55,28 @@ describe('LanguageProvider', () => {
     expect(result.current.language).toBe('en')
   })
 
-  it('falls back to German when the browser reports an unsupported language', () => {
-    mockBrowserLanguage('fr-FR')
+  it('uses German for Swiss German (gsw) locales', () => {
+    mockBrowserLanguage('gsw')
     const { result } = renderHook(() => useLanguage(), { wrapper })
     expect(result.current.language).toBe('de')
+  })
+
+  it('uses English for non-German-speaking locales (e.g. French)', () => {
+    mockBrowserLanguage('fr-FR')
+    const { result } = renderHook(() => useLanguage(), { wrapper })
+    expect(result.current.language).toBe('en')
+  })
+
+  it('uses English for Swiss French / Swiss Italian locales', () => {
+    mockBrowserLanguage('fr-CH')
+    const { result } = renderHook(() => useLanguage(), { wrapper })
+    expect(result.current.language).toBe('en')
+  })
+
+  it('uses English when the browser reports no language', () => {
+    mockBrowserLanguage(undefined)
+    const { result } = renderHook(() => useLanguage(), { wrapper })
+    expect(result.current.language).toBe('en')
   })
 
   it('persists the language to localStorage on mount and on change', () => {
