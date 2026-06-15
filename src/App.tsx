@@ -2,13 +2,27 @@
 // https://github.com/bpasero/firlefanz
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import type { Story } from './types/story'
+import { localizeStory, type Story } from './types/story'
 import { NightModeProvider } from './context/NightModeContext'
 import { LanguageProvider } from './context/LanguageContext'
 import StoryLibrary from './components/StoryLibrary'
 import StoryReader from './components/StoryReader'
 import { rememberLastRead } from './lib/lastRead'
 import { homePath, langFromPath, parseLocation, storyPath } from './lib/routes'
+
+// Per-language tab titles for client-side navigation. The prerendered static
+// HTML already carries a per-URL <title> (scripts/seo-prerender.ts), but the SPA
+// must keep document.title correct as the user opens/closes stories and switches
+// language in-app. Keep these mirrored with UI[lang].homeTitle / titleSuffix there.
+const TITLE = {
+  de: { home: 'Firlefanz — Geschichten zum Einschlafen', suffix: 'Gutenachtgeschichte zum Vorlesen' },
+  en: { home: 'Firlefanz — Bedtime Stories', suffix: 'Bedtime Story to Read Aloud' },
+} as const
+
+function titleFor(story: Story | null, lang: string): string {
+  const t = TITLE[lang as keyof typeof TITLE] ?? TITLE.de
+  return story ? `${localizeStory(story, lang).title} — ${t.suffix}` : t.home
+}
 
 // Back-compat: rewrite an old hash route (#/id/page) to the new path URL on load
 // so bookmarked/shared links keep working. Old links predate languages → German.
@@ -110,6 +124,17 @@ function App() {
       window.removeEventListener('hashchange', route)
     }
   }, [stories])
+
+  // Keep the browser tab title in sync with the open story and active language.
+  // Language switches dispatch popstate (LanguageContext), so we re-title on those.
+  useEffect(() => {
+    const sync = () => {
+      document.title = titleFor(activeStory, langFromPath(window.location.pathname))
+    }
+    sync()
+    window.addEventListener('popstate', sync)
+    return () => window.removeEventListener('popstate', sync)
+  }, [activeStory])
 
   return (
     <NightModeProvider>
