@@ -42,7 +42,7 @@ const images: ImageSpec[] = [
   },
   {
     filename: 'page-1.png',
-    prompt: `${S} Inside Firlefanz's cozy little bedroom on a bright, warm morning. ${F} has just woken and sits up in his small wooden bed, blinking happily and patting his tummy with a dreamy, hungry smile, as if imagining something delicious. Soft golden morning light streams through the window. Warm, snug, tender mood in honey and cream tones. ${E}`
+    prompt: `${S} Inside Firlefanz's cozy little bedroom on a bright, warm morning. ${F} has just woken and sits up in his small wooden bed, blinking happily and patting his tummy with a dreamy, hungry smile, as if imagining something delicious. Soft golden morning light streams through the window. Warm, snug, tender mood in honey and cream tones. IMPORTANT: the only dragon-dinosaur creature anywhere in the image is Firlefanz himself — any toys or decorations in the room must NOT be dragons or dinosaurs (a soft teddy bear or a cloth bunny is fine), so there is never a second little dragon figure. ${E}`
   },
   {
     filename: 'page-2.png',
@@ -86,7 +86,7 @@ const images: ImageSpec[] = [
   },
   {
     filename: 'page-12.png',
-    prompt: `${S} ${F}'s cozy little bedroom at night, warm and snug. ${F} is tucked sweetly into his bed under a soft blanket, eyes gently closed, fast asleep with a peaceful happy smile, holding ${SPOON} close in his paws. Faint dreamy wisps above him hint at golden soup, colorful noodles and a strawberry cake. Soft warm candlelight, a starry sky through the window. Deeply calm, warm, tender, sleep-inducing bedtime mood. ${E}`
+    prompt: `${S} ${F}'s cozy little bedroom at night, warm and snug. ${F} is tucked sweetly into his bed under a soft blanket, eyes gently closed, fast asleep with a peaceful happy smile, holding ${SPOON} close in his paws. Faint dreamy wisps above him hint at golden soup, colorful noodles and a strawberry cake. Soft warm candlelight, a starry sky through the window. Deeply calm, warm, tender, sleep-inducing bedtime mood. IMPORTANT: the only dragon-dinosaur creature anywhere in the image is Firlefanz himself — any toys or decorations in the room must NOT be dragons or dinosaurs (a soft teddy bear or a cloth bunny is fine), so there is never a second little dragon figure. ${E}`
   },
 ]
 
