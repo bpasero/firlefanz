@@ -11,6 +11,7 @@ import { readFileSync, writeFileSync, readdirSync } from 'fs'
 import { join } from 'path'
 import { pathToFileURL } from 'url'
 import type { Story } from '../src/types/story.ts'
+import 'dotenv/config'
 
 export interface TranslationPayload {
   title: string
@@ -56,20 +57,14 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const langName: Record<string, string> = { en: 'English', fr: 'French', es: 'Spanish' }
   const langLabel = langName[targetLang] ?? targetLang
 
-  let apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
-    const env = readFileSync('.env', 'utf-8')
-    const match = env.match(/OPENAI_API_KEY=(.+)/)
-    if (!match) { console.error('No OPENAI_API_KEY found'); process.exit(1) }
-    apiKey = match[1].trim()
-    process.env.OPENAI_API_KEY = apiKey
-  }
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) { console.error('Missing OPENAI_API_KEY'); process.exit(1) }
 
   async function translate(text: string): Promise<string> {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

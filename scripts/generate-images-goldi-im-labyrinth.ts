@@ -4,21 +4,16 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import 'dotenv/config'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
 
-// Load .env
-const envContent = fs.readFileSync(path.join(rootDir, '.env'), 'utf-8')
-function envVar(name: string): string | undefined {
-  return envContent.match(new RegExp(`${name}=(.+)`))?.[1]?.trim()
-}
-
 // --- Image generation (OpenAI gpt-image-2) ---
 
 async function generateWithOpenAI(prompt: string, outPath: string): Promise<number> {
-  const apiKey = envVar('OPENAI_API_KEY')
-  if (!apiKey) throw new Error('Missing OPENAI_API_KEY in .env')
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) throw new Error('Missing OPENAI_API_KEY')
 
   const res = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',

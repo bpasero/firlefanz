@@ -4,13 +4,13 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import 'dotenv/config'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
 
-const envContent = fs.readFileSync(path.join(rootDir, '.env'), 'utf-8')
-const apiKey = envContent.match(/OPENAI_API_KEY=(.+)/)?.[1]?.trim()
-if (!apiKey) { console.error('Missing OPENAI_API_KEY in .env'); process.exit(1) }
+const apiKey = process.env.OPENAI_API_KEY
+if (!apiKey) { console.error('Missing OPENAI_API_KEY'); process.exit(1) }
 
 const storyDir = path.join(rootDir, 'public/stories/das-urzeittal')
 fs.mkdirSync(storyDir, { recursive: true })

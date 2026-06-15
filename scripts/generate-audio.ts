@@ -27,13 +27,14 @@ import path from 'path'
 import { execSync } from 'child_process'
 import { fileURLToPath } from 'url'
 import type { Story } from '../src/types/story.ts'
+import 'dotenv/config'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
 const storiesDir = path.join(rootDir, 'public/stories')
 
-const apiKey = fs.readFileSync(path.join(rootDir, '.env'), 'utf-8').match(/OPENROUTER_API_KEY=(.+)/)?.[1]?.trim()
-if (!apiKey) { console.error('Missing OPENROUTER_API_KEY in .env'); process.exit(1) }
+const apiKey = process.env.OPENROUTER_API_KEY
+if (!apiKey) { console.error('Missing OPENROUTER_API_KEY'); process.exit(1) }
 
 const MODEL = 'google/gemini-3.1-flash-tts-preview'
 const DEFAULT_VOICE = 'Algieba'
