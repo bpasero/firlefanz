@@ -8,11 +8,22 @@ import { useNightMode } from '../context/NightModeContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useMobileImages, getMobileSrc } from '../hooks/useMobileImages'
 import { readLastRead, clearLastRead, type LastRead } from '../lib/lastRead'
+import { storyPath } from '../lib/routes'
 import NightModeToggle from './NightModeToggle'
 import LanguageToggle from './LanguageToggle'
 import StoryContextMenu, { type ContextMenuState } from './StoryContextMenu'
 
 const base = import.meta.env.BASE_URL
+
+// Let a story anchor behave like an SPA link on a plain left-click, while
+// preserving native open-in-new-tab / middle-click / modifier behavior.
+function spaNav(handler: () => void) {
+  return (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+    e.preventDefault()
+    handler()
+  }
+}
 
 // The locket mascot is a live CSS crop of the ONE verified single-Firlefanz cover.
 // Do NOT swap to a cover that shows two dragons (der-mond, die-bunte-rakete,
@@ -194,17 +205,18 @@ interface FrameProps {
   delayMs: number
   glowKey: number
   eager: boolean
-  onSelect: (story: Story) => void
+  lang: string
+  onSelect: (story: Story, page?: number) => void
   onContext: (e: React.MouseEvent, storyId: string) => void
 }
 
-function Frame({ story, title, t, mobile, delayMs, glowKey, eager, onSelect, onContext }: FrameProps) {
+function Frame({ story, title, t, mobile, delayMs, glowKey, eager, lang, onSelect, onContext }: FrameProps) {
   const { deg, dy } = hashTilt(story.id)
   return (
-    <button
-      type="button"
+    <a
+      href={storyPath(story.id, lang)}
       aria-label={title}
-      onClick={() => onSelect(story)}
+      onClick={spaNav(() => onSelect(story))}
       onContextMenu={(e) => onContext(e, story.id)}
       className="nl-anim group relative block w-full text-left focus-visible:outline-none rounded-2xl"
       style={{ animation: `nlFrameIn 520ms ease-out both`, animationDelay: `${delayMs}ms` }}
@@ -263,7 +275,7 @@ function Frame({ story, title, t, mobile, delayMs, glowKey, eager, onSelect, onC
           </span>
         </span>
       </span>
-    </button>
+    </a>
   )
 }
 
@@ -289,7 +301,7 @@ interface FeaturedProps {
   mobile: boolean
   lang: string
   dim: boolean
-  onSelect: (story: Story) => void
+  onSelect: (story: Story, page?: number) => void
   onContext: (e: React.MouseEvent, storyId: string) => void
   onAnother: () => void
 }
@@ -300,10 +312,10 @@ function Featured({ story, title, teaser, t, mobile, lang, dim, onSelect, onCont
       {/* pool of lamplight */}
       <div aria-hidden className="pointer-events-none absolute -inset-x-24 -inset-y-12 rounded-[3rem]" style={{ background: t.pool, filter: 'blur(10px)' }} />
       <div className="relative mx-auto" style={{ maxWidth: 760 }}>
-        <button
-          type="button"
+        <a
+          href={storyPath(story.id, lang)}
           aria-label={`${lang === 'en' ? 'Tonight' : 'Heute Nacht'}: ${title}`}
-          onClick={() => onSelect(story)}
+          onClick={spaNav(() => onSelect(story))}
           onContextMenu={(e) => onContext(e, story.id)}
           className="group relative block w-full text-left focus-visible:outline-none"
         >
@@ -351,7 +363,7 @@ function Featured({ story, title, teaser, t, mobile, lang, dim, onSelect, onCont
               </div>
             </div>
           </div>
-        </button>
+        </a>
         <div className="mt-2 text-center">
           <button
             type="button"
@@ -385,10 +397,10 @@ function KeepReading({ story, title, lastRead, t, mobile, lang, onResume, onCont
   const fraction = Math.max(0.04, Math.min(1, lastRead.page / lastRead.total))
   return (
     <section className="relative mt-5 sm:mt-6">
-      <button
-        type="button"
+      <a
+        href={`${storyPath(story.id, lang)}#${lastRead.page}`}
         aria-label={`${lang === 'en' ? 'Keep reading' : 'Weiterlesen'}: ${title}`}
-        onClick={() => onResume(lastRead)}
+        onClick={spaNav(() => onResume(lastRead))}
         onContextMenu={(e) => onContext(e, story.id)}
         className="group relative block w-full overflow-hidden rounded-3xl text-left ring-2 ring-transparent transition-transform duration-300 focus-visible:outline-none focus-visible:ring-[#f5b942] active:scale-[0.99]"
         style={{ background: t.surface, boxShadow: t.cardShadow, border: `1px solid ${t.keyline}` }}
@@ -425,7 +437,7 @@ function KeepReading({ story, title, lastRead, t, mobile, lang, onResume, onCont
             </div>
           </div>
         </div>
-      </button>
+      </a>
       <button
         type="button"
         onClick={onDismiss}
@@ -444,7 +456,7 @@ function KeepReading({ story, title, lastRead, t, mobile, lang, onResume, onCont
 
 interface StoryLibraryProps {
   stories: Story[]
-  onSelectStory: (story: Story) => void
+  onSelectStory: (story: Story, page?: number) => void
 }
 
 export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryProps) {
@@ -527,7 +539,8 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
   }
 
   const resume = (lr: LastRead) => {
-    window.location.hash = `#/${lr.id}/${lr.page}`
+    const story = byId.get(lr.id)
+    if (story) onSelectStory(story, lr.page)
   }
 
   const dismissKeep = () => {
@@ -688,6 +701,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
                   delayMs={delayFor.get(story.id) ?? 0}
                   glowKey={revealKey}
                   eager={(delayFor.get(story.id) ?? 0) < 160}
+                  lang={language}
                   onSelect={onSelectStory}
                   onContext={openContext}
                 />

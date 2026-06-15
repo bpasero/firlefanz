@@ -2,18 +2,17 @@
 // https://github.com/bpasero/firlefanz
 
 /**
- * Integration tests for App's hash-based routing. Covers:
+ * Integration tests for App's path-based routing. Covers:
  *  - default view (library)
- *  - deep-linking via #/story-id and #/story-id/page
+ *  - deep-linking via /geschichten/<id>/ and /geschichten/<id>/#page
  *  - page clamping vs story length
- *  - opening a story via click updates the hash
- *  - back-from-reader clears the hash
- *  - hashchange events switch stories
+ *  - opening a story via click updates the URL to /geschichten/<id>/
+ *  - back-from-reader returns to the root URL
+ *  - popstate (story switch) and hashchange (page turn) events
+ *  - back-compat: an old #/id/page hash is rewritten to the new path on load
  *
- * These tests intentionally do NOT cover the audio-state-preservation
- * invariant in the hashchange handler (the "skip remount when pageRef
- * matches" branch); that one needs StoryReader-level inspection and
- * is better covered with a dedicated integration test.
+ * The remount-skip invariant (preserve audio state when a page-turn hashchange
+ * targets the page pageRef already points at) is exercised at the end.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
@@ -36,15 +35,23 @@ function makeStory(id: string): Story {
   }
 }
 
-function clearHash() {
-  history.replaceState(null, '', window.location.pathname + window.location.search)
+// Set the initial URL the way a real browser does for a fresh navigation:
+// replaceState updates both pathname and hash WITHOUT firing a hashchange. (Using
+// the location.hash setter would fire a hashchange that races story loading — a
+// test-only artifact that never happens on a real initial page load.)
+function setPath(pathWithHash: string) {
+  history.replaceState(null, '', pathWithHash)
+}
+
+function clearRoute() {
+  history.replaceState(null, '', '/')
 }
 
 beforeEach(() => {
   localStorage.clear()
   localStorage.setItem('firlefanz-language', 'de')
   localStorage.setItem('firlefanz-night-mode', 'false')
-  clearHash()
+  clearRoute()
 
   // Mock fetch to return a fake story keyed by URL.
   vi.stubGlobal(
@@ -64,36 +71,33 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
-  clearHash()
+  clearRoute()
   localStorage.clear()
 })
 
 describe('App routing — default view', () => {
   it('shows the library with the hardcoded story list once fetches resolve', async () => {
     render(<App />)
-    // Library tagline confirms StoryLibrary is mounted.
     await screen.findByText('Geschichten zum Einschlafen')
   })
 
-  it('does not render the StoryReader when the hash is empty', async () => {
+  it('does not render the StoryReader on the root URL', async () => {
     render(<App />)
     await screen.findByText('Geschichten zum Einschlafen')
-    // StoryReader exposes a back button containing "Bibliothek"; the library
-    // does not. Use queryByRole to assert absence.
     expect(screen.queryByRole('button', { name: /Bibliothek/i })).toBeNull()
   })
 })
 
-describe('App routing — deep-link via URL hash', () => {
-  it('opens the StoryReader at page 1 when the hash is "#/story-id"', async () => {
-    window.location.hash = '#/der-mond'
+describe('App routing — deep-link via story URL', () => {
+  it('opens the StoryReader at page 1 for "/geschichten/<id>/"', async () => {
+    setPath('/geschichten/der-mond/')
     render(<App />)
     await screen.findByRole('button', { name: /Bibliothek/i })
     expect(screen.getByText('P1 der-mond')).toBeTruthy()
   })
 
-  it('opens the StoryReader at the requested page when the hash is "#/story-id/N"', async () => {
-    window.location.hash = '#/der-mond/2'
+  it('opens at the requested page for "/geschichten/<id>/#N"', async () => {
+    setPath('/geschichten/der-mond/#2')
     render(<App />)
     await waitFor(() => {
       expect(screen.getByText('P2 der-mond')).toBeTruthy()
@@ -102,7 +106,7 @@ describe('App routing — deep-link via URL hash', () => {
   })
 
   it('clamps an out-of-bounds page number to the last page', async () => {
-    window.location.hash = '#/der-mond/99'
+    setPath('/geschichten/der-mond/#99')
     render(<App />)
     await waitFor(() => {
       expect(screen.getByText('P3 der-mond')).toBeTruthy()
@@ -110,34 +114,42 @@ describe('App routing — deep-link via URL hash', () => {
     expect(screen.getByText('3/3')).toBeTruthy()
   })
 
-  it('falls back to the library when the hash points at an unknown story id', async () => {
-    window.location.hash = '#/nonexistent-story'
+  it('falls back to the library when the path points at an unknown story id', async () => {
+    setPath('/geschichten/nonexistent-story/')
     render(<App />)
     await screen.findByText('Geschichten zum Einschlafen')
     expect(screen.queryByRole('button', { name: /Bibliothek/i })).toBeNull()
   })
+
+  it('rewrites a legacy "#/<id>/<page>" hash to the new path on load', async () => {
+    setPath('/#/der-mond/2')
+    render(<App />)
+    await waitFor(() => {
+      expect(screen.getByText('P2 der-mond')).toBeTruthy()
+    })
+    expect(window.location.pathname).toBe('/geschichten/der-mond/')
+    expect(window.location.hash).toBe('#2')
+  })
 })
 
-describe('App routing — interaction with hash', () => {
-  it('clicking a book opens the StoryReader and updates the hash to "#/<id>/1"', async () => {
+describe('App routing — interaction with the URL', () => {
+  it('clicking a book opens the StoryReader and sets the path to "/geschichten/<id>/"', async () => {
     render(<App />)
     await screen.findByText('Geschichten zum Einschlafen')
 
-    // Each book is rendered as a button with a cover image inside; click the first.
-    const books = screen.getAllByRole('button').filter(
-      (btn) => btn.querySelector('img') !== null,
-    )
-    expect(books.length).toBeGreaterThan(0)
-    fireEvent.click(books[0])
+    // Each cover is rendered as an <a> link with a cover image inside; click the first.
+    const links = screen.getAllByRole('link').filter((el) => el.querySelector('img') !== null)
+    expect(links.length).toBeGreaterThan(0)
+    fireEvent.click(links[0])
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Bibliothek/i })).toBeTruthy()
     })
-    expect(window.location.hash).toMatch(/^#\/[\w-]+\/1$/)
+    expect(window.location.pathname).toMatch(/^\/geschichten\/[\w-]+\/$/)
   })
 
-  it('back button from the reader returns to the library and clears the hash', async () => {
-    window.location.hash = '#/der-mond/2'
+  it('back button from the reader returns to the root URL', async () => {
+    setPath('/geschichten/der-mond/#2')
     render(<App />)
     await waitFor(() => {
       expect(screen.getByText('P2 der-mond')).toBeTruthy()
@@ -146,22 +158,21 @@ describe('App routing — interaction with hash', () => {
     fireEvent.click(screen.getByRole('button', { name: /Bibliothek/i }))
 
     await screen.findByText('Geschichten zum Einschlafen')
-    expect(window.location.hash).toBe('')
+    expect(window.location.pathname).toBe('/')
   })
 })
 
-describe('App routing — hashchange handler', () => {
-  it('switches the active story when a hashchange to a different story id fires', async () => {
-    window.location.hash = '#/der-mond/1'
+describe('App routing — history events', () => {
+  it('switches the active story when popstate navigates to a different story', async () => {
+    setPath('/geschichten/der-mond/#1')
     render(<App />)
     await waitFor(() => {
       expect(screen.getByText('P1 der-mond')).toBeTruthy()
     })
 
     act(() => {
-      window.location.hash = '#/das-urzeittal/1'
-      // happy-dom fires hashchange automatically on hash mutation; if not, dispatch manually.
-      window.dispatchEvent(new HashChangeEvent('hashchange'))
+      setPath('/geschichten/das-urzeittal/#1')
+      window.dispatchEvent(new PopStateEvent('popstate'))
     })
 
     await waitFor(() => {
@@ -169,16 +180,16 @@ describe('App routing — hashchange handler', () => {
     })
   })
 
-  it('clears the active story when the hash becomes empty (browser back to library)', async () => {
-    window.location.hash = '#/der-mond/1'
+  it('clears the active story when popstate returns to the library', async () => {
+    setPath('/geschichten/der-mond/#1')
     render(<App />)
     await waitFor(() => {
       expect(screen.getByText('P1 der-mond')).toBeTruthy()
     })
 
     act(() => {
-      history.replaceState(null, '', window.location.pathname + window.location.search)
-      window.dispatchEvent(new HashChangeEvent('hashchange'))
+      setPath('/')
+      window.dispatchEvent(new PopStateEvent('popstate'))
     })
 
     await screen.findByText('Geschichten zum Einschlafen')
@@ -186,68 +197,55 @@ describe('App routing — hashchange handler', () => {
 })
 
 describe('App routing — remount-skip invariant (audio-state preservation)', () => {
-  // The hashchange handler in App.tsx only updates initialPage (which is part of
-  // the StoryReader's React `key` and thus forces a remount) when the new page
-  // differs from pageRef.current. In-app page turns set pageRef.current first
-  // and then update the hash, so the resulting hashchange must be a no-op for
-  // the remount logic — otherwise StoryReader is recreated on every page turn
-  // and audio / narration state is lost.
-  //
-  // We use the narration toggle as a witness: clicking it sets internal
-  // narrating=true (the tooltip switches from "Vorlesen" to "Vorlesen stoppen").
-  // After remount, the new instance starts with narrating=false again.
+  // App only updates initialPage (part of StoryReader's React `key`, so a change
+  // forces a remount) when the new page differs from pageRef.current. In-app page
+  // turns set pageRef.current first and then update the hash, so the resulting
+  // hashchange must be a no-op for the remount logic — otherwise StoryReader is
+  // recreated on every page turn and audio / narration state is lost.
 
   function narrationButton(): HTMLButtonElement {
-    // The tooltip wraps both the button and the label span as siblings;
-    // grab the button next to whichever narration tooltip text is present.
     const label = screen.queryByText('Vorlesen') ?? screen.getByText('Vorlesen stoppen')
     return label.parentElement!.querySelector('button') as HTMLButtonElement
   }
 
-  it('preserves narration state when hashchange targets the same page (in-app turn)', async () => {
-    window.location.hash = '#/der-mond/2'
+  it('preserves narration state when a hashchange targets the same page (in-app turn)', async () => {
+    setPath('/geschichten/der-mond/#2')
     render(<App />)
     await screen.findByText('P2 der-mond')
 
-    // Toggle narration ON.
     fireEvent.click(narrationButton())
     expect(screen.getByText('Vorlesen stoppen')).toBeTruthy()
 
-    // Simulate the hashchange that fires after an in-app page turn — the hash
-    // value matches what App.handlePageChange would have already set, so
-    // pageRef.current === parsed.page and the skip branch should hit.
+    // The hashchange that fires after an in-app page turn — the hash matches what
+    // App.handlePageChange would have already set, so pageRef.current === parsed.page.
     act(() => {
-      window.location.hash = '#/der-mond/2'
+      window.location.hash = '#2'
       window.dispatchEvent(new HashChangeEvent('hashchange'))
     })
 
-    // Narration tooltip is still in the "stop" state — StoryReader did not remount.
     expect(screen.getByText('Vorlesen stoppen')).toBeTruthy()
   })
 
-  it('resets narration state when hashchange targets a different page (browser back)', async () => {
-    window.location.hash = '#/der-mond/2'
+  it('resets narration state when a hashchange targets a different page (browser back)', async () => {
+    setPath('/geschichten/der-mond/#2')
     render(<App />)
     await screen.findByText('P2 der-mond')
 
     fireEvent.click(narrationButton())
     expect(screen.getByText('Vorlesen stoppen')).toBeTruthy()
 
-    // Simulate browser back/forward: hash changes to a page that pageRef.current
-    // does NOT match → setInitialPage runs → key changes → StoryReader remounts.
     act(() => {
-      window.location.hash = '#/der-mond/3'
+      window.location.hash = '#3'
       window.dispatchEvent(new HashChangeEvent('hashchange'))
     })
 
     await screen.findByText('P3 der-mond')
-    // Fresh StoryReader instance: narrating defaults to false again.
     expect(screen.getByText('Vorlesen')).toBeTruthy()
     expect(screen.queryByText('Vorlesen stoppen')).toBeNull()
   })
 
-  it('resets narration state when hashchange targets a different story', async () => {
-    window.location.hash = '#/der-mond/1'
+  it('resets narration state when popstate targets a different story', async () => {
+    setPath('/geschichten/der-mond/#1')
     render(<App />)
     await screen.findByText('P1 der-mond')
 
@@ -255,11 +253,38 @@ describe('App routing — remount-skip invariant (audio-state preservation)', ()
     expect(screen.getByText('Vorlesen stoppen')).toBeTruthy()
 
     act(() => {
-      window.location.hash = '#/das-urzeittal/1'
-      window.dispatchEvent(new HashChangeEvent('hashchange'))
+      setPath('/geschichten/das-urzeittal/#1')
+      window.dispatchEvent(new PopStateEvent('popstate'))
     })
 
     await screen.findByText('P1 das-urzeittal')
     expect(screen.getByText('Vorlesen')).toBeTruthy()
+  })
+})
+
+describe('App routing — English URLs', () => {
+  it('opens the English reader from a /en/geschichten/<id>/ deep-link', async () => {
+    setPath('/en/geschichten/der-mond/#2')
+    render(<App />)
+    // Reader is mounted (page text falls back to German in the test fixture) and
+    // the English back-button label confirms the active language is English.
+    await screen.findByText('P2 der-mond')
+    expect(screen.getByText('2/3')).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Library/i })).toBeTruthy()
+    expect(document.documentElement.lang).toBe('en')
+  })
+
+  it('toggling language inside a story keeps the story open and flips the URL prefix', async () => {
+    setPath('/geschichten/der-mond/')
+    render(<App />)
+    await screen.findByText('P1 der-mond')
+    expect(screen.getByRole('button', { name: /Bibliothek/i })).toBeTruthy()
+
+    // The DE/EN pill in the reader header switches language.
+    fireEvent.click(screen.getByRole('button', { name: /^DE$/ }))
+
+    await screen.findByRole('button', { name: /Library/i })
+    expect(window.location.pathname).toBe('/en/geschichten/der-mond/')
+    expect(screen.getByText('P1 der-mond')).toBeTruthy() // same story still open
   })
 })

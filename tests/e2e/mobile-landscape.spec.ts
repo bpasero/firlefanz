@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 const bookButton = (page: import('@playwright/test').Page) =>
-  page.getByRole('button').filter({ has: page.locator('img') }).first()
+  page.getByRole('link').filter({ has: page.locator('img') }).first()
 
 test.describe('Story reader mobile landscape', () => {
   test.beforeEach(async ({ page }) => {

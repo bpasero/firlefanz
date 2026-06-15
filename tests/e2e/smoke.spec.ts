@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test'
 
-// Books are <button> elements containing a cover <img>
+// Books are <a> links containing a cover <img>
 const bookButton = (page: import('@playwright/test').Page) =>
-  page.getByRole('button').filter({ has: page.locator('img') }).first()
+  page.getByRole('link').filter({ has: page.locator('img') }).first()
 
 // Back button says "← Zur Bibliothek" (DE) or "← Library" (EN)
 const backButton = (page: import('@playwright/test').Page) =>
@@ -16,7 +16,7 @@ test.describe('Story library', () => {
   })
 
   test('displays story books', async ({ page }) => {
-    const books = page.getByRole('button').filter({ has: page.locator('img') })
+    const books = page.getByRole('link').filter({ has: page.locator('img') })
     const count = await books.count()
     expect(count).toBeGreaterThan(0)
   })
@@ -69,48 +69,64 @@ test.describe('Story reader', () => {
     expect(afterLeft).toBe(before)
   })
 
-  test('back to library clears the URL hash', async ({ page }) => {
-    // Verify hash is set while reading
-    expect(page.url()).toMatch(/#\/[\w-]+\/\d+$/)
+  test('back to library returns to the root URL', async ({ page }) => {
+    // While reading, the URL is the real per-story path
+    expect(page.url()).toMatch(/\/geschichten\/[\w-]+\//)
     await backButton(page).click()
     await page.getByText('Geschichten zum Einschlafen').waitFor({ timeout: 5000 })
-    expect(page.url()).not.toMatch(/#\//)
+    expect(page.url()).not.toMatch(/\/geschichten\//)
   })
 })
 
 test.describe('Language toggle', () => {
-  test('switches the library tagline between DE and EN', async ({ page }) => {
+  test('switches the library tagline + URL between DE and EN', async ({ page }) => {
     await page.goto('/')
     await page.getByText('Geschichten zum Einschlafen').waitFor({ timeout: 10000 })
     // Toggle is the only button in the top-right showing "DE" or "EN"
     const langToggle = page.getByRole('button', { name: /^(DE|EN)$/ })
     await langToggle.click()
     await expect(page.getByText('Bedtime Stories')).toBeVisible({ timeout: 5000 })
+    expect(page.url()).toMatch(/\/en\/$/)
     await langToggle.click()
     await expect(page.getByText('Geschichten zum Einschlafen')).toBeVisible({ timeout: 5000 })
+    expect(page.url()).not.toMatch(/\/en\//)
   })
 
   test('switches the back-button label inside the reader', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button').filter({ has: page.locator('img') }).first().waitFor({ timeout: 10000 })
-    await page.getByRole('button').filter({ has: page.locator('img') }).first().click()
+    await page.getByRole('link').filter({ has: page.locator('img') }).first().waitFor({ timeout: 10000 })
+    await page.getByRole('link').filter({ has: page.locator('img') }).first().click()
     await page.getByRole('button', { name: /Zur Bibliothek/ }).waitFor({ timeout: 5000 })
     await page.getByRole('button', { name: /^(DE|EN)$/ }).click()
     await expect(page.getByRole('button', { name: /Library/ })).toBeVisible({ timeout: 5000 })
   })
 })
 
-test.describe('Deep-link via URL hash', () => {
-  test('opens a specific story at a specific page from the URL hash', async ({ page }) => {
-    // Pick a real story id that the App ships with.
-    await page.goto('/#/der-mond/3')
+test.describe('Deep-link via story URL', () => {
+  test('opens a specific story at a specific page from the URL', async ({ page }) => {
+    // Pick a real story id that the App ships with; page in the hash (1-based).
+    await page.goto('/geschichten/der-mond/#3')
     await page.locator('p').first().waitFor({ timeout: 10000 })
     // Page counter should show "3/<n>"
     await expect(page.getByText(/^3\/\d+$/)).toBeVisible({ timeout: 5000 })
   })
 
-  test('falls back to the library when the hash story does not exist', async ({ page }) => {
-    await page.goto('/#/this-story-id-does-not-exist/1')
+  test('falls back to the library when the story does not exist', async ({ page }) => {
+    await page.goto('/geschichten/this-story-id-does-not-exist/')
     await expect(page.getByText('Geschichten zum Einschlafen')).toBeVisible({ timeout: 10000 })
+  })
+
+  test('an old hash deep-link still resolves (back-compat redirect)', async ({ page }) => {
+    await page.goto('/#/der-mond/3')
+    await page.locator('p').first().waitFor({ timeout: 10000 })
+    await expect(page.getByText(/^3\/\d+$/)).toBeVisible({ timeout: 5000 })
+    expect(page.url()).toMatch(/\/geschichten\/der-mond\//)
+  })
+
+  test('an /en/ deep-link opens the story in English', async ({ page }) => {
+    await page.goto('/en/geschichten/der-mond/')
+    await page.locator('p').first().waitFor({ timeout: 10000 })
+    // The English back-button label confirms the active language.
+    await expect(page.getByRole('button', { name: /Library/ })).toBeVisible({ timeout: 5000 })
   })
 })
