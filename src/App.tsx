@@ -42,7 +42,7 @@ function App() {
 
   useEffect(() => {
     migrateLegacyHash()
-    const storyIds = ['der-glaeserne-strand', 'die-ritterburg', 'der-mond', 'skifahren-in-andermatt', 'ferien-im-hotel-sonnenquell', 'der-zauber-zoo', 'das-rockfestival', 'das-tal-der-sanften-riesen', 'goldi-im-labyrinth', 'am-ende-der-welt', 'die-stadt-der-vergessenen-spielzeuge', 'der-wolkenfluester', 'der-schachmeister', 'der-flughafen', 'das-kloster-in-den-wolken', 'bobo-der-siebenschlafer', 'der-kindergarten', 'der-osterhase', 'das-museum-der-lebendigen-statuen', 'das-urzeittal', 'die-dracheninsel', 'die-reise-nach-afrika', 'die-bunte-rakete', 'der-funkelring', 'der-postbote-des-windes', 'die-traumfabrik', 'das-nordlicht', 'der-zirkus-sternenschweif', 'der-meisterkoch', 'der-zauberwald', 'der-glitzersee']
+    const storyIds = ['der-glaeserne-strand', 'die-ritterburg', 'der-mond', 'skifahren-in-andermatt', 'ferien-im-hotel-sonnenquell', 'der-zauber-zoo', 'das-rockfestival', 'das-tal-der-sanften-riesen', 'goldi-im-labyrinth', 'am-ende-der-welt', 'die-stadt-der-vergessenen-spielzeuge', 'der-wolkenfluester', 'der-schachmeister', 'der-flughafen', 'das-kloster-in-den-wolken', 'bobo-der-siebenschlafer', 'der-kindergarten', 'der-osterhase', 'das-museum-der-lebendigen-statuen', 'das-urzeittal', 'die-dracheninsel', 'die-reise-nach-afrika', 'die-bunte-rakete', 'der-funkelring', 'der-postbote-des-windes', 'die-traumfabrik', 'das-nordlicht', 'der-zirkus-sternenschweif', 'der-meisterkoch', 'der-zauberwald', 'der-glitzersee', 'der-ponyhof']
     Promise.all(
       storyIds.map((id) =>
         fetch(`${import.meta.env.BASE_URL}stories/${id}/story.json`).then((res) => res.json())
