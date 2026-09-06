@@ -46,7 +46,7 @@ const SHELVES: { key: string; de: string; en: string; ids: string[] }[] = [
   },
   {
     key: 'friends', de: 'Liebste Freunde', en: 'Dearest Friends',
-    ids: ['der-kindergarten', 'bobo-der-siebenschlafer', 'der-osterhase', 'der-glaeserne-strand', 'der-zauber-zoo', 'das-tal-der-sanften-riesen'],
+    ids: ['der-kindergarten', 'der-waldkindergarten', 'bobo-der-siebenschlafer', 'der-osterhase', 'der-glaeserne-strand', 'der-zauber-zoo', 'das-tal-der-sanften-riesen'],
   },
   {
     key: 'magic', de: 'Zauber & Wunder', en: 'Magic & Wonder',
