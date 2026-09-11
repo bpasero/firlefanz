@@ -1,3 +1,12 @@
+---
+name: image-watermarking
+description: Embed invisible copyright protection (EXIF metadata + LSB steganography) into Firlefanz story images. Triggers after generating story images, or when asked to watermark or protect images.
+license: MIT
+metadata:
+  author: firlefanz
+  version: "1.0.0"
+---
+
 # Image Watermarking Skill
 
 Embed invisible copyright protection into Firlefanz story images.
