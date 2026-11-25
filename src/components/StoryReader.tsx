@@ -7,7 +7,9 @@ import { localizeStory } from '../types/story'
 import { useNightMode } from '../context/NightModeContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useMobileImages, getMobileSrc } from '../hooks/useMobileImages'
+import { readerColors } from '../lib/theme'
 import NightModeToggle from './NightModeToggle'
+import HighContrastToggle from './HighContrastToggle'
 import LanguageToggle from './LanguageToggle'
 import NarrationToggle from './NarrationToggle'
 import MusicToggle from './MusicToggle'
@@ -48,7 +50,8 @@ function useIsLandscapeMobile() {
   return isLandscape
 }
 
-function PageContent({ story, pageIndex, nightMode, language, mobileImages, isLandscapeMobile }: { story: Story; pageIndex: number; nightMode: boolean; language: string; mobileImages: boolean; isLandscapeMobile: boolean }) {
+function PageContent({ story, pageIndex, nightMode, highContrast, language, mobileImages, isLandscapeMobile }: { story: Story; pageIndex: number; nightMode: boolean; highContrast: boolean; language: string; mobileImages: boolean; isLandscapeMobile: boolean }) {
+  const c = readerColors({ nightMode, highContrast })
   const localized = localizeStory(story, language)
   const page = localized.pages[pageIndex]
   const imageSrc = `${base}${getMobileSrc(page.image, mobileImages).replace(/^\//, '')}`
@@ -79,14 +82,15 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages, isLa
       {/* Left page — illustration */}
       <div
         className={`${useRowLayout ? 'w-1/2' : 'h-2/5'} relative overflow-hidden`}
-        style={{ backgroundColor: nightMode ? '#1e1a14' : '#faf3e3' }}
+        style={{ backgroundColor: c.imageBg }}
       >
-        {useRowLayout && <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-black/10 to-transparent z-10" />}
+        {useRowLayout && !highContrast && <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-black/10 to-transparent z-10" />}
         <img
           src={imageSrc}
           alt={`Seite ${pageIndex + 1}`}
           decoding="sync"
-          className={`w-full h-full object-cover ${nightMode ? 'brightness-75' : ''}`}
+          className="w-full h-full object-cover"
+          style={{ filter: c.imageFilter }}
         />
       </div>
 
@@ -95,20 +99,16 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages, isLa
         <div
           className="w-3 relative z-20 shrink-0"
           style={{
-            background: nightMode
-              ? 'linear-gradient(90deg, #3a2a1c, #4a3828, #3a2a1c)'
-              : 'linear-gradient(90deg, #b8956a, #d4b08c, #b8956a)',
-            boxShadow: '0 0 10px rgba(0,0,0,0.2)',
+            background: c.spineV,
+            boxShadow: highContrast ? undefined : '0 0 10px rgba(0,0,0,0.2)',
           }}
         />
       ) : (
         <div
           className="h-1 relative z-20 shrink-0"
           style={{
-            background: nightMode
-              ? 'linear-gradient(180deg, #3a2a1c, #4a3828, #3a2a1c)'
-              : 'linear-gradient(180deg, #b8956a, #d4b08c, #b8956a)',
-            boxShadow: '0 0 6px rgba(0,0,0,0.15)',
+            background: c.spineH,
+            boxShadow: highContrast ? undefined : '0 0 6px rgba(0,0,0,0.15)',
           }}
         />
       )}
@@ -118,19 +118,14 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages, isLa
         ref={textContainerRef}
         className={`${useRowLayout ? 'w-1/2' : 'h-3/5'} ${isLandscapeMobile ? 'p-3' : useRowLayout ? 'p-8 md:p-12' : 'p-3 sm:p-8'} flex flex-col paper-texture relative overflow-hidden`}
         style={{
-          background: nightMode
-            ? 'linear-gradient(145deg, #2a2418 0%, #241e14 40%, #1e1a12 100%)'
-            : 'linear-gradient(145deg, #fdf8ed 0%, #f8eed5 40%, #f3e5c0 100%)',
+          background: c.paper,
         }}
       >
-        {useRowLayout && <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-black/5 to-transparent" />}
+        {useRowLayout && !highContrast && <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-black/5 to-transparent" />}
         {useRowLayout && (
           <div
             className="absolute bottom-0 right-0 w-10 h-10"
-            style={{ background: nightMode
-              ? 'linear-gradient(135deg, transparent 50%, #1a1610 50%)'
-              : 'linear-gradient(135deg, transparent 50%, #eddcb8 50%)'
-            }}
+            style={{ background: c.cornerFold }}
           />
         )}
 
@@ -142,7 +137,7 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages, isLa
               style={{
                 fontFamily: "'Lora', serif",
                 fontSize: `${fontSize}rem`,
-                color: nightMode ? '#d4c4a8' : '#4a3520',
+                color: c.text,
               }}
             >
               {paragraph}
@@ -155,7 +150,7 @@ function PageContent({ story, pageIndex, nightMode, language, mobileImages, isLa
             className="text-xs sm:text-sm italic"
             style={{
               fontFamily: "'Lora', serif",
-              color: nightMode ? '#6a5a40' : '#c4a06a',
+              color: c.pageNumber,
             }}
           >
             — {pageIndex + 1} —
@@ -187,7 +182,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
   const narratingRef = useRef(false)
   const turnPageRef = useRef<((dir: 'forward' | 'back') => void) | null>(null)
   const isLastRef = useRef(false)
-  const { nightMode } = useNightMode()
+  const { nightMode, highContrast } = useNightMode()
   const { language } = useLanguage()
   const mobileImages = useMobileImages()
   const isLandscapeMobile = useIsLandscapeMobile()
@@ -403,21 +398,18 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
     }
   }, [turnPage])
 
-  const btnBg = nightMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)'
-  const btnHoverBg = nightMode ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.7)'
-  const btnColor = nightMode ? '#e8d5b7' : '#7c4a1e'
+  const c = readerColors({ nightMode, highContrast })
+  const { btnBg, btnHoverBg, btnColor, btnBorder } = c
 
   return (
     <div
       className={`fixed inset-0 flex flex-col items-center overflow-hidden ${isLandscapeMobile ? 'px-2 py-0.5' : 'px-1.5 py-1 sm:p-4'}`}
       style={{
-        background: nightMode
-          ? 'linear-gradient(170deg, #1e1810 0%, #1a1410 40%, #14100c 100%)'
-          : 'linear-gradient(170deg, #f5e1be 0%, #edd3a4 40%, #dfc08a 100%)',
+        background: c.pageBg,
       }}
     >
-      {/* Soft floating shapes */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {/* Soft floating shapes — purely decorative, dropped in high contrast */}
+      {!highContrast && <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-25"
           style={{ background: nightMode
@@ -434,7 +426,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
         />
         <div className={`absolute top-12 left-1/4 text-xl hidden sm:block ${nightMode ? 'text-yellow-200/40' : 'text-amber-400/30'}`}>&#10022;</div>
         <div className={`absolute bottom-20 right-1/4 text-lg hidden sm:block ${nightMode ? 'text-yellow-100/35' : 'text-amber-300/25'}`}>&#10022;</div>
-      </div>
+      </div>}
 
       {/* Header */}
       <div className={`w-full max-w-5xl md:max-w-[90vw] flex items-center justify-between relative z-20 gap-2 ${isLandscapeMobile ? 'mb-0.5' : 'mb-1 sm:mb-5'}`}>
@@ -445,6 +437,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
             fontFamily: "'Lora', serif",
             color: btnColor,
             backgroundColor: btnBg,
+            border: btnBorder,
           }}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = btnHoverBg}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = btnBg}
@@ -455,7 +448,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
           className="text-sm sm:text-lg font-semibold truncate min-w-0"
           style={{
             fontFamily: "'Playfair Display', serif",
-            color: nightMode ? '#e8d5b7' : '#7c4a1e',
+            color: c.title,
           }}
         >
           {localized.title}
@@ -464,14 +457,16 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
           <NarrationToggle narrating={narrating} onToggle={() => setNarrating((n) => !n)} />
           {story.music && <MusicToggle playing={musicOn} onToggle={() => setMusicOn((m) => !m)} />}
           <LanguageToggle />
+          {/* No room on narrow phones — the library toggle (and OS setting) carries over */}
+          <span className="hidden sm:inline-flex"><HighContrastToggle /></span>
           <NightModeToggle />
           <FullscreenToggle />
           <span
             className="text-xs sm:text-sm px-2.5 py-1.5 sm:px-3 rounded-full whitespace-nowrap"
             style={{
               fontFamily: "'Lora', serif",
-              color: nightMode ? '#b8956a' : '#9a6b3a',
-              backgroundColor: nightMode ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.3)',
+              color: c.counter,
+              backgroundColor: c.counterBg,
             }}
           >
             {pageIndex + 1}/{story.pages.length}
@@ -491,15 +486,13 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
         <div
           className="relative rounded-xl sm:rounded-2xl overflow-hidden h-full md:h-auto md:aspect-[3/1]"
           style={{
-            backgroundColor: nightMode ? '#1e1a12' : '#fdf8ed',
-            boxShadow: nightMode
-              ? '0 12px 40px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(60,40,20,0.3)'
-              : '0 12px 40px rgba(120,70,20,0.25), 0 4px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(180,140,90,0.2)',
+            backgroundColor: c.bookBg,
+            boxShadow: c.bookShadow,
             WebkitTransform: 'translateZ(0)',
           }}
         >
           {/* Base layer — always mounted so images are never unmounted/remounted */}
-          <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} language={language} mobileImages={mobileImages} isLandscapeMobile={isLandscapeMobile} />
+          <PageContent story={story} pageIndex={pageIndex} nightMode={nightMode} highContrast={highContrast} language={language} mobileImages={mobileImages} isLandscapeMobile={isLandscapeMobile} />
 
           {/* Flip overlay — layered on top during page turn animation */}
           {flip && (
@@ -509,7 +502,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
                   before the image decodes — the flipping page at z30 covers it anyway
                   for the first ~350ms of the 700ms animation. */}
               <div className="absolute inset-0" style={{ zIndex: 20, opacity: 0, animation: 'flipReveal 1ms 100ms forwards' }}>
-                <PageContent story={story} pageIndex={flip.toPage} nightMode={nightMode} language={language} mobileImages={mobileImages} isLandscapeMobile={isLandscapeMobile} />
+                <PageContent story={story} pageIndex={flip.toPage} nightMode={nightMode} highContrast={highContrast} language={language} mobileImages={mobileImages} isLandscapeMobile={isLandscapeMobile} />
               </div>
               {/* Shadow cast by turning page onto target page */}
               <div
@@ -540,7 +533,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
                     WebkitBackfaceVisibility: 'hidden' as never,
                   }}
                 >
-                  <PageContent story={story} pageIndex={flip.fromPage} nightMode={nightMode} language={language} mobileImages={mobileImages} isLandscapeMobile={isLandscapeMobile} />
+                  <PageContent story={story} pageIndex={flip.fromPage} nightMode={nightMode} highContrast={highContrast} language={language} mobileImages={mobileImages} isLandscapeMobile={isLandscapeMobile} />
                   {/* Fold crease shadow near hinge */}
                   <div
                     className="absolute top-0 bottom-0 pointer-events-none"
@@ -561,9 +554,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden' as never,
                     transform: 'rotateY(180deg)',
-                    background: nightMode
-                      ? 'linear-gradient(135deg, #2a2418, #1e1a12 50%, #252015)'
-                      : 'linear-gradient(135deg, #f5ead4, #fdf8ed 50%, #f0e4cc)',
+                    background: c.paperBack,
                   }}
                 >
                   {/* Fold shadow on back face */}
@@ -592,6 +583,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
           style={{
             backgroundColor: btnBg,
             color: btnColor,
+            border: btnBorder,
           }}
           onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = btnHoverBg }}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = btnBg}
@@ -613,6 +605,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
           style={{
             backgroundColor: btnBg,
             color: btnColor,
+            border: btnBorder,
           }}
           onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = btnHoverBg }}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = btnBg}

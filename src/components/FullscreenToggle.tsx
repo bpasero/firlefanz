@@ -4,10 +4,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNightMode } from '../context/NightModeContext'
 import { useLanguage } from '../context/LanguageContext'
+import { controlColors } from '../lib/theme'
 import Tooltip from './Tooltip'
 
 export default function FullscreenToggle({ className = '' }: { className?: string }) {
-  const { nightMode } = useNightMode()
+  const { nightMode, highContrast } = useNightMode()
   const { language } = useLanguage()
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement)
 
@@ -28,8 +29,7 @@ export default function FullscreenToggle({ className = '' }: { className?: strin
   // Hide on devices that don't support fullscreen (e.g. iOS Safari)
   if (!document.documentElement.requestFullscreen) return null
 
-  const bg = nightMode ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.4)'
-  const hoverBg = nightMode ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.6)'
+  const { bg, hoverBg, color, border } = controlColors({ nightMode, highContrast })
 
   return (
     <Tooltip label={isFullscreen ? (language === 'en' ? 'Exit fullscreen' : 'Vollbild beenden') : (language === 'en' ? 'Fullscreen' : 'Vollbild')}>
@@ -38,7 +38,8 @@ export default function FullscreenToggle({ className = '' }: { className?: strin
       className={`w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors ${className}`}
       style={{
         backgroundColor: bg,
-        color: nightMode ? '#e8d5b7' : '#7c4a1e',
+        color,
+        border,
       }}
       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hoverBg}
       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bg}

@@ -10,6 +10,7 @@ import { useMobileImages, getMobileSrc } from '../hooks/useMobileImages'
 import { readLastRead, clearLastRead, type LastRead } from '../lib/lastRead'
 import { storyPath } from '../lib/routes'
 import NightModeToggle from './NightModeToggle'
+import HighContrastToggle from './HighContrastToggle'
 import LanguageToggle from './LanguageToggle'
 import StoryContextMenu, { type ContextMenuState } from './StoryContextMenu'
 
@@ -60,7 +61,7 @@ const DAY = {
   pageBg: 'linear-gradient(165deg, #fbe6c4 0%, #f6dcab 46%, #efce93 100%)',
   nightlight: 'radial-gradient(circle at center, rgba(255,226,178,0.55) 0%, rgba(255,214,150,0.24) 38%, transparent 70%)',
   ledge: 'linear-gradient(180deg, #d9b585 0%, #c69a68 55%, #b07f4f 100%)',
-  ledgeLip: '#9a6c42',
+  ledgeShadow: '0 2px 0 #9a6c42, 0 9px 16px -6px rgba(40,20,4,0.4)',
   mat: '#fbf3e0',
   surface: 'rgba(253,243,218,0.66)',
   keyline: 'rgba(120,70,20,0.22)',
@@ -81,6 +82,7 @@ const DAY = {
   vignette: 'inset 0 -120px 130px -60px rgba(80,40,10,0.22)',
   coverFilter: 'brightness(1)',
   mascotRing: 'inset 0 0 0 3px #fff7e6, 0 0 28px 6px rgba(255,214,140,0.45)',
+  sheen: 'linear-gradient(90deg, transparent, rgba(255,250,235,0.35), transparent)',
   pool: 'radial-gradient(58% 72% at 50% 44%, rgba(255,224,170,0.62), transparent 72%)',
   progressTrack: 'rgba(120,70,20,0.16)',
   progressFill: 'linear-gradient(90deg, #f0b86a, #ffd98a)',
@@ -90,7 +92,7 @@ const NIGHT: typeof DAY = {
   pageBg: 'radial-gradient(125% 95% at 16% 8%, #34281a 0%, #241a12 42%, #150f0a 100%)',
   nightlight: 'radial-gradient(circle at center, rgba(255,210,150,0.42) 0%, rgba(255,190,120,0.17) 40%, transparent 70%)',
   ledge: 'linear-gradient(180deg, #3c2c1d 0%, #2c2016 60%, #1d1510 100%)',
-  ledgeLip: '#140f0a',
+  ledgeShadow: '0 2px 0 #140f0a, 0 9px 16px -6px rgba(40,20,4,0.4)',
   mat: '#2a2018',
   surface: 'rgba(31,24,16,0.6)',
   keyline: 'rgba(0,0,0,0.45)',
@@ -111,9 +113,66 @@ const NIGHT: typeof DAY = {
   vignette: 'inset 0 -140px 140px -70px rgba(8,5,2,0.6)',
   coverFilter: 'brightness(0.95)',
   mascotRing: 'inset 0 0 0 3px #3a2c1c, 0 0 30px 8px rgba(255,200,120,0.22)',
+  sheen: 'linear-gradient(90deg, transparent, rgba(255,250,235,0.35), transparent)',
   pool: 'radial-gradient(58% 72% at 50% 44%, rgba(255,200,130,0.32), transparent 72%)',
   progressTrack: 'rgba(255,220,170,0.14)',
   progressFill: 'linear-gradient(90deg, #c98e44, #ffcf85)',
+}
+
+// High contrast: flat black/white, real outlines instead of shadows, no lamplight.
+// Every lamplight layer is 'none' so the same markup renders clean.
+const HC_DAY: typeof DAY = {
+  pageBg: '#ffffff',
+  nightlight: 'none',
+  ledge: '#000000',
+  ledgeShadow: 'none',
+  mat: '#ffffff',
+  surface: '#ffffff',
+  keyline: '#000000',
+  textPrimary: '#000000',
+  caption: '#000000',
+  subLabel: '#000000',
+  meta: '#000000',
+  accent: '#000000',
+  halo: 'none',
+  haloHover: 'none',
+  glowRest: 0,
+  frameShadow: '0 0 0 2px #000000',
+  featuredShadow: '0 0 0 3px #000000',
+  cardShadow: '0 0 0 2px #000000',
+  pillBg: '#ffffff',
+  pillText: '#000000',
+  pillBorder: '#000000',
+  vignette: 'none',
+  coverFilter: 'none',
+  mascotRing: '0 0 0 3px #000000',
+  sheen: 'none',
+  pool: 'none',
+  progressTrack: '#cccccc',
+  progressFill: '#000000',
+}
+
+const HC_NIGHT: typeof DAY = {
+  ...HC_DAY,
+  pageBg: '#000000',
+  ledge: '#8a8a8a',
+  mat: '#000000',
+  surface: '#000000',
+  keyline: '#ffffff',
+  textPrimary: '#ffe600',
+  caption: '#ffffff',
+  subLabel: '#ffffff',
+  meta: '#ffffff',
+  accent: '#ffe600',
+  frameShadow: '0 0 0 2px #ffffff',
+  featuredShadow: '0 0 0 3px #ffe600',
+  cardShadow: '0 0 0 2px #ffffff',
+  pillBg: '#000000',
+  pillText: '#ffffff',
+  pillBorder: '#ffffff',
+  mascotRing: '0 0 0 3px #ffffff',
+  progressTrack: '#444444',
+  progressFill: '#ffe600',
 }
 
 type Theme = typeof DAY
@@ -286,7 +345,7 @@ function Ledge({ t }: { t: Theme }) {
     <div
       aria-hidden
       className="mt-1.5 h-3 rounded-b-md sm:h-3.5"
-      style={{ background: t.ledge, boxShadow: `0 2px 0 ${t.ledgeLip}, 0 9px 16px -6px rgba(40,20,4,0.4)` }}
+      style={{ background: t.ledge, boxShadow: t.ledgeShadow }}
     />
   )
 }
@@ -335,12 +394,12 @@ function Featured({ story, title, teaser, t, mobile, lang, dim, onSelect, onCont
                   loading="eager"
                   decoding="sync"
                 />
-                {/* slow sheen */}
+                {/* slow sheen — off in high contrast */}
                 <span
                   aria-hidden
                   className="nl-anim pointer-events-none absolute inset-y-0 left-0 w-1/4"
                   style={{
-                    background: 'linear-gradient(90deg, transparent, rgba(255,250,235,0.35), transparent)',
+                    background: t.sheen,
                     animation: 'nlSheen 7s ease-in-out infinite',
                   }}
                 />
@@ -460,7 +519,7 @@ interface StoryLibraryProps {
 }
 
 export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryProps) {
-  const { nightMode } = useNightMode()
+  const { nightMode, highContrast } = useNightMode()
   const { language } = useLanguage()
   const mobile = useMobileImages()
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
@@ -469,7 +528,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
   const [shimmer, setShimmer] = useState(false)
   const pendingPick = useRef<Story | null>(null)
 
-  const t = nightMode ? NIGHT : DAY
+  const t = highContrast ? (nightMode ? HC_NIGHT : HC_DAY) : nightMode ? NIGHT : DAY
 
   // "Lights coming on" cascade: re-run when the user switches INTO night mode.
   const [revealKey, setRevealKey] = useState(0)
@@ -559,7 +618,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
   const surpriseMe = () => {
     if (stories.length === 0) return
     const pick = stories[Math.floor(Math.random() * stories.length)]
-    if (prefersReducedMotion()) {
+    if (prefersReducedMotion() || highContrast) {
       onSelectStory(pick)
       return
     }
@@ -570,12 +629,12 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
   const mascotSrc = coverSrc(`/stories/${MASCOT_COVER}/cover.png`, mobile)
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ background: nightMode ? '#150f0a' : '#efce93' }}>
+    <div className="relative min-h-screen overflow-hidden" style={{ background: highContrast ? t.pageBg : nightMode ? '#150f0a' : '#efce93' }}>
       {/* crossfading day/night backgrounds — the "dusk falling" toggle moment */}
-      <div aria-hidden className="nl-bgfade pointer-events-none absolute inset-0" style={{ background: DAY.pageBg, opacity: nightMode ? 0 : 1 }} />
-      <div aria-hidden className="nl-bgfade pointer-events-none absolute inset-0" style={{ background: NIGHT.pageBg, opacity: nightMode ? 1 : 0 }} />
-      {/* ambient layers */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div aria-hidden className="nl-bgfade pointer-events-none absolute inset-0" style={{ background: DAY.pageBg, opacity: highContrast || nightMode ? 0 : 1 }} />
+      <div aria-hidden className="nl-bgfade pointer-events-none absolute inset-0" style={{ background: NIGHT.pageBg, opacity: !highContrast && nightMode ? 1 : 0 }} />
+      {/* ambient layers — dropped in high contrast */}
+      {!highContrast && <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
           className="nl-anim absolute"
           style={{ top: -200, left: -200, width: 560, height: 560, background: t.nightlight, animation: 'nlFlicker 9s ease-in-out infinite' }}
@@ -591,18 +650,19 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
           }}
         />
         <div className="absolute inset-0" style={{ boxShadow: t.vignette }} />
-      </div>
+      </div>}
 
       {/* controls */}
       <div className="absolute right-4 top-4 z-30 flex gap-1.5">
         <LanguageToggle />
+        <HighContrastToggle />
         <NightModeToggle />
       </div>
 
       {/* content column */}
-      <div className="relative z-10 mx-auto w-full max-w-[1200px] px-4 pb-8 pt-9 sm:px-6 sm:pt-12">
+      <div className="relative z-10 mx-auto w-full max-w-[1200px] px-4 pb-8 pt-16 sm:px-6 sm:pt-12">
         {/* header nook */}
-        <header className="nl-anim flex items-center gap-4 pr-24 sm:gap-5" style={{ animation: 'nlGreetingIn 700ms ease-out both' }}>
+        <header className="nl-anim flex items-center gap-4 sm:gap-5 sm:pr-36" style={{ animation: 'nlGreetingIn 700ms ease-out both' }}>
           <div className="relative shrink-0">
             <div
               className="nl-anim absolute -inset-3 rounded-full"
@@ -621,7 +681,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
                   objectPosition: '46% 40%',
                   transform: 'scale(2.1)',
                   transformOrigin: '50% 30%',
-                  filter: nightMode ? 'brightness(0.97)' : undefined,
+                  filter: nightMode && !highContrast ? 'brightness(0.97)' : undefined,
                 }}
               />
             </div>

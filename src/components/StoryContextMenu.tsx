@@ -4,6 +4,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNightMode } from '../context/NightModeContext'
 import { useLanguage } from '../context/LanguageContext'
+import { menuColors } from '../lib/theme'
 
 export interface ContextMenuState {
   x: number
@@ -22,8 +23,9 @@ export function storyUrl(storyId: string): string {
 }
 
 export default function StoryContextMenu({ menu, onClose }: StoryContextMenuProps) {
-  const { nightMode } = useNightMode()
+  const { nightMode, highContrast } = useNightMode()
   const { language } = useLanguage()
+  const colors = menuColors({ nightMode, highContrast })
   const ref = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState({ x: menu.x, y: menu.y })
 
@@ -81,11 +83,7 @@ export default function StoryContextMenu({ menu, onClose }: StoryContextMenuProp
       ? { tab: 'Open in new tab', window: 'Open in new window' }
       : { tab: 'In neuem Tab öffnen', window: 'In neuem Fenster öffnen' }
 
-  const itemClass = `flex items-center gap-2.5 w-full text-left px-3.5 py-2 text-sm rounded-lg transition-colors ${
-    nightMode
-      ? 'text-amber-100 hover:bg-amber-100/10'
-      : 'text-amber-950 hover:bg-amber-900/10'
-  }`
+  const itemClass = `flex items-center gap-2.5 w-full text-left px-3.5 py-2 text-sm rounded-lg transition-colors ${colors.item}`
 
   return (
     <div
@@ -96,11 +94,9 @@ export default function StoryContextMenu({ menu, onClose }: StoryContextMenuProp
         left: pos.x,
         top: pos.y,
         fontFamily: "'Lora', serif",
-        background: nightMode ? 'rgba(42,32,24,0.97)' : 'rgba(252,243,228,0.98)',
-        border: nightMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(120,70,20,0.18)',
-        boxShadow: nightMode
-          ? '0 12px 32px rgba(0,0,0,0.6)'
-          : '0 12px 32px rgba(120,70,20,0.35)',
+        background: colors.background,
+        border: colors.border,
+        boxShadow: colors.boxShadow,
       }}
     >
       <button type="button" role="menuitem" className={itemClass} onClick={openNewTab}>

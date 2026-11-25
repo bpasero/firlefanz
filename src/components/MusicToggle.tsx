@@ -3,6 +3,7 @@
 
 import { useNightMode } from '../context/NightModeContext'
 import { useLanguage } from '../context/LanguageContext'
+import { controlColors } from '../lib/theme'
 import Tooltip from './Tooltip'
 
 interface Props {
@@ -11,15 +12,10 @@ interface Props {
 }
 
 export default function MusicToggle({ playing, onToggle }: Props) {
-  const { nightMode } = useNightMode()
+  const { nightMode, highContrast } = useNightMode()
   const { language } = useLanguage()
 
-  const bg = playing
-    ? (nightMode ? 'rgba(180,140,90,0.35)' : 'rgba(180,140,90,0.4)')
-    : (nightMode ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.4)')
-  const hoverBg = playing
-    ? (nightMode ? 'rgba(180,140,90,0.5)' : 'rgba(180,140,90,0.55)')
-    : (nightMode ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.6)')
+  const { bg, hoverBg, color, border } = controlColors({ nightMode, highContrast }, playing)
 
   return (
     <Tooltip label={playing ? (language === 'en' ? 'Stop music' : 'Musik stoppen') : (language === 'en' ? 'Play music' : 'Musik abspielen')}>
@@ -28,7 +24,8 @@ export default function MusicToggle({ playing, onToggle }: Props) {
       className="w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors"
       style={{
         backgroundColor: bg,
-        color: nightMode ? '#e8d5b7' : '#7c4a1e',
+        color,
+        border,
       }}
       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hoverBg}
       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bg}

@@ -160,3 +160,19 @@ html, body {
   .group:hover .nl-featured-lift,
   .group:active .nl-featured-lift { transform: none; }
 }
+
+/* ===========================================================================
+   High contrast — data-contrast="day|night" is set on <html> by NightModeProvider.
+   Unlayered on purpose: it must beat Tailwind's focus-visible:outline-none.
+   =========================================================================== */
+[data-contrast="day"] { --hc-focus: #0033cc; }
+[data-contrast="night"] { --hc-focus: #00e5ff; }
+[data-contrast] :focus-visible {
+  outline: 3px solid var(--hc-focus);
+  outline-offset: 3px;
+}
+[data-contrast] .hc-tip {
+  background: #000;
+  color: #fff;
+  border: 1px solid #fff;
+}

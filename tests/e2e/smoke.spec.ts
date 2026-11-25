@@ -130,3 +130,24 @@ test.describe('Deep-link via story URL', () => {
     await expect(page.getByRole('button', { name: /Library/ })).toBeVisible({ timeout: 5000 })
   })
 })
+
+test.describe('High contrast', () => {
+  const toggle = (page: import('@playwright/test').Page) => page.getByRole('button', { name: 'Hoher Kontrast' })
+
+  test('toggles in the library, carries into the reader and survives a reload', async ({ page }) => {
+    await page.goto('/')
+    await bookButton(page).waitFor({ timeout: 10000 })
+    await expect(toggle(page)).toHaveAttribute('aria-pressed', 'false')
+    await toggle(page).click()
+    await expect(toggle(page)).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.locator('html')).toHaveAttribute('data-contrast', 'day')
+
+    await bookButton(page).click()
+    await expect(page.locator('p').first()).toHaveCSS('color', 'rgb(0, 0, 0)')
+    await page.reload()
+    await expect(page.locator('p').first()).toHaveCSS('color', 'rgb(0, 0, 0)')
+
+    await toggle(page).click()
+    await expect(page.locator('p').first()).not.toHaveCSS('color', 'rgb(0, 0, 0)')
+  })
+})

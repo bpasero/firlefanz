@@ -88,4 +88,34 @@ describe('NightModeProvider', () => {
     act(() => result.current.toggleNightMode())
     expect(document.documentElement.style.backgroundColor).toBe('#14100c')
   })
+
+  it('high contrast follows prefers-contrast until the user chooses, then persists', () => {
+    mqlSpy = vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({
+      matches: query === '(prefers-contrast: more)',
+    }) as unknown as MediaQueryList)
+    const { result } = renderHook(() => useNightMode(), { wrapper })
+    expect(result.current.highContrast).toBe(true)
+    expect(localStorage.getItem('firlefanz-high-contrast')).toBeNull()
+
+    act(() => result.current.toggleHighContrast())
+    expect(result.current.highContrast).toBe(false)
+    expect(localStorage.getItem('firlefanz-high-contrast')).toBe('false')
+    cleanup()
+    const again = renderHook(() => useNightMode(), { wrapper })
+    expect(again.result.current.highContrast).toBe(false)
+  })
+
+  it('high contrast combines with day/night on the document root', () => {
+    mockPrefersDark(false)
+    const { result } = renderHook(() => useNightMode(), { wrapper })
+    const root = document.documentElement
+    act(() => result.current.toggleHighContrast())
+    expect(root.dataset.contrast).toBe('day')
+    expect(root.style.backgroundColor).toBe('#ffffff')
+    act(() => result.current.toggleNightMode())
+    expect(root.dataset.contrast).toBe('night')
+    expect(root.style.backgroundColor).toBe('#000000')
+    act(() => result.current.toggleHighContrast())
+    expect(root.dataset.contrast).toBeUndefined()
+  })
 })
