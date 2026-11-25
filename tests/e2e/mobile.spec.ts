@@ -20,6 +20,18 @@ test.describe('Story reader mobile', () => {
     expect(bodyScrollHeight).toBeLessThanOrEqual(viewport.height)
   })
 
+  test('high contrast toggle is reachable and keeps everything on screen', async ({ page }) => {
+    const viewport = page.viewportSize()!
+    const toggle = page.getByRole('button', { name: 'Hoher Kontrast' })
+    await toggle.click()
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    for (const button of await page.getByRole('button').all()) {
+      const box = (await button.boundingBox())!
+      expect(box.x).toBeGreaterThanOrEqual(0)
+      expect(box.x + box.width).toBeLessThanOrEqual(viewport.width)
+    }
+  })
+
   test('no scrolling after navigating pages', async ({ page }) => {
     const viewport = page.viewportSize()!
 

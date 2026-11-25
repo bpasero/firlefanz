@@ -457,12 +457,12 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
           <NarrationToggle narrating={narrating} onToggle={() => setNarrating((n) => !n)} />
           {story.music && <MusicToggle playing={musicOn} onToggle={() => setMusicOn((m) => !m)} />}
           <LanguageToggle />
-          {/* No room on narrow phones — the library toggle (and OS setting) carries over */}
-          <span className="hidden sm:inline-flex"><HighContrastToggle /></span>
+          <HighContrastToggle />
           <NightModeToggle />
           <FullscreenToggle />
+          {/* Hidden on narrow phones to fit the toggles — the page itself shows its number */}
           <span
-            className="text-xs sm:text-sm px-2.5 py-1.5 sm:px-3 rounded-full whitespace-nowrap"
+            className="hidden sm:inline text-xs sm:text-sm px-2.5 py-1.5 sm:px-3 rounded-full whitespace-nowrap"
             style={{
               fontFamily: "'Lora', serif",
               color: c.counter,
@@ -579,7 +579,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
         <button
           onClick={() => turnPage('back')}
           disabled={isFirst}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-lg sm:text-lg"
+          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${highContrast ? 'disabled:opacity-50' : 'disabled:opacity-20'} disabled:cursor-not-allowed transition-colors text-lg sm:text-lg`}
           style={{
             backgroundColor: btnBg,
             color: btnColor,
@@ -601,7 +601,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
             }
           }}
           aria-label={isLast ? 'Zurück zur Bibliothek' : 'Nächste Seite'}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-lg sm:text-lg"
+          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${highContrast ? 'disabled:opacity-50' : 'disabled:opacity-20'} disabled:cursor-not-allowed transition-colors text-lg sm:text-lg`}
           style={{
             backgroundColor: btnBg,
             color: btnColor,

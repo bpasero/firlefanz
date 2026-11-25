@@ -79,6 +79,7 @@ const DAY = {
   pillBg: '#fff6e4',
   pillText: '#a8742f',
   pillBorder: 'rgba(168,116,47,0.28)',
+  pillBorderWidth: 1,
   vignette: 'inset 0 -120px 130px -60px rgba(80,40,10,0.22)',
   coverFilter: 'brightness(1)',
   mascotRing: 'inset 0 0 0 3px #fff7e6, 0 0 28px 6px rgba(255,214,140,0.45)',
@@ -110,6 +111,7 @@ const NIGHT: typeof DAY = {
   pillBg: 'rgba(58,44,28,0.92)',
   pillText: '#e8bc7e',
   pillBorder: 'rgba(255,200,120,0.26)',
+  pillBorderWidth: 1,
   vignette: 'inset 0 -140px 140px -70px rgba(8,5,2,0.6)',
   coverFilter: 'brightness(0.95)',
   mascotRing: 'inset 0 0 0 3px #3a2c1c, 0 0 30px 8px rgba(255,200,120,0.22)',
@@ -143,6 +145,7 @@ const HC_DAY: typeof DAY = {
   pillBg: '#ffffff',
   pillText: '#000000',
   pillBorder: '#000000',
+  pillBorderWidth: 2,
   vignette: 'none',
   coverFilter: 'none',
   mascotRing: '0 0 0 3px #000000',
@@ -406,7 +409,7 @@ function Featured({ story, title, teaser, t, mobile, lang, dim, onSelect, onCont
                 {/* tonight pill */}
                 <span
                   className={`${PILL_BASE} absolute left-2.5 top-2.5`}
-                  style={{ background: t.pillBg, color: t.pillText, borderColor: t.pillBorder, fontFamily: FREDOKA }}
+                  style={{ background: t.pillBg, color: t.pillText, borderColor: t.pillBorder, borderWidth: t.pillBorderWidth, fontFamily: FREDOKA }}
                 >
                   <span aria-hidden>✦</span>
                   {lang === 'en' ? 'Tonight' : 'Heute Nacht'}
@@ -475,7 +478,7 @@ function KeepReading({ story, title, lastRead, t, mobile, lang, onResume, onCont
             />
           </div>
           <div className="flex flex-1 flex-col justify-center p-4 sm:p-5">
-            <span className={`${PILL_BASE} mb-2 self-start`} style={{ background: t.pillBg, color: t.pillText, borderColor: t.pillBorder, fontFamily: FREDOKA }}>
+            <span className={`${PILL_BASE} mb-2 self-start`} style={{ background: t.pillBg, color: t.pillText, borderColor: t.pillBorder, borderWidth: t.pillBorderWidth, fontFamily: FREDOKA }}>
               <span aria-hidden>↻</span>
               {lang === 'en' ? 'Keep reading' : 'Weiterlesen'}
             </span>
@@ -503,7 +506,7 @@ function KeepReading({ story, title, lastRead, t, mobile, lang, onResume, onCont
         aria-label={lang === 'en' ? 'Remove from keep reading' : 'Aus „Weiterlesen“ entfernen'}
         title={lang === 'en' ? 'Remove from keep reading' : 'Aus „Weiterlesen“ entfernen'}
         className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full text-lg leading-none transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f5b942] active:scale-90"
-        style={{ background: t.pillBg, color: t.pillText, border: `1px solid ${t.pillBorder}` }}
+        style={{ background: t.pillBg, color: t.pillText, border: `${t.pillBorderWidth}px solid ${t.pillBorder}` }}
       >
         <span aria-hidden>×</span>
       </button>
@@ -703,7 +706,7 @@ export default function StoryLibrary({ stories, onSelectStory }: StoryLibraryPro
             onClick={surpriseMe}
             aria-label={language === 'en' ? 'Open a random story' : 'Zufällige Geschichte öffnen'}
             className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f5b942] active:scale-95"
-            style={{ fontFamily: FREDOKA, fontWeight: 500, background: t.pillBg, color: t.pillText, border: `1px solid ${t.pillBorder}` }}
+            style={{ fontFamily: FREDOKA, fontWeight: 500, background: t.pillBg, color: t.pillText, border: `${t.pillBorderWidth}px solid ${t.pillBorder}` }}
           >
             <span aria-hidden>🌙</span>
             {language === 'en' ? 'Surprise me' : 'Überrasch mich'}
