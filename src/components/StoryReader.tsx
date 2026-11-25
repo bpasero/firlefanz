@@ -34,21 +34,23 @@ const FONT_STEPS_DESKTOP = [1.25, 1.125, 1, 0.9375, 0.875, 0.8125, 0.75] // rem:
 const FONT_STEPS_MOBILE = [1, 0.9375, 0.875, 0.8125, 0.75, 0.6875, 0.625] // rem: base → xxs (mobile has less vertical space)
 const FONT_STEPS_LANDSCAPE = [0.875, 0.8125, 0.75, 0.6875, 0.625, 0.5625, 0.5] // rem: smaller still — landscape has very limited height
 
-// Detect when a mobile phone is turned to landscape (short viewport height).
-// max-height: 600px excludes desktop monitors and tablets.
-function useIsLandscapeMobile() {
-  const [isLandscape, setIsLandscape] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia('(orientation: landscape) and (max-height: 600px)').matches
-  })
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
   useEffect(() => {
-    const mq = window.matchMedia('(orientation: landscape) and (max-height: 600px)')
-    const handler = (e: MediaQueryListEvent) => setIsLandscape(e.matches)
+    const mq = window.matchMedia(query)
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches)
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
-  }, [])
-  return isLandscape
+  }, [query])
+  return matches
 }
+
+// Detect when a mobile phone is turned to landscape (short viewport height).
+// max-height: 600px excludes desktop monitors and tablets.
+const useIsLandscapeMobile = () => useMediaQuery('(orientation: landscape) and (max-height: 600px)')
+
+// Portrait tablets: a 3:1 open book would be too short for the text, so stack like a phone.
+const useIsPortraitTablet = () => useMediaQuery('(orientation: portrait) and (min-width: 768px) and (max-width: 1024px)')
 
 function PageContent({ story, pageIndex, nightMode, highContrast, language, mobileImages, isLandscapeMobile }: { story: Story; pageIndex: number; nightMode: boolean; highContrast: boolean; language: string; mobileImages: boolean; isLandscapeMobile: boolean }) {
   const c = readerColors({ nightMode, highContrast })
@@ -56,32 +58,46 @@ function PageContent({ story, pageIndex, nightMode, highContrast, language, mobi
   const page = localized.pages[pageIndex]
   const imageSrc = `${base}${getMobileSrc(page.image, mobileImages).replace(/^\//, '')}`
   const textContainerRef = useRef<HTMLDivElement>(null)
-  const [fontStep, setFontStep] = useState(0)
+  const textRef = useRef<HTMLDivElement>(null)
+  const isPortraitTablet = useIsPortraitTablet()
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
   // Landscape mobile has very limited height — use the smallest font step set
   const fontSteps = isLandscapeMobile ? FONT_STEPS_LANDSCAPE : isMobile ? FONT_STEPS_MOBILE : FONT_STEPS_DESKTOP
   // Use side-by-side (book) layout on desktop or when a phone is in landscape
-  const useRowLayout = !isMobile || isLandscapeMobile
+  const useRowLayout = (!isMobile && !isPortraitTablet) || isLandscapeMobile
 
-  // Reset font step when page, language, or orientation changes
-  useEffect(() => { setFontStep(0) }, [pageIndex, language, isLandscapeMobile])
-
-  // Shrink font until text fits without overflow
+  // Fit the text: try sizes from large to small until nothing overflows. One pass that
+  // writes the size directly — splitting "reset" and "shrink" across two effects makes
+  // React batch them, and the reset wins.
   useLayoutEffect(() => {
     const container = textContainerRef.current
-    if (!container) return
-    if (container.scrollHeight > container.clientHeight && fontStep < fontSteps.length - 1) {
-      setFontStep((s) => s + 1)
+    const text = textRef.current
+    if (!container || !text) return
+    let active = true
+    const fit = () => {
+      if (!active) return
+      for (const size of fontSteps) {
+        text.style.fontSize = `${size}rem`
+        if (container.scrollHeight <= container.clientHeight) break
+      }
     }
-  }, [fontStep, fontSteps.length, pageIndex, language, isLandscapeMobile])
-
-  const fontSize = fontSteps[fontStep]
+    fit()
+    // Refit when the window changes size or the story font replaces the fallback.
+    // (Observing the container is loop-free: its size doesn't depend on the text.)
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(fit)
+    observer?.observe(container)
+    document.fonts?.ready?.then(fit)
+    return () => {
+      active = false
+      observer?.disconnect()
+    }
+  }, [fontSteps, pageIndex, story, language])
 
   return (
     <div className={`absolute inset-0 flex ${useRowLayout ? 'flex-row' : 'flex-col'}`}>
       {/* Left page — illustration */}
       <div
-        className={`${useRowLayout ? 'w-1/2' : 'h-2/5'} relative overflow-hidden`}
+        className={`${useRowLayout ? 'w-1/2' : isPortraitTablet ? 'h-1/2' : 'h-2/5'} relative overflow-hidden`}
         style={{ backgroundColor: c.imageBg }}
       >
         {useRowLayout && !highContrast && <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-black/10 to-transparent z-10" />}
@@ -116,7 +132,7 @@ function PageContent({ story, pageIndex, nightMode, highContrast, language, mobi
       {/* Right page — text */}
       <div
         ref={textContainerRef}
-        className={`${useRowLayout ? 'w-1/2' : 'h-3/5'} ${isLandscapeMobile ? 'p-3' : useRowLayout ? 'p-8 md:p-12' : 'p-3 sm:p-8'} flex flex-col paper-texture relative overflow-hidden`}
+        className={`${useRowLayout ? 'w-1/2' : isPortraitTablet ? 'h-1/2' : 'h-3/5'} ${isLandscapeMobile ? 'p-3' : useRowLayout ? 'p-8 md:p-12' : 'p-3 sm:p-8'} flex flex-col paper-texture relative overflow-hidden`}
         style={{
           background: c.paper,
         }}
@@ -129,14 +145,13 @@ function PageContent({ story, pageIndex, nightMode, highContrast, language, mobi
           />
         )}
 
-        <div className="relative z-10 my-auto">
+        <div ref={textRef} className="relative z-10 my-auto">
           {page.text.map((paragraph, i) => (
             <p
               key={i}
               className="leading-relaxed mb-4 last:mb-0"
               style={{
                 fontFamily: "'Lora', serif",
-                fontSize: `${fontSize}rem`,
                 color: c.text,
               }}
             >
@@ -186,6 +201,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
   const { language } = useLanguage()
   const mobileImages = useMobileImages()
   const isLandscapeMobile = useIsLandscapeMobile()
+  const isPortraitTablet = useIsPortraitTablet()
   const localized = localizeStory(story, language)
   const isFirst = pageIndex === 0
   const isLast = pageIndex === story.pages.length - 1
@@ -484,7 +500,7 @@ export default function StoryReader({ story, initialPage = 0, onBack, onPageChan
         style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
       >
         <div
-          className="relative rounded-xl sm:rounded-2xl overflow-hidden h-full md:h-auto md:aspect-[3/1]"
+          className={`relative rounded-xl sm:rounded-2xl overflow-hidden h-full ${isPortraitTablet ? '' : 'md:h-auto md:aspect-[3/1]'}`}
           style={{
             backgroundColor: c.bookBg,
             boxShadow: c.bookShadow,
